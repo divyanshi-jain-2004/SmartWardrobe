@@ -21,7 +21,9 @@ import 'package:smart_wardrobe_new/controllers/user_controller.dart';
 
 import 'package:smart_wardrobe_new/screens/login.dart';
 import 'package:smart_wardrobe_new/screens/saved_outfits.dart'; // SavedOutfitsScreen का इम्पोर्ट
-import 'package:smart_wardrobe_new/models/outfit_model.dart'; // 🎯 कॉमन मॉडल इम्पोर्ट
+import 'package:smart_wardrobe_new/models/outfit_model.dart';
+
+import '../utils/constants/colors.dart'; // 🎯 कॉमन मॉडल इम्पोर्ट
 
 
 // 🎯 Mock Data (अब इम्पोर्ट किए गए मॉडल का उपयोग करता है)
@@ -40,19 +42,19 @@ final List<OutfitModel> _mockSavedOutfits = [
   ),
 ];
 
-// --- App Colors (Unchanged) ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00ADB5);
-  static const Color primaryText = Color(0xFF333333);
-  static const Color secondaryText = Color(0xFF8D8D8D);
-  static const Color lightGrayBackground = Color(0xFFF5F5F5);
-  static const Color backgroundWhite = Colors.white;
-  static const Color darkBackground = Color(0xFF121212);
-  static const Color darkCard = Color(0xFF1E1E1E);
-  static const Color darkPrimaryText = Colors.white;
-  static const Color darkSecondaryText = Color(0xFFAAAAAA);
-  static const Color mintGreen = Color(0xFFA8E6CF);
-}
+// // --- App Colors (Unchanged) ---
+// class AppColors {
+//   static const Color accentTeal = Color(0xFF00ADB5);
+//   static const Color primaryText = Color(0xFF333333);
+//   static const Color secondaryText = Color(0xFF8D8D8D);
+//   static const Color lightGrayBackground = Color(0xFFF5F5F5);
+//   static const Color backgroundWhite = Colors.white;
+//   static const Color darkBackground = Color(0xFF121212);
+//   static const Color darkCard = Color(0xFF1E1E1E);
+//   static const Color darkPrimaryText = Colors.white;
+//   static const Color darkSecondaryText = Color(0xFFAAAAAA);
+//   static const Color mintGreen = Color(0xFFA8E6CF);
+// }
 // --------------------------------------------------------------------------------
 
 class ProfileScreen extends StatefulWidget {

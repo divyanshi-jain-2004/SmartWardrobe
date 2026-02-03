@@ -1,252 +1,101 @@
-import 'package:smart_wardrobe_new/screens/login.dart';
 import 'package:flutter/material.dart';
-// ⚠️ Supabase और global client को एक्सेस करने के लिए main.dart से इम्पोर्ट करें
+import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:smart_wardrobe_new/main.dart'; // assuming supabase client is initialized here
+import '../controllers/signup_controller.dart';
 
-class SignUpScreen extends StatefulWidget {
+class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
-}
-
-class _SignUpScreenState extends State<SignUpScreen> {
-  // 🔹 Controllers to capture input data
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
-  bool _isLoading = false; // Loading state for button
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  // 🛠️ Supabase Sign Up Logic (UPDATED)
-  Future<void> signUpUser() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty || _nameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields.')),
-      );
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match.')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final AuthResponse res = await supabase.auth.signUp(
-        email: _emailController.text,
-        password: _passwordController.text,
-        // Optional: Add user name to metadata
-        data: {'full_name': _nameController.text},
-      );
-
-      // Check for response error (Supabase throws an exception on error, but session/user being null handles policy checks)
-      if (res.user != null) {
-        // SUCCESS: User successfully created AND session started.
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Registration successful! ')),
-          );
-
-          // 3. SAFALTA KE BAAD hi Home par redirect karein
-          // pushReplacementNamed ensures the user cannot go back to the SignUp screen.
-          Navigator.of(context).pushReplacementNamed('/home');
-        }
-      } else if (res.session == null) {
-        // This usually happens if Email Confirmation is required by Supabase RLS policy.
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Registration successful. Check your email for verification before logging in.")),
-          );
-          // If email confirmation is needed, navigate to Login or a verification screen.
-          // Since the session wasn't started, we typically send them back to the login screen.
-          Navigator.of(context).pushReplacementNamed('/login');
-        }
-      }
-
-    } on AuthException catch (e) {
-      // Supabase specific error handling (e.g., email already registered)
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Signup Failed: ${e.message}')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An unexpected error occurred: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // 💡 Media Query का उपयोग करें
+    // Controller inject karna
+    final controller = Get.put(SignUpController());
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFD8B4FE), Color(0xFFA5F3FC)], // pastel gradient
+            colors: [Color(0xFFD8B4FE), Color(0xFFA5F3FC)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
-            // Vertical padding को Responsive बनाया गया
             padding: EdgeInsets.symmetric(horizontal: 30, vertical: screenHeight * 0.05),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 🔹 Logo - Responsive Height
-                Image.asset(
-                  "assets/logo.png",
-                  height: screenHeight * 0.12, // स्क्रीन हाइट का 12%
-                ),
-                SizedBox(height: screenHeight * 0.025), // Responsive Spacing
+                Image.asset("assets/logo.png", height: screenHeight * 0.12),
+                SizedBox(height: screenHeight * 0.025),
+                const Text("Create Account",
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
+                SizedBox(height: screenHeight * 0.035),
 
-                const Text(
-                  "Create Account",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.035), // Responsive Spacing
+                // Name Field
+                _inputField(controller.nameController, "Full Name", Icons.person_outline),
+                SizedBox(height: screenHeight * 0.015),
 
-                // 🔹 Name Field
-                _buildTextField(
-                  controller: _nameController,
-                  hintText: "Enter your name",
-                  icon: Icons.person_outline,
-                ),
-                SizedBox(height: screenHeight * 0.015), // Responsive Spacing
+                // Email Field
+                _inputField(controller.emailController, "Email", Icons.email_outlined),
+                SizedBox(height: screenHeight * 0.015),
 
-                // 🔹 Email Field
-                _buildTextField(
-                  controller: _emailController,
-                  hintText: "Enter your email",
-                  icon: Icons.email_outlined,
-                ),
-                SizedBox(height: screenHeight * 0.015), // Responsive Spacing
+                // Password Field
+                Obx(() => _passwordField(
+                  controller.passwordController,
+                  "Password",
+                  controller.obscurePassword.value,
+                      () => controller.obscurePassword.toggle(),
+                )),
+                SizedBox(height: screenHeight * 0.015),
 
-                // 🔹 Password Field
-                _buildPasswordField(
-                  controller: _passwordController,
-                  hintText: "Create a password",
-                  obscureText: _obscurePassword,
-                  toggleVisibility: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                ),
-                SizedBox(height: screenHeight * 0.015), // Responsive Spacing
-
-                // 🔹 Confirm Password Field
-                _buildPasswordField(
-                  controller: _confirmPasswordController,
-                  hintText: "Confirm your password",
-                  obscureText: _obscureConfirmPassword,
+                // Confirm Password Field
+                Obx(() => _passwordField(
+                  controller.confirmPasswordController,
+                  "Confirm Password",
+                  controller.obscureConfirmPassword.value,
+                      () => controller.obscureConfirmPassword.toggle(),
                   icon: Icons.lock_person_outlined,
-                  toggleVisibility: () {
-                    setState(() {
-                      _obscureConfirmPassword = !_obscureConfirmPassword;
-                    });
-                  },
-                ),
+                )),
 
-                SizedBox(height: screenHeight * 0.03), // Responsive Spacing
+                SizedBox(height: screenHeight * 0.03),
 
-                // 🔹 Sign Up Button
+                // Sign Up Button
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: Obx(() => ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F766E), // teal
+                      backgroundColor: controller.accentTeal,
                       padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: _isLoading ? null : signUpUser, // Call the Supabase function
-                    child: _isLoading
-                        ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(color: Colors.white70, strokeWidth: 3),
-                    )
-                        : const Text(
-                      "Sign Up",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white70),
-                    ),
-                  ),
+                    onPressed: controller.isLoading.value ? null : () => controller.signUp(),
+                    child: controller.isLoading.value
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text("Sign Up", style: TextStyle(fontSize: 18, color: Colors.white)),
+                  )),
                 ),
 
-                SizedBox(height: screenHeight * 0.025), // Responsive Spacing
+                SizedBox(height: screenHeight * 0.025),
+                const Text("or", style: TextStyle(color: Colors.black54)),
+                SizedBox(height: screenHeight * 0.025),
 
-                const Text("or", style: TextStyle(color: Colors.black54, fontSize: 16)),
+                // Social Buttons
+                _socialBtn("Google", "assets/google.png", OAuthProvider.google, controller),
+                SizedBox(height: screenHeight * 0.015),
+                _socialBtn("Facebook", "assets/facebook.png", OAuthProvider.facebook, controller),
 
-                SizedBox(height: screenHeight * 0.025), // Responsive Spacing
+                SizedBox(height: screenHeight * 0.03),
 
-                // 🔹 Social Sign Up Buttons
-                _socialButton("Google", "assets/google.png"),
-                SizedBox(height: screenHeight * 0.015), // Responsive Spacing
-                _socialButton("Facebook", "assets/facebook.png"),
-                SizedBox(height: screenHeight * 0.015), // Responsive Spacing
-                _socialButton("Apple", "assets/apple.png"),
-
-                SizedBox(height: screenHeight * 0.03), // Responsive Spacing
-
+                // Back to Login
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Already have an account? ",
-                      style: TextStyle(fontSize: 16),
-                    ),
+                    const Text("Already have an account? "),
                     GestureDetector(
-                      onTap: () {
-                        // Changed to named route if available, or pop
-                        Navigator.pop(context); // back to login
-                      },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Color(0xFF0F766E),
-                        ),
-                      ),
+                      onTap: () => Get.back(),
+                      child: Text("Login",
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: controller.accentTeal)),
                     ),
                   ],
                 ),
@@ -258,75 +107,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // 🛠️ Helper Method: Standard TextField
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    required IconData icon,
-  }) {
+  // Helper Widgets
+  Widget _inputField(TextEditingController ctrl, String hint, IconData icon) {
     return TextField(
-      controller: controller,
+      controller: ctrl,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: hint,
         prefixIcon: Icon(icon),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       ),
     );
   }
 
-  // 🛠️ Helper Method: Password Field
-  Widget _buildPasswordField({
-    required TextEditingController controller,
-    required String hintText,
-    required bool obscureText,
-    required VoidCallback toggleVisibility,
-    IconData icon = Icons.lock_outline, // Default icon
-  }) {
+  Widget _passwordField(TextEditingController ctrl, String hint, bool obscure, VoidCallback toggle, {IconData icon = Icons.lock_outline}) {
     return TextField(
-      controller: controller,
-      obscureText: obscureText,
+      controller: ctrl,
+      obscureText: obscure,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: hint,
         prefixIcon: Icon(icon),
-        suffixIcon: IconButton(
-          icon: Icon(
-            obscureText ? Icons.visibility_off : Icons.visibility,
-          ),
-          onPressed: toggleVisibility,
-        ),
+        suffixIcon: IconButton(icon: Icon(obscure ? Icons.visibility_off : Icons.visibility), onPressed: toggle),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       ),
     );
   }
 
-  // 🔹 Social Button Widget
-  Widget _socialButton(String text, String iconPath) {
+  Widget _socialBtn(String label, String iconPath, OAuthProvider provider, SignUpController controller) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          side: const BorderSide(color: Colors.black12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         icon: Image.asset(iconPath, height: 20),
-        onPressed: () {
-          // Implement social sign-up logic here (e.g., supabase.auth.signInWithOAuth)
-        },
-        label: Text("Continue with $text", style: const TextStyle(color: Colors.black87)),
+        onPressed: () => controller.handleSocialLogin(provider),
+        label: Text("Continue with $label", style: const TextStyle(color: Colors.black87)),
       ),
     );
   }

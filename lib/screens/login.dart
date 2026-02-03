@@ -1,330 +1,92 @@
-import 'package:smart_wardrobe_new/screens/Signup.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:smart_wardrobe_new/main.dart';
-import 'package:get/get.dart'; // GetX Snackbar के लिए जोड़ा गया
+import '../controllers/login_controller.dart';
+import 'Signup.dart';
+// import 'signup_screen.dart'; // Apna signup screen import karein
 
-// --- App Colors (Forgot Password Dialog के लिए जरूरी) ---
-const Color accentTeal = Color(0xFF0F766E);
-const Color primaryText = Colors.black87;
-const Color secondaryText = Colors.grey;
-const Color backgroundWhite = Colors.white;
-
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  bool _obscurePassword = true;
-  bool _isLoading = false;
-
-  // 🎯 GetX Snackbar Helper (नया)
-  void _showSnackbar(String message, Color color) {
-    Get.snackbar(
-      color == Colors.red ? 'Error' : 'Success',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: color,
-      colorText: Colors.white,
-    );
-  }
-
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  // 🛠️ Supabase Sign In Logic (ScaffoldMessenger की जगह GetX Snackbar)
-  Future<void> signInUser() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showSnackbar('Please enter email and password.', Colors.orange);
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final AuthResponse res = await supabase.auth.signInWithPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-
-      if (res.user != null) {
-        if (mounted) {
-          _showSnackbar("Login Successful! ", accentTeal);
-          // Navigator का उपयोग जारी रखा गया है
-          Navigator.of(context).pushReplacementNamed('/home');
-        }
-
-      } else {
-        if (mounted) {
-          _showSnackbar("Authentication response was null. Check network or server status.", Colors.red);
-        }
-      }
-
-    } on AuthException catch (e) {
-      if (mounted) {
-        _showSnackbar("Login Failed: ${e.message}. (Did you verify your email?)", Colors.red);
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnackbar('An unexpected error occurred: ${e.toString()}', Colors.red);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  // ######################################################################
-  //                   🎯 FORGOT PASSWORD LOGIC ADDED (UPDATED)
-  // ######################################################################
-
-  // 1. रीसेट ईमेल भेजने का Supabase फ़ंक्शन
-  Future<void> _resetPassword(String email) async {
-    if (email.isEmpty || !email.contains('@')) {
-      _showSnackbar('Please enter a valid email address.', Colors.orange);
-      return;
-    }
-
-    // ❌ OLD ScaffoldMessenger कॉल हटा दिया गया
-    // 💡 FIX: केवल Get.snackbar का उपयोग करें
-    Get.snackbar(
-        'Sending',
-        'Sending password reset link...',
-        duration: const Duration(seconds: 5),
-        backgroundColor: accentTeal,
-        colorText: Colors.white
-    );
-
-
-    try {
-      await supabase.auth.resetPasswordForEmail(
-        email,
-        // 🎯 Deep Link URI
-        redirectTo: 'smartwardrobe://reset-callback',
-      );
-
-      _showSnackbar('Password reset link sent to $email. Check your inbox!', Colors.green);
-
-    } on AuthException catch (e) {
-      _showSnackbar('Error: ${e.message}', Colors.red);
-    } catch (e) {
-      _showSnackbar('An unexpected error occurred.', Colors.red);
-    }
-  }
-
-  // 2. Forgot Password Dialog (Unchanged)
-  void _showForgotPasswordDialog(BuildContext context) {
-    final TextEditingController emailResetController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: backgroundWhite,
-          title: const Text('Forgot Password', style: TextStyle(color: primaryText, fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Enter your registered email address to receive a password reset link.',
-                style: TextStyle(color: secondaryText),
-              ),
-              const SizedBox(height: 15),
-              TextField(
-                controller: emailResetController,
-                keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(color: primaryText),
-                cursorColor: accentTeal,
-                decoration: InputDecoration(
-                  hintText: "Email",
-                  hintStyle: const TextStyle(color: secondaryText),
-                  prefixIcon: const Icon(Icons.email_outlined, color: secondaryText),
-                  filled: true,
-                  fillColor: Colors.grey.shade100, // Light gray fill
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel', style: TextStyle(color: secondaryText)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final email = emailResetController.text.trim();
-                Navigator.pop(dialogContext); // Close the dialog first
-                _resetPassword(email); // Send reset request
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: accentTeal,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Send Reset Link'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-  // ######################################################################
-
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(LoginController());
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // 🎯 GRADIENT BACKGROUND (ओरिजिनल कोड)
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFD8B4FE), Color(0xFFA5F3FC)], // lavender → teal pastel gradient
+            colors: [Color(0xFFD8B4FE), Color(0xFFA5F3FC)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: screenHeight * 0.05),
+            padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 🔹 Logo - Responsive Height
-                Image.asset(
-                  "assets/logo.png", // apna splash logo yahan rakho
-                  height: screenHeight * 0.12,
-                ),
-                SizedBox(height: screenHeight * 0.025),
+                Image.asset("assets/logo.png", height: screenHeight * 0.12),
+                const SizedBox(height: 20),
+                const Text("Login", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 30),
 
-                const Text(
-                  "Login",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.035),
+                _buildTextField(controller.emailController, "Email", Icons.email_outlined),
+                const SizedBox(height: 15),
 
-                // 🔹 Email
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    hintText: "Email",
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.015),
-
-                // 🔹 Password with Eye Toggle
-                TextField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
+                Obx(() => TextField(
+                  controller: controller.passwordController,
+                  obscureText: controller.obscurePassword.value,
                   decoration: InputDecoration(
                     hintText: "Password",
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(controller.obscurePassword.value ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => controller.obscurePassword.toggle(),
                     ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
-                ),
+                )),
 
-                SizedBox(height: screenHeight * 0.01),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      _showForgotPasswordDialog(context);
-                    },
-                    child: const Text(
-                      "Forgot Password?",
-                      style: TextStyle(fontSize: 16),
-                    ),
+                    onPressed: () => _showForgotDialog(context, controller),
+                    child: const Text("Forgot Password?"),
                   ),
                 ),
 
-                SizedBox(height: screenHeight * 0.01),
-
-                // 🔹 Login Button
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: Obx(() => ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: accentTeal,
+                      backgroundColor: controller.accentTeal,
                       padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: _isLoading ? null : signInUser,
-                    child: _isLoading
-                        ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(color: Colors.white70, strokeWidth: 3),
-                    )
-                        : const Text(
-                      "Login",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white70),
-                    ),
-                  ),
+                    onPressed: controller.isLoading.value ? null : controller.signIn,
+                    child: controller.isLoading.value
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text("Login", style: TextStyle(color: Colors.white, fontSize: 18)),
+                  )),
                 ),
 
-                SizedBox(height: screenHeight * 0.025),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text("or"),
+                ),
 
-                const Text("or", style: TextStyle(color: Colors.black54, fontSize: 16)),
+                _socialBtn("Google", "assets/google.png", OAuthProvider.google, controller),
+                const SizedBox(height: 10),
+                _socialBtn("Facebook", "assets/facebook.png", OAuthProvider.facebook, controller),
 
-                SizedBox(height: screenHeight * 0.025),
-
-                // 🔹 Social Login Buttons
-                _socialButton("Continue with Google", "assets/google.png"),
-                SizedBox(height: screenHeight * 0.015),
-                _socialButton("Continue with Apple", "assets/apple.png"),
-                SizedBox(height: screenHeight * 0.015),
-                _socialButton("Continue with Facebook", "assets/facebook.png"),
-
-                SizedBox(height: screenHeight * 0.025),
-
+                // ######################################################################
+                //                   🎯 SIGN UP LINK ADDED BACK (UPDATED)
+                // ######################################################################
+                const SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -334,19 +96,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const SignUpScreen()));
+                        // GetX navigation use karein ya Navigator
+                        Get.to(() => const SignUpScreen());
                       },
-                      child: const Text(
+                      child: Text(
                         "Sign Up",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: accentTeal,
+                          color: controller.accentTeal,
                           fontSize: 20,
                         ),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -355,22 +119,46 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // 🔹 Social Button Widget (Unchanged)
-  Widget _socialButton(String text, String iconPath) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          side: const BorderSide(color: Colors.black12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Colors.white,
-        ),
-        icon: Image.asset(iconPath, height: 20),
+  // --- Helper Widgets (Same as before) ---
+
+  Widget _buildTextField(TextEditingController ctrl, String hint, IconData icon) {
+    return TextField(
+      controller: ctrl,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: Icon(icon),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      ),
+    );
+  }
+
+  Widget _socialBtn(String label, String icon, OAuthProvider provider, LoginController controller) {
+    return OutlinedButton.icon(
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 50),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      icon: Image.asset(icon, height: 20),
+      label: Text("Continue with $label", style: const TextStyle(color: Colors.black)),
+      onPressed: () => controller.handleSocialLogin(provider),
+    );
+  }
+
+  void _showForgotDialog(BuildContext context, LoginController controller) {
+    final resetEmail = TextEditingController();
+    Get.defaultDialog(
+      title: "Forgot Password",
+      content: TextField(controller: resetEmail, decoration: const InputDecoration(hintText: "Email")),
+      confirm: ElevatedButton(
+        style: ElevatedButton.styleFrom(backgroundColor: controller.accentTeal),
         onPressed: () {
-          // Implement social login logic here (e.g., supabase.auth.signInWithOAuth)
+          controller.resetPassword(resetEmail.text.trim());
+          Get.back();
         },
-        label: Text(text, style: const TextStyle(color: Colors.black87)),
+        child: const Text("Send", style: TextStyle(color: Colors.white)),
       ),
     );
   }

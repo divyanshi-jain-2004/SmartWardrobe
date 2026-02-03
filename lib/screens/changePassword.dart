@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // 🎯 Supabase Client को एक्सेस करने के लिए imports
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:smart_wardrobe_new/main.dart'; // assuming supabase client is initialized here
+import 'package:smart_wardrobe_new/main.dart';
+
+import '../utils/constants/colors.dart'; // assuming supabase client is initialized here
 
 // --- Custom Colors ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00ADB5);
-// ⚠️ बाकी Hardcoded Colors हटा दिए गए हैं, वे Theme से आएंगे।
-}
+// class AppColors {
+//   static const Color accentTeal = Color(0xFF00ADB5);
+// // ⚠️ बाकी Hardcoded Colors हटा दिए गए हैं, वे Theme से आएंगे।
+// }
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});

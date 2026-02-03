@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // 🎯 GetX Import
+import 'package:get/get.dart';
+import '../utils/constants/colors.dart';
+import '../controllers/edit_profile_controller.dart';
 
-// --- Custom Colors ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00ADB5);
-// ⚠️ बाकी Hardcoded Colors हटा दिए गए हैं, वे Theme से आएंगे।
-}
 
 class EditPersonalInfoScreen extends StatefulWidget {
   const EditPersonalInfoScreen({super.key});
@@ -15,155 +12,96 @@ class EditPersonalInfoScreen extends StatefulWidget {
 }
 
 class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
-  // Controllers
+  // Personal Details Controllers
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _apparelSizeController = TextEditingController();
-
-  // Dropdown State
   String? _selectedGender;
   final List<String> _genders = ['Female', 'Male', 'Non-Binary', 'Prefer not to say'];
 
-  // Sizing Dropdown
-  String? _selectedSizeUnit;
-  final List<String> _sizeUnits = ['EU', 'US', 'UK'];
+  // Initialize Edit Controller
+  final editController = Get.put(EditProfileController());
 
-  // 🎯 Theme Getters
   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
   Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
   Color get _surfaceColor => Theme.of(context).colorScheme.surface;
   Color get _scaffoldColor => Theme.of(context).scaffoldBackgroundColor;
 
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _apparelSizeController.dispose();
-    super.dispose();
-  }
-
-  void _saveChanges() {
-    // Implement save logic here (e.g., Supabase update)
-    // 🎯 GetX Snackbar
-    Get.snackbar(
-      'Success',
-      'Changes saved successfully!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.accentTeal,
-      colorText: Colors.white,
-    );
-    // Optionally navigate back
-    // Get.back();
-  }
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final horizontalPadding = size.width * 0.05;
-    final cardMargin = size.height * 0.02;
 
     return Scaffold(
-      // 🎯 Theme-Aware Background Color
       backgroundColor: _scaffoldColor,
       appBar: AppBar(
-        // AppBar Background color Theme से आएगा
         elevation: 0,
-        toolbarHeight: size.height * 0.08,
-        title: Text(
-          'Edit Personal Info',
-          style: TextStyle(
-            // 🎯 Theme-Aware Text Color
-            color: _primaryTextColor,
-            fontWeight: FontWeight.bold,
-            fontSize: size.width * 0.05,
-          ),
-        ),
+        title: Text('Edit Personal Info',
+            style: TextStyle(color: _primaryTextColor, fontWeight: FontWeight.bold)),
         centerTitle: true,
-        // 🎯 Theme-Aware Icon Color
         iconTheme: IconThemeData(color: _primaryTextColor),
       ),
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: cardMargin),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. Personal Details Card
+                // 1. Personal Details Card (Existing)
                 _buildInfoCard(
                   size: size,
                   title: 'Personal Details',
                   children: [
                     _buildLabel('First Name', size),
-                    _buildTextField(
-                      controller: _firstNameController,
-                      size: size,
-                    ),
-                    SizedBox(height: size.height * 0.02),
+                    _buildTextField(controller: _firstNameController, size: size),
+                    const SizedBox(height: 15),
                     _buildLabel('Last Name', size),
-                    _buildTextField(
-                      controller: _lastNameController,
-                      size: size,
-                    ),
-                    SizedBox(height: size.height * 0.02),
+                    _buildTextField(controller: _lastNameController, size: size),
+                    const SizedBox(height: 15),
                     _buildLabel('Gender', size),
                     _buildGenderDropdown(size),
                   ],
                 ),
 
-                SizedBox(height: cardMargin),
+                const SizedBox(height: 20),
 
-                // 2. Sizing Information Card
+                // 2. Physical Profile Card (New Replacement)
                 _buildInfoCard(
                   size: size,
-                  title: 'Sizing Information',
+                  title: 'Physical Profile',
                   children: [
-                    _buildLabel('Apparel Size', size),
-                    _buildSizingField(size),
-                    // Add extra padding to prevent the scrollable content from being hidden by the button
-                    SizedBox(height: size.height * 0.15),
+                    _buildLabel('Skin Tone', size),
+                    const SizedBox(height: 10),
+                    _buildSkinTonePalette(editController),
+                    const SizedBox(height: 30),
+                    _buildLabel('Body Measurements (inches)', size),
+                    const SizedBox(height: 10),
+                    _buildBodyFields(editController, size),
+                    const SizedBox(height: 100), // Space for floating button
                   ],
                 ),
               ],
             ),
           ),
 
-          // 3. Floating Save Button (Always visible at the bottom)
+          // Save Button Container
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 0, left: 0, right: 0,
             child: Container(
-              decoration: BoxDecoration(
-                color: _surfaceColor, // 🎯 Theme-Aware Bottom Container Color
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: size.height * 0.02),
+              color: _surfaceColor,
+              padding: const EdgeInsets.all(20),
               child: ElevatedButton(
-                onPressed: _saveChanges,
+                onPressed: () {
+                  // Save both local state and GetX state
+                  editController.saveProfileUpdates();
+                  Get.back();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accentTeal,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 5,
+                  minimumSize: const Size(double.infinity, 55),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(
-                  'Save Changes',
-                  style: TextStyle(
-                    fontSize: size.width * 0.045,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: const Text('Save Changes',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             ),
           ),
@@ -172,188 +110,123 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
     );
   }
 
-  // --- Helper Widgets ---
+  // --- New Helper Widgets for Physical Profile ---
+
+  Widget _buildSkinTonePalette(EditProfileController controller) {
+    return Center(
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 15,
+        alignment: WrapAlignment.center,
+        children: controller.skinToneData.map((data) {
+          final Color color = data['color'];
+          final String name = data['name'];
+          return GestureDetector(
+            onTap: () => controller.selectSkinTone(color, name),
+            child: Column(
+              children: [
+                Obx(() => Container(
+                  width: 45, height: 45,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: controller.selectedSkinName.value == name
+                          ? AppColors.accentTeal : Colors.grey.withOpacity(0.3),
+                      width: 2.5,
+                    ),
+                  ),
+                )),
+                const SizedBox(height: 4),
+                Text(name, style: TextStyle(fontSize: 11, color: _secondaryTextColor)),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildBodyFields(EditProfileController controller, Size size) {
+    return Column(
+      children: [
+        _buildMeasurementRow("Shoulder", controller.shoulderController, size),
+        _buildMeasurementRow("Waist", controller.waistController, size),
+        _buildMeasurementRow("Hip", controller.hipController, size),
+      ],
+    );
+  }
+
+  Widget _buildMeasurementRow(String label, TextEditingController ctrl, Size size) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Expanded(flex: 2, child: Text(label, style: TextStyle(color: _primaryTextColor))),
+          Expanded(
+            flex: 3,
+            child: _buildTextField(controller: ctrl, size: size, hint: "in"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Existing Helper Widgets (Modified for consistency) ---
 
   Widget _buildInfoCard({required Size size, required String title, required List<Widget> children}) {
-    return Card(
-      elevation: 4,
-      // 🎯 Card color Theme से आएगा
-      color: _surfaceColor,
-      shape: RoundedRectangleBorder(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _surfaceColor,
         borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
       ),
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: EdgeInsets.all(size.width * 0.05),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: size.width * 0.05,
-                fontWeight: FontWeight.bold,
-                color: _primaryTextColor, // 🎯 Theme-Aware Text Color
-              ),
-            ),
-            SizedBox(height: size.height * 0.025),
-            ...children,
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _primaryTextColor)),
+          const Divider(height: 30),
+          ...children,
+        ],
       ),
     );
   }
 
   Widget _buildLabel(String label, Size size) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: size.height * 0.005),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: size.width * 0.038,
-          fontWeight: FontWeight.w600,
-          color: _primaryTextColor, // 🎯 Theme-Aware Text Color
-        ),
-      ),
-    );
+    return Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _primaryTextColor));
   }
 
-  Widget _buildTextField({required TextEditingController controller, required Size size}) {
+  Widget _buildTextField({required TextEditingController controller, required Size size, String? hint}) {
     return TextField(
       controller: controller,
-      // 🎯 Theme-Aware Input Text Color
-      style: TextStyle(fontSize: size.width * 0.04, color: _primaryTextColor),
-      cursorColor: AppColors.accentTeal,
+      style: TextStyle(color: _primaryTextColor),
       decoration: InputDecoration(
+        hintText: hint,
         filled: true,
-        fillColor: _scaffoldColor, // 🎯 Theme-Aware Fill Color
-        contentPadding: EdgeInsets.symmetric(horizontal: size.width * 0.04, vertical: size.height * 0.02),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.accentTeal, width: 1.5),
-        ),
+        fillColor: _scaffoldColor,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
     );
   }
 
   Widget _buildGenderDropdown(Size size) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
-      decoration: BoxDecoration(
-        color: _scaffoldColor, // 🎯 Theme-Aware Fill Color
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.transparent),
+      margin: const EdgeInsets.only(top: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(color: _scaffoldColor, borderRadius: BorderRadius.circular(8)),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedGender,
+          isExpanded: true,
+          hint: Text("Select Gender", style: TextStyle(color: _secondaryTextColor)),
+          dropdownColor: _surfaceColor,
+          items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(g, style: TextStyle(color: _primaryTextColor)))).toList(),
+          onChanged: (val) => setState(() => _selectedGender = val),
+        ),
       ),
-      child: DropdownButtonFormField<String>(
-        value: _selectedGender,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          isDense: true,
-          contentPadding: EdgeInsets.zero,
-          hintText: 'Select Gender',
-          hintStyle: TextStyle(color: _secondaryTextColor), // 🎯 Theme-Aware Hint Text
-        ),
-        // 🎯 Theme-Aware Text Color
-        style: TextStyle(fontSize: size.width * 0.04, color: _primaryTextColor),
-        dropdownColor: _surfaceColor, // 🎯 Dropdown List Background
-        icon: Icon(Icons.arrow_drop_down, color: _secondaryTextColor), // 🎯 Theme-Aware Icon
-        items: _genders.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            // 🎯 Theme-Aware Dropdown Item Text Color
-            child: Text(value, style: TextStyle(color: _primaryTextColor)),
-          );
-        }).toList(),
-        onChanged: (String? newValue) {
-          setState(() {
-            _selectedGender = newValue;
-          });
-        },
-      ),
-    );
-  }
-
-  Widget _buildSizingField(Size size) {
-    return Row(
-      children: [
-        // Input Field (Size)
-        Expanded(
-          flex: 2,
-          child: TextField(
-            controller: _apparelSizeController,
-            keyboardType: TextInputType.number,
-            style: TextStyle(fontSize: size.width * 0.04, color: _primaryTextColor), // 🎯 Theme-Aware Text Color
-            cursorColor: AppColors.accentTeal,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: _scaffoldColor, // 🎯 Theme-Aware Fill Color
-              contentPadding: EdgeInsets.symmetric(horizontal: size.width * 0.04, vertical: size.height * 0.02),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.accentTeal, width: 1.5),
-              ),
-              hintText: 'e.g. 38',
-              hintStyle: TextStyle(color: _secondaryTextColor.withOpacity(0.7)), // 🎯 Theme-Aware Hint Text
-            ),
-          ),
-        ),
-
-        SizedBox(width: size.width * 0.02),
-
-        // Dropdown Unit (EU/US/UK)
-        Expanded(
-          flex: 1,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
-            decoration: BoxDecoration(
-              color: _scaffoldColor, // 🎯 Theme-Aware Fill Color
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: DropdownButtonFormField<String>(
-              value: _selectedSizeUnit,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-                hintText: 'Unit',
-                hintStyle: TextStyle(color: _secondaryTextColor), // 🎯 Theme-Aware Hint Text
-              ),
-              // 🎯 Theme-Aware Text Color
-              style: TextStyle(fontSize: size.width * 0.04, color: _primaryTextColor),
-              dropdownColor: _surfaceColor, // 🎯 Dropdown List Background
-              iconSize: size.width * 0.045,
-              items: _sizeUnits.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  // 🎯 Theme-Aware Dropdown Item Text Color
-                  child: Text(value, textAlign: TextAlign.center, style: TextStyle(color: _primaryTextColor)),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedSizeUnit = newValue;
-                });
-              },
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

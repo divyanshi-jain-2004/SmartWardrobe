@@ -3,14 +3,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smart_wardrobe_new/controllers/outfit_controller.dart'; // 🎯 Controller Import
-import 'package:smart_wardrobe_new/models/outfit_model.dart'; // 🎯 Model Import
+import 'package:smart_wardrobe_new/models/outfit_model.dart';
+
+import '../utils/constants/colors.dart'; // 🎯 Model Import
 
 // --- Custom Colors ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00C7B1);
-  static const Color cardGradientStart = Color(0xFFB0F4E8);
-  static const Color cardGradientEnd = Color(0xFF8ED2C7);
-}
+// class AppColors {
+//   static const Color accentTeal = Color(0xFF00C7B1);
+//   static const Color cardGradientStart = Color(0xFFB0F4E8);
+//   static const Color cardGradientEnd = Color(0xFF8ED2C7);
+// }
 
 // --- Main Screen Class (Stateful) ---
 class OutfitSuggestionScreen extends StatefulWidget {

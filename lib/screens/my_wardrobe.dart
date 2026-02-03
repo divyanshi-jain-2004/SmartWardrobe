@@ -5,40 +5,43 @@ import 'package:smart_wardrobe_new/screens/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../models/wardrobe_category_model.dart';
+import '../models/wardrobe_item_model.dart';
+import '../utils/constants/colors.dart';
 import 'HomeScreen.dart';
 import 'addNewItem.dart'; // 🎯 GetX Import
 
 // --- DATA MODEL (Unchanged) ---
-enum Gender { men, women }
-
-class WardrobeCategory {
-  final String title;
-  final IconData icon;
-  final String itemImage;
-  final List<String> tags;
-  final List<Gender> genders;
-
-  WardrobeCategory({
-    required this.title,
-    required this.icon,
-    required this.itemImage,
-    required this.tags,
-    required this.genders,
-  });
-}
+// enum Gender { men, women }
+//
+// class WardrobeCategory {
+//   final String title;
+//   final IconData icon;
+//   final String itemImage;
+//   final List<String> tags;
+//   final List<Gender> genders;
+//
+//   WardrobeCategory({
+//     required this.title,
+//     required this.icon,
+//     required this.itemImage,
+//     required this.tags,
+//     required this.genders,
+//   });
+// }
 
 // --- ITEM DATA MODEL (Unchanged) ---
-class WardrobeItem {
-  final String name;
-  final String imagePath;
-  final String category;
-
-  WardrobeItem({
-    required this.name,
-    required this.imagePath,
-    required this.category,
-  });
-}
+// class WardrobeItem {
+//   final String name;
+//   final String imagePath;
+//   final String category;
+//
+//   WardrobeItem({
+//     required this.name,
+//     required this.imagePath,
+//     required this.category,
+//   });
+// }
 
 // --- MOCK DUMMY ITEM DATA (Unchanged) ---
 final List<WardrobeItem> _allWardrobeItems = [
@@ -58,9 +61,9 @@ final List<WardrobeItem> _allWardrobeItems = [
 ];
 
 // --- APP COLORS (Only Accent needed) ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00C7B1); // Use this for accent
-}
+// class AppColors {
+//   static const Color accentTeal = Color(0xFF00C7B1); // Use this for accent
+// }
 
 // --- WARDROBE SCREEN (Main Categories View) ---
 

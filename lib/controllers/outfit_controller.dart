@@ -2,32 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smart_wardrobe_new/models/outfit_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-// ⚠️ Ensure this path is correct for Supabase client access
+
 import 'package:smart_wardrobe_new/main.dart';
 
 
 class OutfitController extends GetxController {
-  // Observable List (RxList) जो सभी सहेजे गए आउटफिट्स को रखेगी।
-  // Mock Data को हटा दिया गया है, क्योंकि अब हम DB से लोड करेंगे।
+
   final RxList<OutfitModel> savedOutfits = <OutfitModel>[].obs;
 
-  // 🎯 Init method को DB fetch लॉजिक से बदलें
+
   @override
   void onInit() {
     super.onInit();
 
-    // 1. Supabase Auth State Listener
+
     supabase.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedIn) {
-        fetchOutfits(); // लॉगिन पर आउटफिट्स लोड करें
+        fetchOutfits();
       } else if (data.event == AuthChangeEvent.signedOut) {
-        savedOutfits.clear(); // लॉगआउट पर लिस्ट खाली करें
+        savedOutfits.clear();
       }
     });
-    fetchOutfits(); // ऐप शुरू होने पर भी एक बार कोशिश करें (यदि सत्र पहले से मौजूद है)
+    fetchOutfits();
   }
 
-  // 🎯 FETCH LOGIC: Supabase से डेटा लोड करें
+//fetching data from supabase
   Future<void> fetchOutfits() async {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {

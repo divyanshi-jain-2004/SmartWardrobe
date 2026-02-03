@@ -1,30 +1,33 @@
 import 'package:smart_wardrobe_new/screens/addEvent.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // 🎯 GetX Import
-import 'package:intl/intl.dart'; // Date formatting के लिए
+import 'package:intl/intl.dart';
+
+import '../models/event_model.dart';
+import '../utils/constants/colors.dart'; // Date formatting के लिए
 
 // --- Custom Colors ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00ADB5);
-// ⚠️ बाकी Hardcoded Colors हटा दिए गए हैं, वे Theme से आएंगे।
-}
+// class AppColors {
+//   static const Color accentTeal = Color(0xFF00ADB5);
+// // ⚠️ बाकी Hardcoded Colors हटा दिए गए हैं, वे Theme से आएंगे।
+// }
 
 // --- Data Model for an Event (unchanged) ---
-class Event {
-  final String title;
-  final DateTime date;
-  final String time;
-  final String timeLeft;
-  final List<String> outfitImageUrls;
-
-  Event({
-    required this.title,
-    required this.date,
-    required this.time,
-    required this.timeLeft,
-    required this.outfitImageUrls,
-  });
-}
+// class Event {
+//   final String title;
+//   final DateTime date;
+//   final String time;
+//   final String timeLeft;
+//   final List<String> outfitImageUrls;
+//
+//   Event({
+//     required this.title,
+//     required this.date,
+//     required this.time,
+//     required this.timeLeft,
+//     required this.outfitImageUrls,
+//   });
+// }
 
 // --- Main Event Planner Screen ---
 class EventPlannerScreen extends StatefulWidget {

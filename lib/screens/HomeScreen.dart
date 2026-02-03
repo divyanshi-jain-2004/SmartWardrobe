@@ -10,12 +10,14 @@ import 'package:smart_wardrobe_new/controllers/user_controller.dart';
 // 🎯 Weather Controller Import (नया)
 import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
 
+import '../utils/constants/colors.dart';
+
 // --- Custom Colors ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00C7B1);
-  static const Color cardGradientStart = Color(0xFFB0F4E8);
-  static const Color cardGradientEnd = Color(0xFF8ED2C7);
-}
+// class AppColors {
+//   static const Color accentTeal = Color(0xFF00C7B1);
+//   static const Color cardGradientStart = Color(0xFFB0F4E8);
+//   static const Color cardGradientEnd = Color(0xFF8ED2C7);
+// }
 
 // --- Main Screen Class (Stateful) ---
 class HomeScreen extends StatefulWidget {

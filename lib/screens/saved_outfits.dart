@@ -3,13 +3,15 @@ import 'package:get/get.dart';
 // ⚠️ Ensure these paths are correct
 import 'package:smart_wardrobe_new/models/outfit_model.dart';
 import 'package:smart_wardrobe_new/controllers/outfit_controller.dart';
-import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart'; // 🎯 OutfitSuggestionScreen इम्पोर्ट करें
+import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
+
+import '../utils/constants/colors.dart'; // 🎯 OutfitSuggestionScreen इम्पोर्ट करें
 
 // --- App Colors (Unchanged) ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00C7B1);
-  static const Color mintGreen = Color(0xFFA8E6CF);
-}
+// class AppColors {
+//   static const Color accentTeal = Color(0xFF00C7B1);
+//   static const Color mintGreen = Color(0xFFA8E6CF);
+// }
 
 // 🎯 Changed to GetView to access the controller directly
 class SavedOutfitsScreen extends GetView<OutfitController> {

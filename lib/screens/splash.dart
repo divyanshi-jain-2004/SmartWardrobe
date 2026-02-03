@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_storage/get_storage.dart';
 import 'onboarding.dart'; // OnboardingScreen के लिए
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,7 +9,7 @@ import 'package:smart_wardrobe_new/main.dart'; // Supabase client access के 
 // --- App Colors ---
 const Color _kGradientStart = Color(0xFFD8B4FE);
 const Color _kGradientEnd = Color(0xFFA5F3FC);
-const Color _kBrandTeal = Color(0xFF00ADB5);
+const Color _kBrandTeal = Color(0xFF00ADB5);//accenteal1
 const Color _kBrandBlack = Color(0xFF333333);
 
 
@@ -92,45 +93,81 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   // 🎯 SUPABASE AUTH STATUS CHECK LOGIC (UPDATED)
+  // void _checkUserStatusAndNavigate() async {
+  //   if (!mounted) return;
+  //
+  //   // --- 1. DEEP LINK / RECOVERY CHECK (FIRST PRIORITY) ---
+  //   // 💡 FIX: Uri.base की जाँच तुरंत करें।
+  //   final uri = Uri.parse(Uri.base.toString());
+  //
+  //   // Check for Deep Link pattern: smartwardrobe://reset-callback or ?access_token
+  //   bool isDeepLinkRecovery = uri.pathSegments.contains('reset-callback') ||
+  //       uri.queryParameters.containsKey('access_token') ||
+  //       uri.queryParameters.containsKey('recovery_token');
+  //
+  //
+  //   if (isDeepLinkRecovery) {
+  //     // यदि यह रिकवरी फ़्लो है, तो तुरंत (बिना 3 सेकंड के डिले के) नेविगेट करें।
+  //     // यह GlobalKey कॉन्फ़्लिक्ट को रोकने के लिए सबसे तेज़ रास्ता है।
+  //     Get.offAllNamed('/password-reset');
+  //     return;
+  //   }
+  //
+  //
+  //   // --- 2. REGULAR APP LAUNCH (WITH 3 SECOND DELAY) ---
+  //   // अगर रिकवरी नहीं है, तो एनीमेशन के लिए प्रतीक्षा करें
+  //   await Future.delayed(const Duration(seconds: 3));
+  //
+  //   final session = supabase.auth.currentSession;
+  //   bool isAuthenticated = session != null;
+  //
+  //   bool isFirstTime = false; // 🎯 (GetStorage check here)
+  //
+  //
+  //   if (!mounted) return;
+  //
+  //   // --- NAVIGATION LOGIC ---
+  //   if (isAuthenticated) {
+  //     Get.offNamed('/home');
+  //   } else if (isFirstTime) {
+  //     Get.offNamed('/onboarding');
+  //   } else {
+  //     Get.offNamed('/login');
+  //   }
+  // }
+
+  // 🎯 SUPABASE AUTH STATUS CHECK LOGIC (UPDATED WITH GET_STORAGE)
   void _checkUserStatusAndNavigate() async {
     if (!mounted) return;
 
-    // --- 1. DEEP LINK / RECOVERY CHECK (FIRST PRIORITY) ---
-    // 💡 FIX: Uri.base की जाँच तुरंत करें।
+    // 1. Deep link check (keep your existing code)
     final uri = Uri.parse(Uri.base.toString());
-
-    // Check for Deep Link pattern: smartwardrobe://reset-callback or ?access_token
-    bool isDeepLinkRecovery = uri.pathSegments.contains('reset-callback') ||
-        uri.queryParameters.containsKey('access_token') ||
-        uri.queryParameters.containsKey('recovery_token');
-
-
-    if (isDeepLinkRecovery) {
-      // यदि यह रिकवरी फ़्लो है, तो तुरंत (बिना 3 सेकंड के डिले के) नेविगेट करें।
-      // यह GlobalKey कॉन्फ़्लिक्ट को रोकने के लिए सबसे तेज़ रास्ता है।
+    if (uri.pathSegments.contains('reset-callback')) {
       Get.offAllNamed('/password-reset');
       return;
     }
 
-
-    // --- 2. REGULAR APP LAUNCH (WITH 3 SECOND DELAY) ---
-    // अगर रिकवरी नहीं है, तो एनीमेशन के लिए प्रतीक्षा करें
+    // 2. Wait for animation
     await Future.delayed(const Duration(seconds: 3));
+
+    // --- GET_STORAGE LOGIC ---
+    final box = GetStorage();
+    // Check if 'onboarding_complete' exists. If null, it means it's the first time.
+    bool onboardingComplete = box.read('onboarding_complete') ?? false;
 
     final session = supabase.auth.currentSession;
     bool isAuthenticated = session != null;
-
-    bool isFirstTime = false; // 🎯 (GetStorage check here)
-
 
     if (!mounted) return;
 
     // --- NAVIGATION LOGIC ---
     if (isAuthenticated) {
       Get.offNamed('/home');
-    } else if (isFirstTime) {
+    } else if (!onboardingComplete) {
+      // If onboarding is NOT complete, show onboarding
       Get.offNamed('/onboarding');
     } else {
+      // If onboarding IS complete but not logged in, show login
       Get.offNamed('/login');
     }
   }
@@ -190,7 +227,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                               child: FadeTransition(
                                 opacity: _textFade1,
                                 child: Text(
-                                  "Clos",
+                                  "Attire",
                                   style: TextStyle(
                                     fontSize: 35,
                                     fontWeight: FontWeight.bold,
@@ -204,7 +241,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                               child: FadeTransition(
                                 opacity: _textFade2,
                                 child: Text(
-                                  "ora",
+                                  "Hub",
                                   style: TextStyle(
                                     fontSize: 35,
                                     fontWeight: FontWeight.bold,

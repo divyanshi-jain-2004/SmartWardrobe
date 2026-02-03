@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:get/get.dart'; // 🎯 GetX Import
+import 'package:get/get.dart';
+
+import '../utils/constants/colors.dart'; // 🎯 GetX Import
 
 // --- Custom Colors ---
-class AppColors {
-  static const Color accentTeal = Color(0xFF00ADB5);
-// ⚠️ Hardcoded primaryText, secondaryText, lightGrayBackground, backgroundWhite हटा दिए गए हैं
-}
+// class AppColors {
+//   static const Color accentTeal = Color(0xFF00ADB5);
+// // ⚠️ Hardcoded primaryText, secondaryText, lightGrayBackground, backgroundWhite हटा दिए गए हैं
+// }
 
 // --------------------------------------------------------------------------------
 //                             ADD EVENT SCREEN
