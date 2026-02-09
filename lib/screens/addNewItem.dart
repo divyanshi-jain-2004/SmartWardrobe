@@ -1,16 +1,17 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:get/get.dart'; // 🎯 GetX Import
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 // --- THEME COLORS ---
-// ⚠️ अब केवल Accent Color ही रखेंगे, बाकी Theme से आएंगे
 const Color _kPrimaryTeal = Color(0xFF00C7B1);
-// const Color _kSoftMint = Color(0xFFE8F5E9); // हटा दिया गया
-// const Color _kSoftMintBorder = Color(0xFF66BB6A); // हटा दिया गया
-// const Color _kBackground = Colors.white; // हटा दिया गया
+// const Color _kSoftMint = Color(0xFFE8F5E9); 
+// const Color _kSoftMintBorder = Color(0xFF66BB6A);
+// const Color _kBackground = Colors.white;
 
 // Global accessor for the Supabase client
 // ASSUMPTION: This must be correctly initialized in your main.dart file.
@@ -21,6 +22,9 @@ class AddItemScreen extends StatefulWidget {
 
   @override
   State<AddItemScreen> createState() => _AddItemScreenState();
+}
+class MLApiconfig{
+  static const String baseUrl = 'http://172.8.2.79:5000/api';
 }
 
 class _AddItemScreenState extends State<AddItemScreen> {
@@ -34,9 +38,15 @@ class _AddItemScreenState extends State<AddItemScreen> {
   String _itemImageUrl = 'https://placehold.co/100x100/CCCCCC/000000?text=No+Image';
 
   File? _selectedImageFile;
+  String? _predictedCategory;
+  String? _detectedColor;
+  double? _predictionConfidence;
+  bool _isProcessing = false;
 
   // Mock list for categories
   final List<String> _categories = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Footwear'];
+
+
 
   // 🎯 Theme Getters
   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
@@ -119,6 +129,92 @@ class _AddItemScreenState extends State<AddItemScreen> {
     }
   }
 
+  Future<void> _processImageWithML(File imageFile) async {
+    try {
+      setState(() => _isProcessing = true);
+
+      // Show loading
+      Get.snackbar(
+        'Processing',
+        'AI is analyzing your clothing...',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF00C7B1),
+        colorText: Colors.white,
+        showProgressIndicator: true,
+        duration: const Duration(seconds: 30),
+      );
+
+      // Convert image to base64
+      final bytes = await imageFile.readAsBytes();
+      final base64Image = base64Encode(bytes);
+
+      print('📡 Calling API: ${MLApiconfig.baseUrl}/process-clothing');
+
+      // Call ML API
+      final response = await http.post(
+        Uri.parse('${MLApiconfig.baseUrl}/process-clothing'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'image': base64Image,
+        }),
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Request timeout - API took too long to respond');
+        },
+      );
+
+      print('Response status: ${response.statusCode}');
+      print(' Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true) {
+          setState(() {
+            _predictedCategory = data['category'];
+            _detectedColor = data['color'];
+            _predictionConfidence = data['confidence'];
+
+            // Auto-fill category if it matches one in dropdown
+            if (_categories.contains(data['category'])) {
+              _selectedCategory = data['category'];
+            }
+          });
+
+          Get.closeCurrentSnackbar();
+          Get.snackbar(
+            'AI Analysis Complete!',
+            'Detected: ${data['category']} • Color: ${data['color']} (${(data['confidence'] * 100).toStringAsFixed(1)}% confident)',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green.withOpacity(0.8),
+            colorText: Colors.white,
+            duration: const Duration(seconds: 4),
+          );
+
+          print(' ML Processing successful');
+          print('   Category: ${data['category']}');
+          print('   Color: ${data['color']}');
+          print('   Confidence: ${data['confidence']}');
+        }
+      } else {
+        throw Exception('API returned status ${response.statusCode}');
+      }
+    } catch (e) {
+      print(' ML Processing Error: $e');
+      Get.closeCurrentSnackbar();
+      Get.snackbar(
+        'Warning',
+        'AI analysis failed. Please select category manually.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() => _isProcessing = false);
+    }
+  }
+
   // --- NEW: Function to handle image cropping and re-upload ---
   Future<void> _cropImage() async {
     if (_selectedImageFile == null) {
@@ -198,7 +294,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
       // (Supabase logic remains unchanged)
       final userId = supabase.auth.currentUser!.id;
       final fileName = '$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
+      // Show uploading indicator
+      if (mounted) {
+        Get.snackbar(
+          'Uploading Image',
+          'Uploading to storage...',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF00C7B1),
+          colorText: Colors.white,
+          showProgressIndicator: true,
+          duration: const Duration(seconds: 30),
+        );
+      }
       await supabase.storage.from('wardrobe_image').upload(
         fileName,
         imageFile,
@@ -206,7 +313,10 @@ class _AddItemScreenState extends State<AddItemScreen> {
       );
 
       final publicUrl = supabase.storage.from('wardrobe_image').getPublicUrl(fileName);
-
+      if (mounted) {
+        Get.closeCurrentSnackbar();
+      }
+      await _processImageWithML(imageFile);
       if (mounted) {
         setState(() {
           _itemImageUrl = publicUrl;
@@ -225,6 +335,13 @@ class _AddItemScreenState extends State<AddItemScreen> {
       }
     } catch (e) {
       print('General Image Upload Error: $e');
+      if (mounted) {
+        Get.closeCurrentSnackbar();
+        Get.snackbar('Error', 'Failed to upload image: $e',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red.withOpacity(0.8),
+            colorText: Colors.white);
+      }
     }
   }
 

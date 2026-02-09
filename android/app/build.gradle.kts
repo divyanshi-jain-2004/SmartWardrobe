@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.smart_wardrobe_new"
-    compileSdk = flutter.compileSdkVersion //36
+    compileSdk = 36 //36
 
     // NDK Version Fix: प्लगइन्स द्वारा मांगे गए नए वर्जन पर सेट करें।
     ndkVersion = "27.0.12077973"
@@ -27,7 +27,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
