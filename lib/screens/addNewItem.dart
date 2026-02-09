@@ -5,8 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:get/get.dart'; // 🎯 GetX Import
 
-// --- THEME COLORS ---
-// ⚠️ अब केवल Accent Color ही रखेंगे, बाकी Theme से आएंगे
+
 const Color _kPrimaryTeal = Color(0xFF00C7B1);
 // const Color _kSoftMint = Color(0xFFE8F5E9); // हटा दिया गया
 // const Color _kSoftMintBorder = Color(0xFF66BB6A); // हटा दिया गया
@@ -632,3 +631,4 @@ class _AddItemScreenState extends State<AddItemScreen> {
     );
   }
 }
+
