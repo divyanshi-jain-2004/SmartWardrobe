@@ -8,6 +8,7 @@ class BodyScanController extends GetxController {
   final box = GetStorage();
 
   var isScanning = false.obs;
+  var scanningStage = "".obs;
   var detectedBodyType = "".obs;
   var detectedSkinTone = Rxn<Color>();
   var detectedSkinToneName = "".obs;
@@ -21,7 +22,7 @@ class BodyScanController extends GetxController {
     'Hourglass'
   ];
 
-  // Skin tone palette (must match EditProfileController)
+  // Skin tone palette
   final List<Map<String, dynamic>> skinToneData = [
     {"name": "Fair", "color": const Color(0xFFFFE7D1)},
     {"name": "Light", "color": const Color(0xFFF3D5B5)},
@@ -34,9 +35,194 @@ class BodyScanController extends GetxController {
     isScanning.value = value;
   }
 
+  void setScanningStage(String stage) {
+    scanningStage.value = stage;
+  }
+
+  // ✅ FIXED: Relaxed validation with better thresholds
+  Future<bool> validateBodyPose(String imagePath) async {
+    try {
+      final imageFile = File(imagePath);
+      final bytes = await imageFile.readAsBytes();
+      final image = img.decodeImage(bytes);
+
+      if (image == null) return false;
+
+      // Check 1: Image brightness (lighting check)
+      if (!await _checkLighting(image)) {
+        Get.snackbar(
+          'Poor Lighting',
+          'Please move to a well-lit area',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        return false;
+      }
+
+      // Check 2: Body visibility (distance check)
+      final bodyVisibility = await _checkBodyVisibility(image);
+
+      print('🔍 Body Visibility: $bodyVisibility'); // Debug log
+
+      // ✅ RELAXED THRESHOLDS
+      if (bodyVisibility < 0.12) { // Was 0.15 - now more forgiving
+        Get.snackbar(
+          '📏 Too Far',
+          'Please move closer to the camera (3-4 feet)',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        return false;
+      } else if (bodyVisibility > 0.92) { // ✅ CHANGED from 0.80 to 0.92
+        // Now only fails if EXTREMELY close (>92% body coverage)
+        Get.snackbar(
+          '📏 Too Close',
+          'Please step back a bit (3-4 feet)',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        return false;
+      }
+
+      // Check 3: Partial body visible (relaxed - no longer requires feet)
+      // ✅ CHANGED: Now only checks for upper body presence
+      if (!await _checkUpperBodyVisible(image)) {
+        Get.snackbar(
+          'Upper Body Not Clear',
+          'Ensure your face and torso are clearly visible',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      print('Validation error: $e');
+      // ✅ Fail-open: Allow scan on error
+      return true;
+    }
+  }
+
+  // Check lighting conditions
+  Future<bool> _checkLighting(img.Image image) async {
+    int totalBrightness = 0;
+    int sampleCount = 0;
+
+    // Sample random pixels
+    for (int y = 0; y < image.height; y += 20) {
+      for (int x = 0; x < image.width; x += 20) {
+        final pixel = image.getPixel(x, y);
+        final brightness = (pixel.r + pixel.g + pixel.b) / 3;
+        totalBrightness += brightness.toInt();
+        sampleCount++;
+      }
+    }
+
+    final avgBrightness = totalBrightness / sampleCount;
+
+    // ✅ RELAXED: More forgiving lighting range
+    return avgBrightness > 30 && avgBrightness < 245; // Was 40-240
+  }
+
+  // Check body visibility (distance)
+  Future<double> _checkBodyVisibility(img.Image image) async {
+    final width = image.width;
+    final height = image.height;
+
+    int bodyPixelCount = 0;
+    int totalPixels = 0;
+
+    // ✅ WIDER SAMPLING AREA - Check more of the frame
+    final startY = (height * 0.10).toInt(); // Was 0.15 - now starts higher
+    final endY = (height * 0.90).toInt();   // Was 0.85 - now goes lower
+    final startX = (width * 0.20).toInt();  // Was 0.25 - now wider
+    final endX = (width * 0.80).toInt();    // Was 0.75 - now wider
+
+    for (int y = startY; y < endY; y += 8) {
+      for (int x = startX; x < endX; x += 8) {
+        final pixel = image.getPixel(x, y);
+        if (_isBodyPixel(pixel)) {
+          bodyPixelCount++;
+        }
+        totalPixels++;
+      }
+    }
+
+    return bodyPixelCount / totalPixels;
+  }
+
+  // ✅ NEW: Check upper body only (more lenient than full body)
+  Future<bool> _checkUpperBodyVisible(img.Image image) async {
+    final width = image.width;
+    final height = image.height;
+
+    // Check head region (top 20%)
+    bool hasHead = false;
+    for (int y = (height * 0.10).toInt(); y < (height * 0.25).toInt(); y += 10) {
+      for (int x = (width * 0.35).toInt(); x < (width * 0.65).toInt(); x += 10) {
+        if (_isBodyPixel(image.getPixel(x, y))) {
+          hasHead = true;
+          break;
+        }
+      }
+      if (hasHead) break;
+    }
+
+    // Check torso region (middle 30-60%)
+    bool hasTorso = false;
+    for (int y = (height * 0.30).toInt(); y < (height * 0.60).toInt(); y += 10) {
+      for (int x = (width * 0.30).toInt(); x < (width * 0.70).toInt(); x += 10) {
+        if (_isBodyPixel(image.getPixel(x, y))) {
+          hasTorso = true;
+          break;
+        }
+      }
+      if (hasTorso) break;
+    }
+
+    // ✅ Only require head + torso (not feet)
+    return hasHead && hasTorso;
+  }
+
+  // ✅ KEPT: Original full body check (optional, currently not used)
+  Future<bool> _checkFullBodyVisible(img.Image image) async {
+    final width = image.width;
+    final height = image.height;
+
+    // Check head region (top 20%)
+    bool hasHead = false;
+    for (int y = (height * 0.10).toInt(); y < (height * 0.25).toInt(); y += 10) {
+      for (int x = (width * 0.35).toInt(); x < (width * 0.65).toInt(); x += 10) {
+        if (_isBodyPixel(image.getPixel(x, y))) {
+          hasHead = true;
+          break;
+        }
+      }
+      if (hasHead) break;
+    }
+
+    // Check feet region (bottom 20%)
+    bool hasFeet = false;
+    for (int y = (height * 0.75).toInt(); y < (height * 0.90).toInt(); y += 10) {
+      for (int x = (width * 0.30).toInt(); x < (width * 0.70).toInt(); x += 10) {
+        if (_isBodyPixel(image.getPixel(x, y))) {
+          hasFeet = true;
+          break;
+        }
+      }
+      if (hasFeet) break;
+    }
+
+    return hasHead && hasFeet;
+  }
+
   Future<void> analyzeBodyImage(String imagePath) async {
     try {
-      // Load the image
       final imageFile = File(imagePath);
       final bytes = await imageFile.readAsBytes();
       final image = img.decodeImage(bytes);
@@ -45,158 +231,212 @@ class BodyScanController extends GetxController {
         throw Exception('Failed to decode image');
       }
 
-      // Detect skin tone from image
-      await _detectSkinTone(image);
+      // Detect skin tone
+      await _detectSkinToneImproved(image);
 
-      // Detect body type (this would normally use an ML model)
-      // For now, using a placeholder - you'll need to integrate TensorFlow Lite or similar
-      await _detectBodyType(image);
+      // Detect body type
+      await _detectBodyTypeImproved(image);
 
       // Save to storage
       _saveDetectedData();
 
     } catch (e) {
+      print('Analysis error: $e');
       Get.snackbar('Analysis Error', 'Failed to analyze image: $e');
       rethrow;
     }
   }
 
-  Future<void> _detectSkinTone(img.Image image) async {
-    // Sample pixels from face region (upper 1/3 of image, center area)
+  // ✅ IMPROVED: Better skin tone detection
+  Future<void> _detectSkinToneImproved(img.Image image) async {
     final width = image.width;
     final height = image.height;
 
-    int totalR = 0, totalG = 0, totalB = 0;
-    int sampleCount = 0;
+    List<int> rValues = [];
+    List<int> gValues = [];
+    List<int> bValues = [];
 
-    // Sample from the upper-center region (face area)
+    // Sample from face area (upper-center region)
     final startY = (height * 0.15).toInt();
     final endY = (height * 0.30).toInt();
     final startX = (width * 0.35).toInt();
     final endX = (width * 0.65).toInt();
 
-    for (int y = startY; y < endY; y += 5) {
-      for (int x = startX; x < endX; x += 5) {
+    for (int y = startY; y < endY; y += 3) {
+      for (int x = startX; x < endX; x += 3) {
         final pixel = image.getPixel(x, y);
-        totalR += pixel.r.toInt();
-        totalG += pixel.g.toInt();
-        totalB += pixel.b.toInt();
-        sampleCount++;
+        final r = pixel.r.toInt();
+        final g = pixel.g.toInt();
+        final b = pixel.b.toInt();
+
+        // Only sample skin-like pixels
+        if (_isSkinTonePixel(r, g, b)) {
+          rValues.add(r);
+          gValues.add(g);
+          bValues.add(b);
+        }
       }
     }
 
-    if (sampleCount > 0) {
-      final avgR = totalR ~/ sampleCount;
-      final avgG = totalG ~/ sampleCount;
-      final avgB = totalB ~/ sampleCount;
-
-      // Calculate brightness/luminance
-      final brightness = (0.299 * avgR + 0.587 * avgG + 0.114 * avgB).toInt();
-
-      // Map brightness to skin tone category
-      String toneName;
-      Color toneColor;
-
-      if (brightness > 220) {
-        toneName = "Fair";
-        toneColor = const Color(0xFFFFE7D1);
-      } else if (brightness > 180) {
-        toneName = "Light";
-        toneColor = const Color(0xFFF3D5B5);
-      } else if (brightness > 140) {
-        toneName = "Medium";
-        toneColor = const Color(0xFFC69061);
-      } else if (brightness > 100) {
-        toneName = "Tan";
-        toneColor = const Color(0xFFA15D2D);
-      } else {
-        toneName = "Deep";
-        toneColor = const Color(0xFF632E18);
-      }
-
-      detectedSkinTone.value = toneColor;
-      detectedSkinToneName.value = toneName;
+    if (rValues.isEmpty) {
+      // Fallback: use medium tone
+      detectedSkinTone.value = const Color(0xFFC69061);
+      detectedSkinToneName.value = "Medium";
+      return;
     }
+
+    // Use median instead of average (more robust)
+    rValues.sort();
+    gValues.sort();
+    bValues.sort();
+
+    final medianR = rValues[rValues.length ~/ 2];
+    final medianG = gValues[gValues.length ~/ 2];
+    final medianB = bValues[bValues.length ~/ 2];
+
+    // Calculate brightness
+    final brightness = (0.299 * medianR + 0.587 * medianG + 0.114 * medianB).toInt();
+
+    // Map to skin tone with better thresholds
+    String toneName;
+    Color toneColor;
+
+    if (brightness > 200) {
+      toneName = "Fair";
+      toneColor = const Color(0xFFFFE7D1);
+    } else if (brightness > 160) {
+      toneName = "Light";
+      toneColor = const Color(0xFFF3D5B5);
+    } else if (brightness > 120) {
+      toneName = "Medium";
+      toneColor = const Color(0xFFC69061);
+    } else if (brightness > 80) {
+      toneName = "Tan";
+      toneColor = const Color(0xFFA15D2D);
+    } else {
+      toneName = "Deep";
+      toneColor = const Color(0xFF632E18);
+    }
+
+    detectedSkinTone.value = toneColor;
+    detectedSkinToneName.value = toneName;
   }
 
-  Future<void> _detectBodyType(img.Image image) async {
-    // PLACEHOLDER: In production, you would use TensorFlow Lite or an ML model
-    // For now, using a simple heuristic based on image analysis
+  bool _isSkinTonePixel(int r, int g, int b) {
+    // Improved skin tone detection
+    return r > 95 && g > 40 && b > 20 &&
+        r > g && r > b &&
+        (r - g).abs() > 15 &&
+        (r - b) > 15 &&
+        r < 255 && g < 220 && b < 200; // Exclude very bright pixels
+  }
 
-    // This is where you'd integrate:
-    // 1. TensorFlow Lite model for body shape classification
-    // 2. Or call an API service like Google Vision API, Azure Computer Vision
-    // 3. Or use MediaPipe for pose detection and measurement ratios
-
+  // ✅ IMPROVED: More accurate body type detection
+  Future<void> _detectBodyTypeImproved(img.Image image) async {
     final width = image.width;
     final height = image.height;
 
-    // Simplified detection - analyze body proportions
-    // In reality, you'd use pose detection to find key points
+    // Define measurement points with better positioning
+    final shoulderY = (height * 0.25).toInt();
+    final bustY = (height * 0.35).toInt();
+    final waistY = (height * 0.50).toInt();
+    final hipY = (height * 0.68).toInt();
 
-    // Sample different vertical sections to estimate body shape
-    final shoulderWidth = _measureWidth(image, (height * 0.25).toInt());
-    final waistWidth = _measureWidth(image, (height * 0.50).toInt());
-    final hipWidth = _measureWidth(image, (height * 0.70).toInt());
+    // Measure widths
+    final shoulderWidth = _measureWidthAtHeight(image, shoulderY);
+    final bustWidth = _measureWidthAtHeight(image, bustY);
+    final waistWidth = _measureWidthAtHeight(image, waistY);
+    final hipWidth = _measureWidthAtHeight(image, hipY);
 
-    // Determine body type based on ratios
+    print('Measurements:');
+    print('Shoulder: $shoulderWidth, Bust: $bustWidth, Waist: $waistWidth, Hip: $hipWidth');
+
+    // Avoid division by zero
+    if (hipWidth == 0 || waistWidth == 0 || shoulderWidth == 0) {
+      detectedBodyType.value = "Rectangle";
+      return;
+    }
+
+    // Calculate ratios
     final shoulderHipRatio = shoulderWidth / hipWidth;
     final waistHipRatio = waistWidth / hipWidth;
+    final shoulderWaistRatio = shoulderWidth / waistWidth;
 
-    if (hipWidth > shoulderWidth * 1.05 && waistWidth < hipWidth) {
-      detectedBodyType.value = "Pear";
-    } else if (waistWidth > hipWidth * 0.9 && shoulderWidth < hipWidth * 1.1) {
-      detectedBodyType.value = "Apple";
-    } else if (shoulderWidth > hipWidth * 1.05 && waistWidth < shoulderWidth) {
-      detectedBodyType.value = "Inverted Triangle";
-    } else if ((shoulderWidth / hipWidth).abs() < 1.05 && waistWidth < shoulderWidth * 0.75) {
-      detectedBodyType.value = "Hourglass";
+    print('Ratios:');
+    print('Shoulder/Hip: $shoulderHipRatio, Waist/Hip: $waistHipRatio, Shoulder/Waist: $shoulderWaistRatio');
+
+    // Determine body type with improved logic
+    String bodyType;
+
+    if (waistHipRatio < 0.75 && shoulderHipRatio >= 0.92 && shoulderHipRatio <= 1.08) {
+      // Well-defined waist + balanced shoulders/hips
+      bodyType = "Hourglass";
+    } else if (shoulderHipRatio < 0.88) {
+      // Hips significantly wider than shoulders
+      bodyType = "Pear";
+    } else if (shoulderHipRatio > 1.12) {
+      // Shoulders significantly wider than hips
+      bodyType = "Inverted Triangle";
+    } else if (waistHipRatio > 0.85 && shoulderWaistRatio < 1.15) {
+      // Wider waist, less definition
+      bodyType = "Apple";
     } else {
-      detectedBodyType.value = "Rectangle";
+      // Relatively straight silhouette
+      bodyType = "Rectangle";
     }
+
+    print('Detected body type: $bodyType');
+    detectedBodyType.value = bodyType;
   }
 
-  int _measureWidth(img.Image image, int yPosition) {
-    // Find the width of the body at a specific height
+  int _measureWidthAtHeight(img.Image image, int yPosition) {
     final width = image.width;
-    int leftEdge = 0;
-    int rightEdge = width - 1;
+    final centerX = width ~/ 2;
 
-    // Find left edge (scanning from left)
-    for (int x = 0; x < width ~/ 2; x++) {
+    int leftEdge = centerX;
+    int rightEdge = centerX;
+
+    // Find left edge (scan from center to left)
+    for (int x = centerX; x > 0; x--) {
       if (_isBodyPixel(image.getPixel(x, yPosition))) {
         leftEdge = x;
+      } else {
+        // Stop at first non-body pixel
         break;
       }
     }
 
-    // Find right edge (scanning from right)
-    for (int x = width - 1; x > width ~/ 2; x--) {
+    // Find right edge (scan from center to right)
+    for (int x = centerX; x < width; x++) {
       if (_isBodyPixel(image.getPixel(x, yPosition))) {
         rightEdge = x;
+      } else {
+        // Stop at first non-body pixel
         break;
       }
     }
 
-    return rightEdge - leftEdge;
+    return (rightEdge - leftEdge).abs();
   }
 
   bool _isBodyPixel(img.Pixel pixel) {
-    // Simple check - in production, use background subtraction or ML segmentation
     final r = pixel.r.toInt();
     final g = pixel.g.toInt();
     final b = pixel.b.toInt();
 
-    // Skin tone range detection (simplified)
-    return (r > 80 && r < 255 && g > 50 && g < 240 && b > 40 && b < 220);
+    final brightness = (r + g + b) / 3;
+
+    // Body pixel should not be pure black/white background
+    return brightness > 30 && brightness < 240;
   }
 
   void _saveDetectedData() {
-    // Save to GetStorage
     box.write('body_type', detectedBodyType.value);
     box.write('skin_tone_name', detectedSkinToneName.value);
     box.write('skin_tone_color', detectedSkinTone.value?.value);
     box.write('has_completed_scan', true);
+
+    print('Saved: Body Type: ${detectedBodyType.value}, Skin Tone: ${detectedSkinToneName.value}');
   }
 
   String getStoredBodyType() {
@@ -205,5 +445,22 @@ class BodyScanController extends GetxController {
 
   bool hasCompletedScan() {
     return box.read('has_completed_scan') ?? false;
+  }
+
+  String getBodyTypeDescription(String bodyType) {
+    switch (bodyType) {
+      case 'Pear':
+        return 'Wider hips with narrower shoulders. Best suited for A-line and fit-and-flare styles.';
+      case 'Apple':
+        return 'Fuller midsection with narrower hips. Empire waists and V-necks work great.';
+      case 'Rectangle':
+        return 'Balanced proportions throughout. Most styles work well, belts create definition.';
+      case 'Inverted Triangle':
+        return 'Broader shoulders with narrower hips. A-line skirts and wide-leg pants balance proportions.';
+      case 'Hourglass':
+        return 'Defined waist with balanced bust and hips. Fitted styles highlight your curves.';
+      default:
+        return 'Your unique body shape is beautiful!';
+    }
   }
 }

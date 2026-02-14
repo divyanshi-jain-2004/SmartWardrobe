@@ -13,20 +13,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smart_wardrobe_new/main.dart'; // supabase client के लिए
+
+// 🔧 FIXED: Remove the main.dart import that was causing conflict
+// import 'package:smart_wardrobe_new/main.dart'; // ❌ REMOVED
 
 // 🎯 Controller Imports
 import 'package:smart_wardrobe_new/controllers/theme_controller.dart';
 import 'package:smart_wardrobe_new/controllers/user_controller.dart';
 
 import 'package:smart_wardrobe_new/screens/login.dart';
-import 'package:smart_wardrobe_new/screens/saved_outfits.dart'; // SavedOutfitsScreen का इम्पोर्ट
+import 'package:smart_wardrobe_new/screens/saved_outfits.dart';
 import 'package:smart_wardrobe_new/models/outfit_model.dart';
 
-import '../utils/constants/colors.dart'; // 🎯 कॉमन मॉडल इम्पोर्ट
+import '../utils/constants/colors.dart';
 
+// 🔧 FIXED: Access supabase directly from Supabase.instance.client
+// No need to import from other files
+final supabase = Supabase.instance.client;
 
-// 🎯 Mock Data (अब इम्पोर्ट किए गए मॉडल का उपयोग करता है)
+// 🎯 Mock Data
 final List<OutfitModel> _mockSavedOutfits = [
   OutfitModel(
     name: "Classic Workday",
@@ -42,21 +47,6 @@ final List<OutfitModel> _mockSavedOutfits = [
   ),
 ];
 
-// // --- App Colors (Unchanged) ---
-// class AppColors {
-//   static const Color accentTeal = Color(0xFF00ADB5);
-//   static const Color primaryText = Color(0xFF333333);
-//   static const Color secondaryText = Color(0xFF8D8D8D);
-//   static const Color lightGrayBackground = Color(0xFFF5F5F5);
-//   static const Color backgroundWhite = Colors.white;
-//   static const Color darkBackground = Color(0xFF121212);
-//   static const Color darkCard = Color(0xFF1E1E1E);
-//   static const Color darkPrimaryText = Colors.white;
-//   static const Color darkSecondaryText = Color(0xFFAAAAAA);
-//   static const Color mintGreen = Color(0xFFA8E6CF);
-// }
-// --------------------------------------------------------------------------------
-
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -70,15 +60,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
 
   int _selectedIndex = 4;
-
-  // New state to hold image file temporarily during upload (optimistic view)
   File? _tempImageFile;
 
-  // ######################################################################
-  //                   🎯 PROFILE PIC UPLOAD LOGIC
-  // ######################################################################
   Future<void> _updateProfilePicture() async {
-    // 1. Image Source Dialog
     final XFile? pickedFile = await showModalBottomSheet<XFile?>(
       context: context,
       builder: (BuildContext context) {
@@ -90,7 +74,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: const Text('Photo Library'),
                 onTap: () async {
                   final file = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-                  // Using Get.back to dismiss the modal
                   Get.back(result: file);
                 },
               ),
@@ -110,13 +93,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (pickedFile == null) return;
 
-    // Show image immediately (optimistic update)
     setState(() {
       _tempImageFile = File(pickedFile.path);
     });
 
-    // Show uploading snackbar
-    Get.snackbar('Uploading', 'Updating profile picture...', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.accentTeal, colorText: Colors.white, showProgressIndicator: true);
+    Get.snackbar(
+      'Uploading',
+      'Updating profile picture...',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: AppColors.accentTeal,
+      colorText: Colors.white,
+      showProgressIndicator: true,
+    );
 
     try {
       final file = File(pickedFile.path);
@@ -124,36 +112,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final userId = supabase.auth.currentUser!.id;
       final fileName = '$userId/avatar/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
 
-      // 2. Upload to Supabase Storage
       await supabase.storage.from('avatars').upload(
         fileName,
         file,
         fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
       );
 
-      // 3. Get Public URL
       final publicUrl = supabase.storage.from('avatars').getPublicUrl(fileName);
 
-      // 4. Update User Metadata (avatar_url)
       await supabase.auth.updateUser(
         UserAttributes(
           data: {'avatar_url': publicUrl},
         ),
       );
 
-      // 5. Update Local State and Controller
       if (mounted) {
         setState(() {
           _tempImageFile = null;
         });
 
-        // Refresh user info to get the new URL in the controller
         userController.fetchUserInfo();
 
         Get.closeCurrentSnackbar();
-        Get.snackbar('Success', 'Profile picture updated!', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+        Get.snackbar(
+          'Success',
+          'Profile picture updated!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
       }
-
     } on StorageException catch (e) {
       Get.closeCurrentSnackbar();
       _showErrorSnackbar('Upload failed: ${e.message}');
@@ -167,13 +155,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showErrorSnackbar(String message) {
-    Get.snackbar('Error', message, snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    Get.snackbar(
+      'Error',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
   }
 
-
-  // ######################################################################
-  //                   🎯 LOGOUT IMPLEMENTATION (Unchanged)
-  // ######################################################################
   Future<void> _performLogout() async {
     final bool? confirmLogout = await showDialog<bool>(
       context: context,
@@ -183,7 +173,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           content: const Text('Are you sure you want to log out?'),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel', style: TextStyle(color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6))),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6),
+                ),
+              ),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
@@ -201,18 +196,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (confirmLogout == true) {
       Get.snackbar(
-          'Success',
-          'Logged out successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: AppColors.backgroundWhite
+        'Success',
+        'Logged out successfully!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: AppColors.backgroundWhite,
       );
       Get.offAll(() => const LoginScreen());
     }
   }
 
-
-  // --- Reusable Widget for Profile List Items (Unchanged) ---
   Widget _buildProfileListItem({
     required BuildContext context,
     required IconData icon,
@@ -271,7 +264,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // --- Custom Bottom Navigation Bar Widget (Unchanged) ---
   Widget _buildCustomBottomNavBar() {
     final size = MediaQuery.of(context).size;
     final double iconSize = size.width * 0.06;
@@ -311,9 +303,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           } else if (index == 3) {
             Get.to(() => EventPlannerScreen());
           }
-          // index 4: Stay on Profile Screen
         },
-        items:[
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_filled, size: iconSize),
             label: 'Home',
@@ -365,36 +356,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // --- Profile Header Section ---
             Container(
               color: cardColor,
               padding: EdgeInsets.symmetric(vertical: verticalPadding),
               child: Center(
                 child: Column(
                   children: [
-                    // Profile Image
-                    GestureDetector( // 🎯 GestureDetector जोड़ा गया
-                      onTap: _updateProfilePicture, // 🎯 ऑन टैप फ़ंक्शन
+                    GestureDetector(
+                      onTap: _updateProfilePicture,
                       child: ClipOval(
                         child: Container(
                           width: imageSize,
                           height: imageSize,
                           color: Theme.of(context).scaffoldBackgroundColor,
-                          // 🎯 Image Source: Temp file, then User Avatar URL from Controller, then placeholder
                           child: Obx(() {
-                            // Controller से Avatar URL प्राप्त करें
                             final avatarUrl = userController.avatarUrl.value;
 
                             ImageProvider imageProvider;
 
                             if (_tempImageFile != null) {
-                              // 1. If currently uploading (optimistic view)
-                              imageProvider = FileImage(_tempImageFile!) as ImageProvider;
+                              imageProvider = FileImage(_tempImageFile!);
                             } else if (avatarUrl.isNotEmpty) {
-                              // 2. If URL exists in Supabase metadata
                               imageProvider = NetworkImage(avatarUrl);
                             } else {
-                              // 3. Fallback Placeholder
                               imageProvider = const NetworkImage('https://i.pravatar.cc/150?img=1');
                             }
 
@@ -407,8 +391,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     SizedBox(height: size.height * 0.015),
-
-                    // 🎯 Name - Obx का उपयोग करके UserController से डेटा प्राप्त करें
                     Obx(
                           () => Text(
                         userController.userName.value,
@@ -419,8 +401,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-
-                    // 🎯 Email - Obx का उपयोग करके UserController से डेटा प्राप्त करें
                     Obx(
                           () => Text(
                         userController.userEmail.value,
@@ -436,8 +416,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: size.height * 0.02),
-
-            // --- Profile List Items Section ---
             Column(
               children: [
                 _buildProfileListItem(
@@ -445,10 +423,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   icon: Icons.person_outline,
                   title: 'Edit Personal Info',
                   onTap: () {
-                    Get.to(()=>EditPersonalInfoScreen());
+                    Get.to(() => EditPersonalInfoScreen());
                   },
                 ),
-
                 _buildProfileListItem(
                   context: context,
                   icon: Icons.favorite_border,
@@ -459,14 +436,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 SizedBox(height: size.height * 0.02),
                 _buildProfileListItem(
-                    context: context,
-                    icon: Icons.lock_outline,
-                    title: 'Change Password',
-                    onTap: () {
-                      Get.to(()=>ChangePasswordScreen());
-                    }
+                  context: context,
+                  icon: Icons.lock_outline,
+                  title: 'Change Password',
+                  onTap: () {
+                    Get.to(() => ChangePasswordScreen());
+                  },
                 ),
-                // 🎯 Theme Switching Item (Unchanged)
                 GetBuilder<ThemeController>(
                   builder: (controller) {
                     return _buildProfileListItem(
@@ -484,8 +460,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
                   },
                 ),
-
-                // 🎯 LOGOUT ITEM (Unchanged)
                 _buildProfileListItem(
                   context: context,
                   icon: Icons.logout,
@@ -499,7 +473,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-      // --- Bottom Navigation Bar ---
       bottomNavigationBar: _buildCustomBottomNavBar(),
     );
   }

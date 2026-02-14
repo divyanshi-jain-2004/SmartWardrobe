@@ -1,69 +1,17 @@
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
 import 'package:smart_wardrobe_new/screens/eventPlanner.dart';
-import 'package:smart_wardrobe_new/screens/my_wardrobe.dart';
 import 'package:smart_wardrobe_new/screens/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/wardrobe_category_model.dart';
 import '../models/wardrobe_item_model.dart';
 import '../utils/constants/colors.dart';
 import 'HomeScreen.dart';
-import 'addNewItem.dart'; // 🎯 GetX Import
+import 'addNewItem.dart';
 
-// --- DATA MODEL (Unchanged) ---
-// enum Gender { men, women }
-//
-// class WardrobeCategory {
-//   final String title;
-//   final IconData icon;
-//   final String itemImage;
-//   final List<String> tags;
-//   final List<Gender> genders;
-//
-//   WardrobeCategory({
-//     required this.title,
-//     required this.icon,
-//     required this.itemImage,
-//     required this.tags,
-//     required this.genders,
-//   });
-// }
-
-// --- ITEM DATA MODEL (Unchanged) ---
-// class WardrobeItem {
-//   final String name;
-//   final String imagePath;
-//   final String category;
-//
-//   WardrobeItem({
-//     required this.name,
-//     required this.imagePath,
-//     required this.category,
-//   });
-// }
-
-// --- MOCK DUMMY ITEM DATA (Unchanged) ---
-final List<WardrobeItem> _allWardrobeItems = [
-  // ... (Your dummy data remains the same)
-  WardrobeItem(name: "Blue T-shirt", imagePath: 'assets/men_item_1.jpg', category: "Topwear"),
-  WardrobeItem(name: "Formal Shirt", imagePath: 'assets/men_item_2.jpg', category: "Topwear"),
-  WardrobeItem(name: "Polo White", imagePath: 'assets/men_item_3.jpg', category: "Topwear"),
-  WardrobeItem(name: "Black Jeans", imagePath: 'assets/men_item_4.jpg', category: "Bottomwear"),
-  WardrobeItem(name: "Khaki Chinos", imagePath: 'assets/men_item_5.jpg', category: "Bottomwear"),
-  WardrobeItem(name: "Red Cocktail", imagePath: 'assets/women_item_1.jpg', category: "Dresses"),
-  WardrobeItem(name: "Summer Maxi", imagePath: 'assets/women_item_2.jpg', category: "Dresses"),
-  WardrobeItem(name: "Silk Blouse", imagePath: 'assets/women_item_4.jpg', category: "Tops/Blouses"),
-  WardrobeItem(name: "Stripe Top", imagePath: 'assets/women_item_7.jpg', category: "Tops/Blouses"),
-  WardrobeItem(name: "Black Heels", imagePath: 'assets/women_item_5.jpg', category: "Footwear"),
-  WardrobeItem(name: "Leather Belt", imagePath: 'assets/watch.png', category: "Accessories"),
-  WardrobeItem(name: "Gold Necklace", imagePath: 'assets/women_accesories.png', category: "Jewellery/Scarves"),
-];
-
-// --- APP COLORS (Only Accent needed) ---
-// class AppColors {
-//   static const Color accentTeal = Color(0xFF00C7B1); // Use this for accent
-// }
+final supabase = Supabase.instance.client;
 
 // --- WARDROBE SCREEN (Main Categories View) ---
 
@@ -77,6 +25,54 @@ class MyWardrobeScreen extends StatefulWidget {
 class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
   Gender _selectedGender = Gender.men;
   int _selectedIndex = 1;
+
+  // 🆕 Track item counts per category
+  Map<String, int> _categoryItemCounts = {};
+  bool _isLoadingCounts = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategoryCounts();
+  }
+
+  // 🆕 Load item counts for each category
+  Future<void> _loadCategoryCounts() async {
+    setState(() => _isLoadingCounts = true);
+
+    try {
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) {
+        print('❌ User not logged in');
+        return;
+      }
+
+      // Fetch all items for this user
+      final response = await supabase
+          .from('wardrobe_items')
+          .select('category')
+          .eq('user_id', userId);
+
+      print('📊 Fetched items: $response');
+
+      // Count items per category
+      Map<String, int> counts = {};
+      for (var item in response) {
+        String category = item['category'] ?? 'Unknown';
+        counts[category] = (counts[category] ?? 0) + 1;
+      }
+
+      setState(() {
+        _categoryItemCounts = counts;
+        _isLoadingCounts = false;
+      });
+
+      print('✅ Category counts: $_categoryItemCounts');
+    } catch (e) {
+      print('❌ Error loading category counts: $e');
+      setState(() => _isLoadingCounts = false);
+    }
+  }
 
   // Mock data for the wardrobe (Unchanged)
   final List<WardrobeCategory> _allWardrobeData = [
@@ -160,16 +156,15 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
     });
   }
 
-  // 🎯 GetX Navigation for Bottom NavBar
   void _onNavTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
     if (index == 0) {
-      Get.offAll(() => const HomeScreen()); // 🎯 Use Get.offAll for replacement to root
+      Get.offAll(() => const HomeScreen());
     } else if (index == 1) {
-      return; // Stay on Wardrobe screen
+      return;
     } else if (index == 2) {
       Get.to(() => const OutfitSuggestionScreen());
     } else if (index == 3) {
@@ -179,12 +174,10 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
     }
   }
 
-  // 🎯 Theme Getters
   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
   Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
   Color get _scaffoldColor => Theme.of(context).scaffoldBackgroundColor;
   Color get _surfaceColor => Theme.of(context).colorScheme.surface;
-
 
   @override
   Widget build(BuildContext context) {
@@ -192,10 +185,11 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
     final horizontalPadding = size.width * 0.04;
 
     return Scaffold(
-      // 🎯 Theme-Aware Background Color
       appBar: _buildAppBar(size),
       backgroundColor: _scaffoldColor,
-      body: SingleChildScrollView(
+      body: _isLoadingCounts
+          ? Center(child: CircularProgressIndicator(color: AppColors.accentTeal))
+          : SingleChildScrollView(
         padding: EdgeInsets.symmetric(
             horizontal: horizontalPadding, vertical: size.height * 0.01),
         child: Column(
@@ -218,25 +212,20 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
     );
   }
 
-  // --- WIDGET BUILDERS ---
-
   AppBar _buildAppBar(Size size) {
     return AppBar(
       elevation: 0,
-      // 🎯 AppBar Background Color Theme से आएगा
       backgroundColor: _scaffoldColor,
       toolbarHeight: size.height * 0.1,
       title: Text(
         'My Wardrobe',
         style: TextStyle(
-          // 🎯 Theme-Aware Text Color
           color: _primaryTextColor,
           fontWeight: FontWeight.bold,
           fontSize: size.width * 0.055,
         ),
       ),
       centerTitle: true,
-      // ❌ Calendar Icon और Profile Avatar हटा दिए गए हैं
       actions: const [],
     );
   }
@@ -259,21 +248,31 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
         return _CategoryCard(
           category: filteredData[index],
           size: size,
+          itemCount: _categoryItemCounts[filteredData[index].title] ?? 0,
+          onTap: () async {
+            // 🆕 Navigate and refresh on return
+            await Get.to(() => WardrobeItemScreen(
+              categoryTitle: filteredData[index].title,
+            ));
+            _loadCategoryCounts(); // Refresh counts when returning
+          },
         );
       },
     );
   }
 
   Widget _buildAddItemButton(Size size) {
-    // 🎯 Use Accent Teal for Add Item FAB
     return FloatingActionButton(
       heroTag: 'addItemFab',
-      onPressed: () {
-        // 🎯 GetX Navigation
-        Get.to(() => const AddItemScreen());
+      onPressed: () async {
+        // 🆕 Wait for result and refresh
+        final result = await Get.to(() => const AddItemScreen());
+        if (result == true) {
+          _loadCategoryCounts(); // Refresh when item is added
+        }
       },
       backgroundColor: AppColors.accentTeal.withOpacity(0.8),
-      foregroundColor: Colors.white, // Text/Icon color is always white
+      foregroundColor: Colors.white,
       shape: const CircleBorder(),
       elevation: 8,
       child: Icon(Icons.add, size: size.width * 0.06),
@@ -281,22 +280,18 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
   }
 
   Widget _buildGenerateOutfitButton(Size size) {
-    // 🎯 Theme-Aware Colors
     final accentTeal = AppColors.accentTeal;
 
     return FloatingActionButton.extended(
       heroTag: 'generateOutfitFab',
       onPressed: () {
-        // 🎯 GetX Navigation
         Get.to(() => const OutfitSuggestionScreen());
       },
-      // 🎯 Theme-Aware Background Color (Surface/Card)
       backgroundColor: _surfaceColor,
       foregroundColor: accentTeal,
       elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(size.width * 0.08),
-        // 🎯 Theme-Aware Border
         side: BorderSide(color: _secondaryTextColor.withOpacity(0.3), width: 1.5),
       ),
       label: Text(
@@ -327,7 +322,7 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: _surfaceColor, // 🎯 Theme-Aware Background Color
+        color: _surfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -341,40 +336,24 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
         backgroundColor: Colors.transparent,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: accentTeal,
-        unselectedItemColor: unselectedColor, // 🎯 Theme-Aware Unselected Color
+        unselectedItemColor: unselectedColor,
         selectedLabelStyle: TextStyle(fontSize: size.width * 0.03),
         unselectedLabelStyle: TextStyle(fontSize: size.width * 0.03),
         currentIndex: _selectedIndex,
-        onTap: _onNavTapped, // 🎯 Use the GetX enabled handler
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
-            label: 'Home',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.checkroom),
-            label: 'Wardrobe',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.star_half_rounded),
-            label: 'AI Stylist',
-          ),
-
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            label: 'Planner',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
+        onTap: _onNavTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.checkroom), label: 'Wardrobe'),
+          BottomNavigationBarItem(icon: Icon(Icons.star_half_rounded), label: 'AI Stylist'),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), label: 'Planner'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
       ),
     );
   }
 }
 
-// --- GENDER TOGGLE WIDGET (Theme-Aware) ---
+// --- GENDER TOGGLE WIDGET ---
 
 class _GenderToggle extends StatelessWidget {
   final Gender selectedGender;
@@ -401,12 +380,9 @@ class _GenderToggle extends StatelessWidget {
 
   Widget _buildGenderChip(BuildContext context, Gender gender, String label, IconData icon) {
     final bool isSelected = selectedGender == gender;
-    // Theme-Aware Colors
     final Color primaryTextColor = Theme.of(context).textTheme.bodyLarge!.color!;
     final Color secondaryTextColor = Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
     final Color surfaceColor = Theme.of(context).colorScheme.surface;
-
-    // Using a softer accent color for chip selection (A8E6CF approx)
     final Color selectedColor = AppColors.accentTeal.withOpacity(0.5);
 
     final double paddingH = size.width * 0.04;
@@ -418,10 +394,9 @@ class _GenderToggle extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
         decoration: BoxDecoration(
-          color: isSelected ? selectedColor : surfaceColor, // Theme-Aware Color
+          color: isSelected ? selectedColor : surfaceColor,
           borderRadius: BorderRadius.circular(size.width * 0.08),
           border: Border.all(
-            // Theme-Aware Border
             color: isSelected ? selectedColor : secondaryTextColor.withOpacity(0.3),
             width: 1.5,
           ),
@@ -440,14 +415,12 @@ class _GenderToggle extends StatelessWidget {
             Icon(
               icon,
               size: size.width * 0.05,
-              // Theme-Aware Icon Color
               color: isSelected ? primaryTextColor : secondaryTextColor,
             ),
             SizedBox(width: size.width * 0.01),
             Text(
               label,
               style: TextStyle(
-                // Theme-Aware Text Color
                 color: isSelected ? primaryTextColor : secondaryTextColor,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 fontSize: fontSize,
@@ -460,23 +433,22 @@ class _GenderToggle extends StatelessWidget {
   }
 }
 
-// --- CATEGORY CARD WIDGET (Theme-Aware) ---
+// --- CATEGORY CARD WIDGET ---
 
 class _CategoryCard extends StatelessWidget {
   final WardrobeCategory category;
   final Size size;
+  final int itemCount;
+  final VoidCallback onTap;
 
-  const _CategoryCard({required this.category, required this.size});
+  const _CategoryCard({
+    required this.category,
+    required this.size,
+    required this.itemCount,
+    required this.onTap,
+  });
 
-  // Navigation function: Navigates from Category Grid to Item Grid
-  void _navigateToItems(BuildContext context) {
-    // GetX Navigation
-    Get.to(() => WardrobeItemScreen(categoryTitle: category.title));
-  }
-
-  //  Theme Getters for StatelessWidget
   Color _primaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyLarge!.color!;
-
 
   @override
   Widget build(BuildContext context) {
@@ -486,10 +458,9 @@ class _CategoryCard extends StatelessWidget {
     final double padding = size.width * 0.03;
 
     return InkWell(
-      onTap: () => _navigateToItems(context),
+      onTap: onTap,
       borderRadius: BorderRadius.circular(size.width * 0.05),
       child: Card(
-        //  Card color Theme
         color: Theme.of(context).colorScheme.surface,
         elevation: 5,
         shape: RoundedRectangleBorder(
@@ -500,12 +471,30 @@ class _CategoryCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Category Header (Icon and Title)
+              // 🆕 Item count badge
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Theme-Aware Icon Color
                   Icon(category.icon, size: iconSize, color: _primaryTextColor(context)),
+                  if (itemCount > 0)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: size.width * 0.02,
+                        vertical: size.height * 0.003,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentTeal,
+                        borderRadius: BorderRadius.circular(size.width * 0.03),
+                      ),
+                      child: Text(
+                        '$itemCount',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: size.width * 0.03,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                 ],
               ),
               SizedBox(height: size.height * 0.005),
@@ -515,13 +504,11 @@ class _CategoryCard extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: titleFontSize,
-                    color: _primaryTextColor(context), // 🎯 Theme-Aware Text Color
+                    color: _primaryTextColor(context),
                   ),
                 ),
               ),
               SizedBox(height: size.height * 0.01),
-
-              // Item Image Preview (Stacked with Tags)
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(size.width * 0.03),
@@ -533,14 +520,13 @@ class _CategoryCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: Theme.of(context).dividerColor.withOpacity(0.5), // 🎯 Theme-Aware Fallback BG
+                            color: Theme.of(context).dividerColor.withOpacity(0.5),
                             child: const Center(
                                 child: Icon(Icons.image_not_supported_outlined,
                                     color: Colors.white)),
                           );
                         },
                       ),
-                      // Tags Overlay (Bottom Left)
                       Positioned(
                         bottom: size.height * 0.01,
                         left: size.width * 0.01,
@@ -549,7 +535,7 @@ class _CategoryCard extends StatelessWidget {
                           spacing: size.width * 0.015,
                           runSpacing: size.width * 0.01,
                           children: category.tags
-                              .map((tag) => _buildTag(tag, tagFontSize, context)) // Pass context
+                              .map((tag) => _buildTag(tag, tagFontSize, context))
                               .toList(),
                         ),
                       ),
@@ -570,13 +556,13 @@ class _CategoryCard extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: size.width * 0.015, vertical: size.height * 0.005),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5), // Tags remain opaque black for image contrast
+        color: Colors.black.withOpacity(0.5),
         borderRadius: BorderRadius.circular(size.width * 0.015),
       ),
       child: Text(
         tag,
         style: TextStyle(
-          color: Colors.white, // Text remains white for contrast
+          color: Colors.white,
           fontSize: fontSize,
           fontWeight: FontWeight.w500,
         ),
@@ -585,130 +571,264 @@ class _CategoryCard extends StatelessWidget {
   }
 }
 
+// --- ITEM VIEW SCREEN (Fetches from Supabase) ---
 
-// --- ITEM VIEW SCREEN (The actual grid of saved items - Theme-Aware) ---
-
-class WardrobeItemScreen extends StatelessWidget {
+class WardrobeItemScreen extends StatefulWidget {
   final String categoryTitle;
 
   const WardrobeItemScreen({super.key, required this.categoryTitle});
 
-  List<WardrobeItem> _getCategoryItems() {
-    // ... filtering logic remains ...
-    final targetCategoryTitle = categoryTitle.contains('Bottomwear') && categoryTitle.contains('Women') ? 'Bottomwear (Women)' : categoryTitle;
-    return _allWardrobeItems
-        .where((item) => item.category == categoryTitle)
-        .toList();
+  @override
+  State<WardrobeItemScreen> createState() => _WardrobeItemScreenState();
+}
+
+class _WardrobeItemScreenState extends State<WardrobeItemScreen> {
+  List<Map<String, dynamic>> _items = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
   }
 
-  // 🎯 Theme Getters for StatelessWidget
+  // 🆕 Fetch items from Supabase
+  Future<void> _loadItems() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) {
+        print('❌ User not logged in');
+        return;
+      }
+
+      print('📥 Fetching items for category: ${widget.categoryTitle}');
+
+      final response = await supabase
+          .from('wardrobe_items')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('category', widget.categoryTitle)
+          .order('created_at', ascending: false);
+
+      print('✅ Fetched ${response.length} items');
+
+      setState(() {
+        _items = List<Map<String, dynamic>>.from(response);
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('❌ Error loading items: $e');
+      setState(() => _isLoading = false);
+    }
+  }
+
   Color _primaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyLarge!.color!;
   Color _scaffoldColor(BuildContext context) => Theme.of(context).scaffoldBackgroundColor;
   Color _secondaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
 
   @override
   Widget build(BuildContext context) {
-    final List<WardrobeItem> items = _getCategoryItems();
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          categoryTitle,
-          style: TextStyle(color: _primaryTextColor(context)), // 🎯 Theme-Aware Title
+          widget.categoryTitle,
+          style: TextStyle(color: _primaryTextColor(context)),
         ),
-        // 🎯 AppBar Background Color Theme से आएगा
         backgroundColor: _scaffoldColor(context),
         elevation: 0,
-        foregroundColor: _primaryTextColor(context), // 🎯 Theme-Aware Back Button Color
+        foregroundColor: _primaryTextColor(context),
       ),
-      backgroundColor: _scaffoldColor(context), // 🎯 Theme-Aware Background
-      body: items.isEmpty
+      backgroundColor: _scaffoldColor(context),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator(color: AppColors.accentTeal))
+          : _items.isEmpty
           ? Center(
-        child: Text(
-          'There is no item in this category',
-          style: TextStyle(fontSize: 18, color: _secondaryTextColor(context)), // 🎯 Theme-Aware Text Color
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.checkroom_outlined,
+              size: size.width * 0.2,
+              color: _secondaryTextColor(context),
+            ),
+            SizedBox(height: size.height * 0.02),
+            Text(
+              'No items in this category yet',
+              style: TextStyle(
+                fontSize: size.width * 0.045,
+                color: _secondaryTextColor(context),
+              ),
+            ),
+            SizedBox(height: size.height * 0.01),
+            Text(
+              'Tap + to add your first item',
+              style: TextStyle(
+                fontSize: size.width * 0.035,
+                color: _secondaryTextColor(context),
+              ),
+            ),
+          ],
         ),
       )
-          : Padding(
-        padding: EdgeInsets.all(size.width * 0.04),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: size.width * 0.03,
-            mainAxisSpacing: size.width * 0.03,
-            childAspectRatio: 0.7,
+          : RefreshIndicator(
+        color: AppColors.accentTeal,
+        onRefresh: _loadItems,
+        child: Padding(
+          padding: EdgeInsets.all(size.width * 0.04),
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: size.width * 0.03,
+              mainAxisSpacing: size.width * 0.03,
+              childAspectRatio: 0.7,
+            ),
+            itemCount: _items.length,
+            itemBuilder: (context, index) {
+              return _WardrobeItemCard(
+                item: _items[index],
+                size: size,
+                onDelete: () async {
+                  await _deleteItem(_items[index]['id']);
+                },
+              );
+            },
           ),
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            return _WardrobeItemCard(item: items[index], size: size);
-          },
         ),
       ),
     );
   }
+
+  // 🆕 Delete item from Supabase
+  Future<void> _deleteItem(int itemId) async {
+    try {
+      await supabase.from('wardrobe_items').delete().eq('id', itemId);
+
+      Get.snackbar(
+        'Deleted',
+        'Item removed from wardrobe',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+
+      _loadItems(); // Refresh the list
+    } catch (e) {
+      print('❌ Error deleting item: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to delete item',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    }
+  }
 }
 
-// --- INDIVIDUAL WARDROBE ITEM CARD WIDGET (Theme-Aware) ---
+// --- INDIVIDUAL WARDROBE ITEM CARD WIDGET ---
 
 class _WardrobeItemCard extends StatelessWidget {
-  final WardrobeItem item;
+  final Map<String, dynamic> item;
   final Size size;
+  final VoidCallback onDelete;
 
-  const _WardrobeItemCard({required this.item, required this.size});
+  const _WardrobeItemCard({
+    required this.item,
+    required this.size,
+    required this.onDelete,
+  });
 
-  //  Theme Getters for StatelessWidget
   Color _primaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyLarge!.color!;
   Color _surfaceColor(BuildContext context) => Theme.of(context).colorScheme.surface;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      //  Card color Theme
-      color: _surfaceColor(context),
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(size.width * 0.03),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Item Image
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(size.width * 0.03),
+    return GestureDetector(
+      onLongPress: () {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Item?'),
+            content: Text('Remove "${item['item_name']}" from wardrobe?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              child: Image.asset(
-                item.imagePath,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Theme.of(context).dividerColor.withOpacity(0.5), // Theme-Aware Fallback BG
-                    child: const Center(
-                        child: Icon(Icons.image_not_supported_outlined,
-                            color: Colors.white)),
-                  );
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  onDelete();
                 },
+                child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        );
+      },
+      child: Card(
+        color: _surfaceColor(context),
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(size.width * 0.03),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(size.width * 0.03),
+                ),
+                child: Image.network(
+                  item['image_url'] ?? '',
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                            : null,
+                        color: AppColors.accentTeal,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Theme.of(context).dividerColor.withOpacity(0.5),
+                      child: const Center(
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          // Item Name
-          Padding(
-            padding: EdgeInsets.all(size.width * 0.015),
-            child: Text(
-              item.name,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: size.width * 0.035,
-                color: _primaryTextColor(context), // theme-Aware Text Color
+            Padding(
+              padding: EdgeInsets.all(size.width * 0.015),
+              child: Text(
+                item['item_name'] ?? 'Unnamed',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: size.width * 0.035,
+                  color: _primaryTextColor(context),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
