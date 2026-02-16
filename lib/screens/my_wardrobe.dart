@@ -359,7 +359,7 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
             icon: Icon(Icons.star_half_rounded),
             label: 'AI Stylist',
           ),
-          // ⚠️ InkWell Removed - Navigation handled by _onNavTapped
+
           const BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             label: 'Planner',
@@ -401,7 +401,7 @@ class _GenderToggle extends StatelessWidget {
 
   Widget _buildGenderChip(BuildContext context, Gender gender, String label, IconData icon) {
     final bool isSelected = selectedGender == gender;
-    // 🎯 Theme-Aware Colors
+    // Theme-Aware Colors
     final Color primaryTextColor = Theme.of(context).textTheme.bodyLarge!.color!;
     final Color secondaryTextColor = Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
     final Color surfaceColor = Theme.of(context).colorScheme.surface;
@@ -418,10 +418,10 @@ class _GenderToggle extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
         decoration: BoxDecoration(
-          color: isSelected ? selectedColor : surfaceColor, // 🎯 Theme-Aware Color
+          color: isSelected ? selectedColor : surfaceColor, // Theme-Aware Color
           borderRadius: BorderRadius.circular(size.width * 0.08),
           border: Border.all(
-            // 🎯 Theme-Aware Border
+            // Theme-Aware Border
             color: isSelected ? selectedColor : secondaryTextColor.withOpacity(0.3),
             width: 1.5,
           ),
@@ -440,14 +440,14 @@ class _GenderToggle extends StatelessWidget {
             Icon(
               icon,
               size: size.width * 0.05,
-              // 🎯 Theme-Aware Icon Color
+              // Theme-Aware Icon Color
               color: isSelected ? primaryTextColor : secondaryTextColor,
             ),
             SizedBox(width: size.width * 0.01),
             Text(
               label,
               style: TextStyle(
-                // 🎯 Theme-Aware Text Color
+                // Theme-Aware Text Color
                 color: isSelected ? primaryTextColor : secondaryTextColor,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 fontSize: fontSize,
@@ -470,11 +470,11 @@ class _CategoryCard extends StatelessWidget {
 
   // Navigation function: Navigates from Category Grid to Item Grid
   void _navigateToItems(BuildContext context) {
-    // 🎯 GetX Navigation
+    // GetX Navigation
     Get.to(() => WardrobeItemScreen(categoryTitle: category.title));
   }
 
-  // 🎯 Theme Getters for StatelessWidget
+  //  Theme Getters for StatelessWidget
   Color _primaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyLarge!.color!;
 
 
@@ -489,7 +489,7 @@ class _CategoryCard extends StatelessWidget {
       onTap: () => _navigateToItems(context),
       borderRadius: BorderRadius.circular(size.width * 0.05),
       child: Card(
-        // 🎯 Card color Theme से आएगा
+        //  Card color Theme
         color: Theme.of(context).colorScheme.surface,
         elevation: 5,
         shape: RoundedRectangleBorder(
@@ -504,7 +504,7 @@ class _CategoryCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // 🎯 Theme-Aware Icon Color
+                  // Theme-Aware Icon Color
                   Icon(category.icon, size: iconSize, color: _primaryTextColor(context)),
                 ],
               ),
@@ -657,14 +657,14 @@ class _WardrobeItemCard extends StatelessWidget {
 
   const _WardrobeItemCard({required this.item, required this.size});
 
-  // 🎯 Theme Getters for StatelessWidget
+  //  Theme Getters for StatelessWidget
   Color _primaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyLarge!.color!;
   Color _surfaceColor(BuildContext context) => Theme.of(context).colorScheme.surface;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      // 🎯 Card color Theme से आएगा
+      //  Card color Theme
       color: _surfaceColor(context),
       elevation: 3,
       shape: RoundedRectangleBorder(
@@ -684,7 +684,7 @@ class _WardrobeItemCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: Theme.of(context).dividerColor.withOpacity(0.5), // 🎯 Theme-Aware Fallback BG
+                    color: Theme.of(context).dividerColor.withOpacity(0.5), // Theme-Aware Fallback BG
                     child: const Center(
                         child: Icon(Icons.image_not_supported_outlined,
                             color: Colors.white)),
@@ -704,7 +704,7 @@ class _WardrobeItemCard extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: size.width * 0.035,
-                color: _primaryTextColor(context), // 🎯 Theme-Aware Text Color
+                color: _primaryTextColor(context), // theme-Aware Text Color
               ),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
+import 'package:smart_wardrobe_new/screens/body_scan.dart';
 import 'package:smart_wardrobe_new/screens/eventPlanner.dart';
 import 'package:smart_wardrobe_new/screens/my_wardrobe.dart';
 import 'package:smart_wardrobe_new/screens/profile.dart';
@@ -177,10 +178,13 @@ class HomeHeader extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              Icons.notifications_none,
-              color: primaryTextColor,
-              size: iconSize,
+            child: InkWell(
+              onTap: () => Get.toNamed('/body-scan'),
+              child: Icon(
+                Icons.notifications_none,
+                color: primaryTextColor,
+                size: iconSize,
+              ),
             ),
           ),
         ],

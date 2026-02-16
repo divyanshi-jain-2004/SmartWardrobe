@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
+import '../screens/body_scan.dart';
+
 class OnboardingController extends GetxController {
   final PageController pageController = PageController();
   final box = GetStorage();
@@ -37,6 +39,8 @@ class OnboardingController extends GetxController {
   void handleNext() {
     if (isLastPage) {
       finishOnboardingAndNavigate();
+      //Get.off(() => const BodyScanScreen());
+
     } else {
       pageController.nextPage(
         duration: const Duration(milliseconds: 400),

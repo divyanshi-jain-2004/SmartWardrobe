@@ -6,6 +6,7 @@ import 'package:smart_wardrobe_new/controllers/user_controller.dart';
 import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
 import 'package:smart_wardrobe_new/screens/HomeScreen.dart';
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
+import 'package:smart_wardrobe_new/screens/body_scan.dart';
 import 'package:smart_wardrobe_new/screens/my_wardrobe.dart';
 import 'package:smart_wardrobe_new/screens/profile.dart' hide LoginScreen;
 import 'package:flutter/material.dart';
@@ -76,7 +77,9 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/signup', page: () => const SignUpScreen()),
         GetPage(name: '/home', page: () => const HomeScreen()),
+        GetPage(name: '/body-scan', page: () => const BodyScanScreen()),
         GetPage(name: '/password-reset', page: () => const PasswordResetScreen()),
+
       ],
     );
   }

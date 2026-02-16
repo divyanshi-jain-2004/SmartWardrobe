@@ -4,7 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'onboarding.dart'; // OnboardingScreen के लिए
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:smart_wardrobe_new/main.dart'; // Supabase client access के लिए
+import 'package:smart_wardrobe_new/main.dart';
 
 // --- App Colors ---
 const Color _kGradientStart = Color(0xFFD8B4FE);
@@ -92,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _checkUserStatusAndNavigate();
   }
 
-  // 🎯 SUPABASE AUTH STATUS CHECK LOGIC (UPDATED)
+  // SUPABASE AUTH STATUS CHECK LOGIC (UPDATED)
   // void _checkUserStatusAndNavigate() async {
   //   if (!mounted) return;
   //
@@ -121,7 +121,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   //   final session = supabase.auth.currentSession;
   //   bool isAuthenticated = session != null;
   //
-  //   bool isFirstTime = false; // 🎯 (GetStorage check here)
+  //   bool isFirstTime = false; //  (GetStorage check here)
   //
   //
   //   if (!mounted) return;
@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   //   }
   // }
 
-  // 🎯 SUPABASE AUTH STATUS CHECK LOGIC (UPDATED WITH GET_STORAGE)
+  //  SUPABASE AUTH STATUS CHECK LOGIC (UPDATED WITH GET_STORAGE)
   void _checkUserStatusAndNavigate() async {
     if (!mounted) return;
 
@@ -166,6 +166,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     } else if (!onboardingComplete) {
       // If onboarding is NOT complete, show onboarding
       Get.offNamed('/onboarding');
+      //Get.off(() => const OnboardingScreen());
     } else {
       // If onboarding IS complete but not logged in, show login
       Get.offNamed('/login');
@@ -198,7 +199,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             Positioned(bottom: 100, left: 30, child: FaIcon(FontAwesomeIcons.shirt, size: 40, color: Colors.blue.withOpacity(0.5))),
             Positioned(bottom: 80, right: 30, child: FaIcon(FontAwesomeIcons.bagShopping, size: 40, color: Colors.grey.withOpacity(0.5))),
 
-            // 🎯 Center Content (Animated)
+            //  Center Content (Animated)
             Center(
               // 1. SlideTransition
               child: SlideTransition(
