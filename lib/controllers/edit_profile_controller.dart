@@ -9,6 +9,9 @@ class EditProfileController extends GetxController {
   var selectedSkinTone = Rxn<Color>();
   var selectedSkinName = "".obs;
 
+  // Observable for Body Type (NEW)
+  var bodyType = "".obs;
+
   // Controllers for Body Measurements
   final shoulderController = TextEditingController();
   final waistController = TextEditingController();
@@ -42,7 +45,10 @@ class EditProfileController extends GetxController {
       selectedSkinTone.value = matchingTone['color'];
     }
 
-    // 2. Load Body Measurements into TextFields
+    // 2. Load Body Type (NEW)
+    bodyType.value = box.read('body_type') ?? '';
+
+    // 3. Load Body Measurements into TextFields
     shoulderController.text = box.read('shoulder') ?? "";
     waistController.text = box.read('waist') ?? "";
     hipController.text = box.read('hip') ?? "";
@@ -60,6 +66,7 @@ class EditProfileController extends GetxController {
     box.write('shoulder', shoulderController.text);
     box.write('waist', waistController.text);
     box.write('hip', hipController.text);
+    // Body type is saved by BodyScanController, not manually edited
 
     Get.snackbar(
       'Success',

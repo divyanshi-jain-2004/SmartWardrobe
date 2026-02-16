@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // 🎯 GetX Import
 import 'package:intl/intl.dart';
 
+import '../controllers/event_controller.dart';
 import '../models/event_model.dart';
 import '../utils/constants/colors.dart'; // Date formatting के लिए
 
@@ -38,38 +39,40 @@ class EventPlannerScreen extends StatefulWidget {
 }
 
 class _EventPlannerScreenState extends State<EventPlannerScreen> {
+
+  final EventController eventController = Get.put(EventController());
   // Mock Data (unchanged)
-  final List<Event> _events = [
-    Event(
-      title: "Gala Charity Event",
-      date: DateTime(2024, 8, 10),
-      time: "6:00 PM",
-      timeLeft: "3 weeks left",
-      outfitImageUrls: [
-        'https://i.pravatar.cc/150?img=60',
-        'https://i.pravatar.cc/150?img=62',
-      ],
-    ),
-    Event(
-      title: "Summer Fashion Show - Casual Collection",
-      date: DateTime(2024, 9, 1),
-      time: "2:30 PM",
-      timeLeft: "5 weeks left",
-      outfitImageUrls: [
-        'https://i.pravatar.cc/150?img=4',
-        'https://i.pravatar.cc/150?img=12',
-      ],
-    ),
-    Event(
-      title: "Networking Mixer - Professional Wear",
-      date: DateTime(2024, 10, 25),
-      time: "7:00 PM",
-      timeLeft: "2 months left",
-      outfitImageUrls: [
-        'https://i.pravatar.cc/150?img=20',
-      ],
-    ),
-  ];
+  // final List<Event> _events = [
+  //   Event(
+  //     title: "Gala Charity Event",
+  //     date: DateTime(2024, 8, 10),
+  //     time: "6:00 PM",
+  //     timeLeft: "3 weeks left",
+  //     outfitImageUrls: [
+  //       'https://i.pravatar.cc/150?img=60',
+  //       'https://i.pravatar.cc/150?img=62',
+  //     ],
+  //   ),
+  //   Event(
+  //     title: "Summer Fashion Show - Casual Collection",
+  //     date: DateTime(2024, 9, 1),
+  //     time: "2:30 PM",
+  //     timeLeft: "5 weeks left",
+  //     outfitImageUrls: [
+  //       'https://i.pravatar.cc/150?img=4',
+  //       'https://i.pravatar.cc/150?img=12',
+  //     ],
+  //   ),
+  //   Event(
+  //     title: "Networking Mixer - Professional Wear",
+  //     date: DateTime(2024, 10, 25),
+  //     time: "7:00 PM",
+  //     timeLeft: "2 months left",
+  //     outfitImageUrls: [
+  //       'https://i.pravatar.cc/150?img=20',
+  //     ],
+  //   ),
+  // ];
 
   // 🎯 Theme Getters
   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
@@ -102,17 +105,28 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
         // 🎯 Theme-Aware Icon Color
         iconTheme: IconThemeData(color: _primaryTextColor),
       ),
-      body: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: size.height * 0.02),
-        itemCount: _events.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: size.height * 0.02),
-            // Pass Theme-Aware colors to the card if needed, or let the card handle its own theme
-            child: _EventCard(event: _events[index]),
+      body: Obx(() {
+        // GetX needs to see 'eventController.events' being accessed right here
+        if (eventController.events.isEmpty) {
+          return const Center(
+            child: Text("No events planned yet. Tap '+' to add one!"),
           );
-        },
-      ),
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.symmetric(
+              horizontal: size.width * 0.05,
+              vertical: size.height * 0.02
+          ),
+          itemCount: eventController.events.length, // 🎯 Accessing the .obs variable
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: size.height * 0.02),
+              child: _EventCard(event: eventController.events[index]),
+            );
+          },
+        );
+      }),
 
       // Floating Action Button
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

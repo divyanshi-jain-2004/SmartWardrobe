@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 
+import '../controllers/event_controller.dart';
+import '../models/event_model.dart';
 import '../utils/constants/colors.dart'; // 🎯 GetX Import
 
 // --- Custom Colors ---
@@ -22,6 +24,7 @@ class AddEventScreen extends StatefulWidget {
 }
 
 class _AddEventScreenState extends State<AddEventScreen> {
+  final EventController eventController = Get.find();
   // State for form data
   final TextEditingController _eventNameController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
@@ -98,31 +101,50 @@ class _AddEventScreenState extends State<AddEventScreen> {
     }
   }
 
+  // ... inside _AddEventScreenState ...
+
+// Find the existing controller
+
+
   void _addEvent() {
     if (_eventNameController.text.isEmpty || _selectedDate == null || _selectedTime == null) {
-      // 🎯 GetX Snackbar
       Get.snackbar(
         'Required Fields Missing',
         'Please fill in Event Name, Date, and Time.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.redAccent,
         colorText: Colors.white,
       );
       return;
     }
 
-    // 🎯 GetX Snackbar
+    // 1. Create the New Event Object
+    final newEvent = Event(
+      title: _eventNameController.text,
+      date: _selectedDate!,
+      time: _selectedTime!.format(context),
+      timeLeft: "Upcoming",
+      outfitImageUrls: [],
+    );
+
+    // 2. Add it to the Controller
+    eventController.addEvent(newEvent);
+
+    // 3. Navigate back FIRST, then show the snackbar on the Planner screen
+    Get.back();
+
+    // This snackbar will now appear on top of the Event Planner screen
     Get.snackbar(
-      'Event Added!',
-      'Successfully added event: ${_eventNameController.text}',
-      snackPosition: SnackPosition.BOTTOM,
+      'Success',
+      '${_eventNameController.text} added successfully!',
+      snackPosition: SnackPosition.TOP, // Top is often more visible after navigation
       backgroundColor: AppColors.accentTeal,
       colorText: Colors.white,
+      duration: const Duration(seconds: 2),
+      margin: const EdgeInsets.all(15),
+      icon: const Icon(Icons.check_circle, color: Colors.white),
     );
-    // 🎯 GetX Navigation
-    Get.back(); // Close the screen after adding
   }
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
