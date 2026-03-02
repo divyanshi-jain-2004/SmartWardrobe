@@ -275,7 +275,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               _selectedImageFile = compressedFile ?? tempFile;
             });
 
-            await _uploadImage(_selectedImageFile!);
+            await _uploadImage(_selectedImageFile!,shouldProcessML: false);
 
             Get.snackbar('Success', 'Background removed!');
           } else {
@@ -364,7 +364,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
         _originalImageFile = imageFile;
 
-        await _uploadImage(imageFile);
+        await _uploadImage(imageFile,shouldProcessML: true);
         Get.closeCurrentSnackbar();
       }
     }
@@ -525,7 +525,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
           duration: const Duration(seconds: 10),
         );
 
-        await _uploadImage(newImageFile);
+        await _uploadImage(newImageFile,shouldProcessML: false);
 
         Get.closeCurrentSnackbar();
         Get.snackbar(
@@ -549,74 +549,109 @@ class _AddItemScreenState extends State<AddItemScreen> {
     }
   }
 
-  Future<void> _uploadImage(File imageFile) async {
+  Future<void> _uploadImage(File imageFile,{bool shouldProcessML = false}) async {
     try {
-      final userId = supabase.auth.currentUser!.id;
-      final fileName = '$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      // 1. Show an immediate loading overlay instead of a snackbar
+      Get.showOverlay(
+        asyncFunction: () async {
+          final userId = supabase.auth.currentUser!.id;
+          final fileName = '$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      final fileSize = await imageFile.length();
-      final fileSizeMB = fileSize / 1024 / 1024;
-      print('📤 Uploading file size: ${fileSizeMB.toStringAsFixed(2)} MB');
+          await supabase.storage.from('wardrobe_image').upload(
+            fileName,
+            imageFile,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+          );
 
-      if (fileSizeMB > 10) {
-        throw Exception('File too large (${fileSizeMB.toStringAsFixed(1)}MB). Maximum is 10MB.');
-      }
+          final publicUrl = supabase.storage.from('wardrobe_image').getPublicUrl(fileName);
 
-      Get.snackbar(
-        'Uploading',
-        'Uploading image to cloud...',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF00C7B1),
-        colorText: Colors.white,
-        showProgressIndicator: true,
-        duration: const Duration(seconds: 15),
-      );
+          if (shouldProcessML) {
+            await _processImageWithML(imageFile);
+          }
 
-      await supabase.storage.from('wardrobe_image').upload(
-        fileName,
-        imageFile,
-        fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-      );
-
-      final publicUrl = supabase.storage.from('wardrobe_image').getPublicUrl(fileName);
-
-      Get.closeCurrentSnackbar();
-
-      // Try ML processing (non-blocking)
-      await _processImageWithML(imageFile);
-
-      if (mounted) {
-        setState(() {
-          _itemImageUrl = publicUrl;
-          _selectedImageFile = imageFile;
-          _isImageUploaded = true;
-        });
-      }
-
-      print('✅ Image uploaded successfully. URL: $publicUrl');
-
-    } on StorageException catch (e) {
-      print('❌ Supabase Storage Error: ${e.message}');
-      Get.closeCurrentSnackbar();
-      Get.snackbar(
-        'Storage Error',
-        e.message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
+          setState(() {
+            _itemImageUrl = publicUrl;
+            _selectedImageFile = imageFile;
+            _isImageUploaded = true;
+          });
+        },
+        loadingWidget: const Center(
+          child: CircularProgressIndicator(color: _kPrimaryTeal),
+        ),
       );
     } catch (e) {
-      print('❌ General Image Upload Error: $e');
-      Get.closeCurrentSnackbar();
-      Get.snackbar(
-        'Error',
-        'Failed to upload image: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
-      );
+      Get.snackbar('Error', 'Upload failed: $e', backgroundColor: Colors.red);
     }
   }
+
+  // Future<void> _uploadImage(File imageFile) async {
+  //   try {
+  //     final userId = supabase.auth.currentUser!.id;
+  //     final fileName = '$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+  //
+  //     final fileSize = await imageFile.length();
+  //     final fileSizeMB = fileSize / 1024 / 1024;
+  //     print('📤 Uploading file size: ${fileSizeMB.toStringAsFixed(2)} MB');
+  //
+  //     if (fileSizeMB > 10) {
+  //       throw Exception('File too large (${fileSizeMB.toStringAsFixed(1)}MB). Maximum is 10MB.');
+  //     }
+  //
+  //     Get.snackbar(
+  //       'Uploading',
+  //       'Uploading image to cloud...',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: const Color(0xFF00C7B1),
+  //       colorText: Colors.white,
+  //       showProgressIndicator: true,
+  //       duration: const Duration(seconds: 15),
+  //     );
+  //
+  //     await supabase.storage.from('wardrobe_image').upload(
+  //       fileName,
+  //       imageFile,
+  //       fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+  //     );
+  //
+  //     final publicUrl = supabase.storage.from('wardrobe_image').getPublicUrl(fileName);
+  //
+  //     Get.closeCurrentSnackbar();
+  //
+  //     // Try ML processing (non-blocking)
+  //     await _processImageWithML(imageFile);
+  //
+  //     if (mounted) {
+  //       setState(() {
+  //         _itemImageUrl = publicUrl;
+  //         _selectedImageFile = imageFile;
+  //         _isImageUploaded = true;
+  //       });
+  //     }
+  //
+  //     print('✅ Image uploaded successfully. URL: $publicUrl');
+  //
+  //   } on StorageException catch (e) {
+  //     print('❌ Supabase Storage Error: ${e.message}');
+  //     Get.closeCurrentSnackbar();
+  //     Get.snackbar(
+  //       'Storage Error',
+  //       e.message,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.red.withOpacity(0.8),
+  //       colorText: Colors.white,
+  //     );
+  //   } catch (e) {
+  //     print('❌ General Image Upload Error: $e');
+  //     Get.closeCurrentSnackbar();
+  //     Get.snackbar(
+  //       'Error',
+  //       'Failed to upload image: $e',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.red.withOpacity(0.8),
+  //       colorText: Colors.white,
+  //     );
+  //   }
+  // }
 
   // 🆕 IMPROVED: Add item to wardrobe with proper validation
   void _addItemToWardrobe() async {
@@ -711,6 +746,14 @@ class _AddItemScreenState extends State<AddItemScreen> {
           style: TextStyle(fontWeight: FontWeight.bold, color: _primaryTextColor),
         ),
         centerTitle: true,
+
+        bottom: _isProcessing
+            ? const PreferredSize(
+          preferredSize: Size.fromHeight(4.0),
+          child: LinearProgressIndicator(color: _kPrimaryTeal),
+        )
+            : null,
+
       ),
       body: Stack(
         children: [

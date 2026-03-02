@@ -26,6 +26,7 @@ final supabase = Supabase.instance.client;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
 
   await Supabase.initialize(
     url: 'https://srzyhowfebtkueubwyqr.supabase.co',

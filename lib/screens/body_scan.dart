@@ -530,7 +530,12 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
                 Text(
                   scanController.isScanning.value
                       ? scanController.scanningStage.value
-                      : 'Position Your Full Body',
+                      : (scanController.detectedSkinToneName.value == "Too Dark"
+                      ? "⚠️ Low Light: Find a brighter spot"
+                      : 'Position Your Full Body'),
+                  // scanController.isScanning.value
+                  //     ? scanController.scanningStage.value
+                  //     : 'Position Your Full Body',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -778,6 +783,68 @@ class ScannerPainter extends CustomPainter {
 }
 
 // Body Outline Painter
+// class BodyOutlinePainter extends CustomPainter {
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final paint = Paint()
+//       ..color = AppColors.accentTeal.withOpacity(0.3)
+//       ..style = PaintingStyle.stroke
+//       ..strokeWidth = 2;
+//
+//     final dashedPaint = Paint()
+//       ..color = AppColors.accentTeal.withOpacity(0.5)
+//       ..style = PaintingStyle.stroke
+//       ..strokeWidth = 2;
+//
+//     final centerX = size.width / 2;
+//     final topY = size.height * 0.15;
+//     final bottomY = size.height * 0.85;
+//
+//     canvas.drawCircle(Offset(centerX, topY + 30), 25, paint);
+//
+//     final bodyRect = RRect.fromRectAndRadius(
+//       Rect.fromCenter(
+//         center: Offset(centerX, size.height / 2),
+//         width: size.width * 0.5,
+//         height: bottomY - topY - 60,
+//       ),
+//       Radius.circular(15),
+//     );
+//
+//     _drawDashedRRect(canvas, bodyRect, dashedPaint);
+//
+//     final markerPaint = Paint()
+//       ..color = AppColors.accentTeal
+//       ..style = PaintingStyle.fill;
+//
+//     canvas.drawCircle(Offset(centerX, topY), 4, markerPaint);
+//     canvas.drawCircle(Offset(centerX, bottomY), 4, markerPaint);
+//   }
+//
+//   void _drawDashedRRect(Canvas canvas, RRect rrect, Paint paint) {
+//     final path = Path()..addRRect(rrect);
+//     const dashWidth = 10;
+//     const dashSpace = 5;
+//
+//     final pathMetrics = path.computeMetrics();
+//     for (final metric in pathMetrics) {
+//       double distance = 0;
+//       while (distance < metric.length) {
+//         final start = distance;
+//         final end = distance + dashWidth;
+//         canvas.drawPath(
+//           metric.extractPath(start, end > metric.length ? metric.length : end),
+//           paint,
+//         );
+//         distance += dashWidth + dashSpace;
+//       }
+//     }
+//   }
+//
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+// }
+
 class BodyOutlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -786,34 +853,45 @@ class BodyOutlinePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
-    final dashedPaint = Paint()
-      ..color = AppColors.accentTeal.withOpacity(0.5)
+    final guidePaint = Paint()
+      ..color = AppColors.accentTeal.withOpacity(0.6)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 3;
 
     final centerX = size.width / 2;
     final topY = size.height * 0.15;
     final bottomY = size.height * 0.85;
 
-    canvas.drawCircle(Offset(centerX, topY + 30), 25, paint);
-
-    final bodyRect = RRect.fromRectAndRadius(
+    // ✅ ADDED: Specific Face Oval for ML Skin Detection
+    // This helps the FaceDetector find the face quickly
+    canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(centerX, size.height / 2),
-        width: size.width * 0.5,
-        height: bottomY - topY - 60,
+        center: Offset(centerX, topY + 60),
+        width: 70,
+        height: 90,
       ),
-      Radius.circular(15),
+      guidePaint,
     );
 
-    _drawDashedRRect(canvas, bodyRect, dashedPaint);
+    // Body Rectangle
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(centerX, size.height / 2 + 40),
+        width: size.width * 0.55,
+        height: bottomY - topY - 100,
+      ),
+      const Radius.circular(20),
+    );
 
-    final markerPaint = Paint()
-      ..color = AppColors.accentTeal
-      ..style = PaintingStyle.fill;
+    _drawDashedRRect(canvas, bodyRect, paint);
 
-    canvas.drawCircle(Offset(centerX, topY), 4, markerPaint);
-    canvas.drawCircle(Offset(centerX, bottomY), 4, markerPaint);
+    // ✅ ADDED: Shoulder Line
+    // Helps user level their shoulders for accurate Body Type ratios
+    canvas.drawLine(
+      Offset(centerX - 100, topY + 120),
+      Offset(centerX + 100, topY + 120),
+      paint,
+    );
   }
 
   void _drawDashedRRect(Canvas canvas, RRect rrect, Paint paint) {
