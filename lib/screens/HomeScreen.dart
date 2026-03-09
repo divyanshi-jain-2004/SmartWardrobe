@@ -11,6 +11,7 @@ import 'package:smart_wardrobe_new/controllers/user_controller.dart';
 // 🎯 Weather Controller Import (नया)
 import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
 
+import '../controllers/wardrobe_controller.dart';
 import '../utils/constants/colors.dart';
 
 // --- Custom Colors ---
@@ -285,40 +286,89 @@ class LookCard extends StatelessWidget {
 
 // --- Remaining Component Widgets (Unchanged) ---
 
+// class WardrobeStatsGrid extends StatelessWidget {
+//   const WardrobeStatsGrid({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final List<Map<String, String>> stats = [
+//       {'count': '120', 'label': 'Tops'},
+//       {'count': '75', 'label': 'Bottoms'},
+//       {'count': '40', 'label': 'Footwear'},
+//       {'count': '65', 'label': 'Accessories'},
+//     ];
+//
+//     final size = MediaQuery.of(context).size;
+//     final crossAxisSpacing = size.width * 0.04;
+//     final mainAxisSpacing = size.width * 0.04;
+//     final childAspectRatio = size.width / (size.height / 2.5);
+//
+//     return GridView.builder(
+//       physics: const NeverScrollableScrollPhysics(),
+//       shrinkWrap: true,
+//       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//         crossAxisCount: 2,
+//         crossAxisSpacing: crossAxisSpacing,
+//         mainAxisSpacing: mainAxisSpacing,
+//         childAspectRatio: childAspectRatio,
+//       ),
+//       itemCount: stats.length,
+//       itemBuilder: (context, index) {
+//         return StatBox(
+//           count: stats[index]['count']!,
+//           label: stats[index]['label']!,
+//         );
+//       },
+//     );
+//   }
+// }
+
 class WardrobeStatsGrid extends StatelessWidget {
   const WardrobeStatsGrid({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> stats = [
-      {'count': '120', 'label': 'Tops'},
-      {'count': '75', 'label': 'Bottoms'},
-      {'count': '40', 'label': 'Footwear'},
-      {'count': '65', 'label': 'Accessories'},
-    ];
+    // 🎯 Find the WardrobeController
+    final WardrobeController wardrobeController = Get.put(WardrobeController());
 
     final size = MediaQuery.of(context).size;
     final crossAxisSpacing = size.width * 0.04;
     final mainAxisSpacing = size.width * 0.04;
     final childAspectRatio = size.width / (size.height / 2.5);
 
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: crossAxisSpacing,
-        mainAxisSpacing: mainAxisSpacing,
-        childAspectRatio: childAspectRatio,
-      ),
-      itemCount: stats.length,
-      itemBuilder: (context, index) {
-        return StatBox(
-          count: stats[index]['count']!,
-          label: stats[index]['label']!,
-        );
-      },
-    );
+    return Obx(() {
+      // Mapping the DB categories to your UI Labels
+      final counts = wardrobeController.categoryCounts;
+
+      final List<Map<String, String>> stats = [
+        {'count': '${counts['Topwear'] ?? counts['Tops/Blouses'] ?? 0}', 'label': 'Tops'},
+        {'count': '${counts['Bottomwear'] ?? counts['Bottomwear (Women)'] ?? 0}', 'label': 'Bottoms'},
+        {'count': '${counts['Footwear'] ?? 0}', 'label': 'Footwear'},
+        {'count': '${counts['Accessories'] ?? counts['Jewellery/Scarves'] ?? 0}', 'label': 'Accessories'},
+      ];
+
+      if (wardrobeController.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: crossAxisSpacing,
+          mainAxisSpacing: mainAxisSpacing,
+          childAspectRatio: childAspectRatio,
+        ),
+        itemCount: stats.length,
+        itemBuilder: (context, index) {
+          return StatBox(
+            count: stats[index]['count']!,
+            label: stats[index]['label']!,
+          );
+        },
+      );
+    });
   }
 }
 
@@ -456,7 +506,9 @@ class BottomNavBar extends StatelessWidget {
           if (index == 0) {
             // Stay on Home
           } else if (index == 1) {
-            Get.to(() => const MyWardrobeScreen());
+            Get.to(() => const MyWardrobeScreen())?.then((_) {
+              Get.find<WardrobeController>().fetchCounts(); // Refresh when coming back
+            });
           } else if (index == 2) {
             Get.to(() => const OutfitSuggestionScreen());
           } else if (index == 3) {
