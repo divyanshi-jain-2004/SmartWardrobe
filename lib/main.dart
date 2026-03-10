@@ -6,6 +6,7 @@ import 'package:smart_wardrobe_new/controllers/user_controller.dart';
 import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
 import 'package:smart_wardrobe_new/screens/HomeScreen.dart';
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
+import 'package:smart_wardrobe_new/screens/ResetPasswordScreen.dart';
 import 'package:smart_wardrobe_new/screens/body_scan.dart';
 import 'package:smart_wardrobe_new/screens/my_wardrobe.dart';
 import 'package:smart_wardrobe_new/screens/profile.dart' hide LoginScreen;
@@ -35,6 +36,8 @@ Future<void> main() async {
 
   await GetStorage.init();
 
+  final session = Supabase.instance.client.auth.currentSession;
+
   Get.put(ThemeController());
   Get.put(UserController());
   Get.put(OutfitController());
@@ -42,10 +45,12 @@ Future<void> main() async {
 
   runApp(const MyApp());
 
-  // Supabase Recovery Listener (सिर्फ़ डेटा अपडेट)
   supabase.auth.onAuthStateChange.listen((data) {
-    if (data.event == AuthChangeEvent.passwordRecovery) {
-      // यहां कोई navigation नहीं
+    final AuthChangeEvent event = data.event;
+    if (event == AuthChangeEvent.passwordRecovery) {
+      // When the app opens via the email link, Supabase triggers this event.
+      // We then send the user to the ResetPasswordScreen.
+      Get.to(() => const ResetPasswordScreen());
     }
   });
 }

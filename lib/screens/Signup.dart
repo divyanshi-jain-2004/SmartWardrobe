@@ -34,11 +34,11 @@ class SignUpScreen extends StatelessWidget {
 
                 // Name Field
                 _inputField(controller.nameController, "Full Name", Icons.person_outline),
-                SizedBox(height: screenHeight * 0.015),
+                const SizedBox(height: 15),
 
                 // Email Field
-                _inputField(controller.emailController, "Email", Icons.email_outlined),
-                SizedBox(height: screenHeight * 0.015),
+                _inputField(controller.emailController, "Email Address", Icons.email_outlined),
+                const SizedBox(height: 15),
 
                 // Password Field
                 Obx(() => _passwordField(
@@ -47,7 +47,7 @@ class SignUpScreen extends StatelessWidget {
                   controller.obscurePassword.value,
                       () => controller.obscurePassword.toggle(),
                 )),
-                SizedBox(height: screenHeight * 0.015),
+                const SizedBox(height: 15),
 
                 // Confirm Password Field
                 Obx(() => _passwordField(
@@ -55,47 +55,44 @@ class SignUpScreen extends StatelessWidget {
                   "Confirm Password",
                   controller.obscureConfirmPassword.value,
                       () => controller.obscureConfirmPassword.toggle(),
-                  icon: Icons.lock_person_outlined,
                 )),
 
-                SizedBox(height: screenHeight * 0.03),
+                const SizedBox(height: 30),
 
-                // Sign Up Button
+                // Signup Button
                 SizedBox(
                   width: double.infinity,
                   child: Obx(() => ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: controller.accentTeal,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 2,
                     ),
                     onPressed: controller.isLoading.value ? null : () => controller.signUp(),
                     child: controller.isLoading.value
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Sign Up", style: TextStyle(fontSize: 18, color: Colors.white)),
+                        ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                        : const Text("Sign Up",
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   )),
                 ),
 
-                SizedBox(height: screenHeight * 0.025),
-                const Text("or", style: TextStyle(color: Colors.black54)),
-                SizedBox(height: screenHeight * 0.025),
-
-                // Social Buttons
-                _socialBtn("Google", "assets/google.png", OAuthProvider.google, controller),
-                SizedBox(height: screenHeight * 0.015),
-                _socialBtn("Facebook", "assets/facebook.png", OAuthProvider.facebook, controller),
-
-                SizedBox(height: screenHeight * 0.03),
+                const SizedBox(height: 25),
 
                 // Back to Login
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an account? "),
+                    const Text("Already have an account? ", style: TextStyle(color: Colors.black54)),
                     GestureDetector(
                       onTap: () => Get.back(),
                       child: Text("Login",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: controller.accentTeal)),
+                          style: TextStyle(
+                              color: controller.accentTeal, fontWeight: FontWeight.bold, fontSize: 15)),
                     ),
                   ],
                 ),
@@ -132,22 +129,6 @@ class SignUpScreen extends StatelessWidget {
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-      ),
-    );
-  }
-
-  Widget _socialBtn(String label, String iconPath, OAuthProvider provider, SignUpController controller) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        icon: Image.asset(iconPath, height: 20),
-        onPressed: () => controller.handleSocialLogin(provider),
-        label: Text("Continue with $label", style: const TextStyle(color: Colors.black87)),
       ),
     );
   }

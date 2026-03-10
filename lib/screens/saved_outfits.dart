@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 // ⚠️ Ensure these paths are correct
 import 'package:smart_wardrobe_new/models/outfit_model.dart';
 import 'package:smart_wardrobe_new/controllers/outfit_controller.dart';
+import 'package:smart_wardrobe_new/screens/HomeScreen.dart';
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
+import 'package:smart_wardrobe_new/screens/profile.dart';
 
 import '../utils/constants/colors.dart'; // 🎯 OutfitSuggestionScreen इम्पोर्ट करें
 
@@ -76,10 +78,18 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
           Get.toNamed('/profile');
         }
       },
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+      items:  <BottomNavigationBarItem>[
+        BottomNavigationBarItem(icon: InkWell(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_)=>HomeScreen()));
+          },
+            child: Icon(Icons.home_outlined)), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.auto_awesome_outlined), label: 'Outfits'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+        BottomNavigationBarItem(icon: InkWell(
+          onTap: (){
+            Navigator.push(context, MaterialPageRoute(builder: (_)=>ProfileScreen()));
+          },
+            child: Icon(Icons.person_outline)), label: 'Profile'),
       ],
     );
   }

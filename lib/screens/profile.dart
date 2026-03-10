@@ -164,45 +164,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _performLogout() async {
-    final bool? confirmLogout = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Logout Confirmation'),
-          content: const Text('Are you sure you want to log out?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6),
-                ),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
+  // Future<void> _performLogout() async {
+  //   final bool? confirmLogout = await showDialog<bool>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Logout Confirmation'),
+  //         content: const Text('Are you sure you want to log out?'),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: Text(
+  //               'Cancel',
+  //               style: TextStyle(
+  //                 color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6),
+  //               ),
+  //             ),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(false);
+  //             },
+  //           ),
+  //           TextButton(
+  //             child: const Text('Logout', style: TextStyle(color: Colors.red)),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(true);
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  //
+  //   if (confirmLogout == true) {
+  //     Get.snackbar(
+  //       'Success',
+  //       'Logged out successfully!',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.green,
+  //       colorText: AppColors.backgroundWhite,
+  //     );
+  //     Get.offAll(() => const LoginScreen());
+  //   }
+  // }
 
-    if (confirmLogout == true) {
+  // 🎯 Updated Logout Function
+  Future<void> _performLogout() async {
+    try {
+      // 1. Actually clear the session from Supabase
+      await Supabase.instance.client.auth.signOut();
+
+      // 2. Clear the navigation stack and go to Login
+      // Get.offAll(() => const LoginScreen());
+      Get.offAllNamed('/login');
+
       Get.snackbar(
-        'Success',
-        'Logged out successfully!',
+        'Logged Out',
+        'You have been successfully logged out.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
-        colorText: AppColors.backgroundWhite,
+        colorText: Colors.white,
       );
-      Get.offAll(() => const LoginScreen());
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to logout: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 

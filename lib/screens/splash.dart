@@ -137,39 +137,72 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   // }
 
   //  SUPABASE AUTH STATUS CHECK LOGIC (UPDATED WITH GET_STORAGE)
+  // void _checkUserStatusAndNavigate() async {
+  //   if (!mounted) return;
+  //
+  //   // 1. Deep link check (keep your existing code)
+  //   final uri = Uri.parse(Uri.base.toString());
+  //   if (uri.pathSegments.contains('reset-callback')) {
+  //     Get.offAllNamed('/password-reset');
+  //     return;
+  //   }
+  //
+  //   // 2. Wait for animation
+  //   await Future.delayed(const Duration(seconds: 3));
+  //
+  //   // --- GET_STORAGE LOGIC ---
+  //   final box = GetStorage();
+  //   // Check if 'onboarding_complete' exists. If null, it means it's the first time.
+  //   bool onboardingComplete = box.read('onboarding_complete') ?? false;
+  //
+  //   final session = supabase.auth.currentSession;
+  //   bool isAuthenticated = session != null;
+  //
+  //   if (!mounted) return;
+  //
+  //   // --- NAVIGATION LOGIC ---
+  //   if (isAuthenticated) {
+  //     Get.offNamed('/home');
+  //   } else if (!onboardingComplete) {
+  //     // If onboarding is NOT complete, show onboarding
+  //     Get.offNamed('/onboarding');
+  //     //Get.off(() => const OnboardingScreen());
+  //   } else {
+  //     // If onboarding IS complete but not logged in, show login
+  //     Get.offNamed('/login');
+  //   }
+  // }
+
   void _checkUserStatusAndNavigate() async {
     if (!mounted) return;
 
-    // 1. Deep link check (keep your existing code)
+    // 1. Deep link check for Password Reset
     final uri = Uri.parse(Uri.base.toString());
     if (uri.pathSegments.contains('reset-callback')) {
+      // Use offAllNamed to wipe the splash/login history
       Get.offAllNamed('/password-reset');
       return;
     }
 
-    // 2. Wait for animation
+    // 2. Wait for your 3-second animation
     await Future.delayed(const Duration(seconds: 3));
 
-    // --- GET_STORAGE LOGIC ---
     final box = GetStorage();
-    // Check if 'onboarding_complete' exists. If null, it means it's the first time.
     bool onboardingComplete = box.read('onboarding_complete') ?? false;
 
-    final session = supabase.auth.currentSession;
+    // This checks if a session was left over from the last run
+    final session = Supabase.instance.client.auth.currentSession;
     bool isAuthenticated = session != null;
 
     if (!mounted) return;
 
-    // --- NAVIGATION LOGIC ---
+    // 3. Final Navigation
     if (isAuthenticated) {
-      Get.offNamed('/home');
+      Get.offAllNamed('/home'); // Go home if token exists
     } else if (!onboardingComplete) {
-      // If onboarding is NOT complete, show onboarding
-      Get.offNamed('/onboarding');
-      //Get.off(() => const OnboardingScreen());
+      Get.offAllNamed('/onboarding');
     } else {
-      // If onboarding IS complete but not logged in, show login
-      Get.offNamed('/login');
+      Get.offAllNamed('/login'); // Go to login if token was deleted by signOut()
     }
   }
 

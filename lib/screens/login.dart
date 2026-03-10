@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/login_controller.dart';
 import 'Signup.dart';
-// import 'signup_screen.dart'; // Apna signup screen import karein
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -59,6 +58,8 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
 
+                const SizedBox(height: 10),
+
                 SizedBox(
                   width: double.infinity,
                   child: Obx(() => ElevatedButton(
@@ -69,48 +70,23 @@ class LoginScreen extends StatelessWidget {
                     ),
                     onPressed: controller.isLoading.value ? null : controller.signIn,
                     child: controller.isLoading.value
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Login", style: TextStyle(color: Colors.white, fontSize: 18)),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Login", style: TextStyle(color: Colors.white, fontSize: 16)),
                   )),
                 ),
 
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Text("or"),
-                ),
+                const SizedBox(height: 25),
 
-                _socialBtn("Google", "assets/google.png", OAuthProvider.google, controller),
-                const SizedBox(height: 10),
-                _socialBtn("Facebook", "assets/facebook.png", OAuthProvider.facebook, controller),
-
-                // ######################################################################
-                //                   🎯 SIGN UP LINK ADDED BACK (UPDATED)
-                // ######################################################################
-                const SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don’t have an account? ",
-                      style: TextStyle(fontSize: 16),
-                    ),
+                    const Text("Don't have an account? "),
                     GestureDetector(
-                      onTap: () {
-                        // GetX navigation use karein ya Navigator
-                        Get.to(() => const SignUpScreen());
-                      },
-                      child: Text(
-                        "Sign Up",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: controller.accentTeal,
-                          fontSize: 20,
-                        ),
-                      ),
+                      onTap: () => Get.to(() => SignUpScreen()),
+                      child: Text("Sign Up", style: TextStyle(color: controller.accentTeal, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -118,8 +94,6 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-
-  // --- Helper Widgets (Same as before) ---
 
   Widget _buildTextField(TextEditingController ctrl, String hint, IconData icon) {
     return TextField(
@@ -131,19 +105,6 @@ class LoginScreen extends StatelessWidget {
         fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       ),
-    );
-  }
-
-  Widget _socialBtn(String label, String icon, OAuthProvider provider, LoginController controller) {
-    return OutlinedButton.icon(
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 50),
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      icon: Image.asset(icon, height: 20),
-      label: Text("Continue with $label", style: const TextStyle(color: Colors.black)),
-      onPressed: () => controller.handleSocialLogin(provider),
     );
   }
 

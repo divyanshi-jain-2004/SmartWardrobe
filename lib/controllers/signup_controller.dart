@@ -48,7 +48,7 @@ class SignUpController extends GetxController {
       final AuthResponse res = await supabase.auth.signUp(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
-        data: {'full_name': nameController.text.trim()},
+        data: {'full_name': nameController.text.trim() },
       );
 
       if (res.user != null) {
@@ -68,24 +68,13 @@ class SignUpController extends GetxController {
     }
   }
 
-  // Social Login Handle
-  Future<void> handleSocialLogin(OAuthProvider provider) async {
-    try {
-      await supabase.auth.signInWithOAuth(
-        provider,
-        redirectTo: 'smartwardrobe://login-callback',
-      );
-    } catch (e) {
-      showSnackbar('Error', e.toString(), Colors.red);
-    }
-  }
-
   @override
-  void onClose() {
+
+  void dispose(){
+    super.dispose();
     nameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
-    super.onClose();
   }
 }
