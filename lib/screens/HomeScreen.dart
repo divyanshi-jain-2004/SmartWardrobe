@@ -553,6 +553,16 @@ import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
 import 'package:smart_wardrobe_new/controllers/wardrobe_controller.dart';
 
 // Screens & Utils
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+// Controllers
+import 'package:smart_wardrobe_new/controllers/user_controller.dart';
+import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
+import 'package:smart_wardrobe_new/controllers/wardrobe_controller.dart';
+
+// Screens
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
 import 'package:smart_wardrobe_new/screens/eventPlanner.dart';
 import 'package:smart_wardrobe_new/screens/my_wardrobe.dart';
@@ -567,142 +577,192 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // 1. Current Index Tracker
   int _selectedIndex = 0;
 
-  void _onNavTapped(int index) {
-    if (index == _selectedIndex) return;
-    if (index == 0) return;
-    else if (index == 1) Get.to(() => const MyWardrobeScreen());
-    else if (index == 2) Get.to(() => const OutfitSuggestionScreen());
-    else if (index == 3) Get.to(() => const EventPlannerScreen());
-    else if (index == 4) Get.to(() => const ProfileScreen());
-  }
+  // 2. List of screens to switch between
+  final List<Widget> _screens = [
+    const HomeContent(), // Extracted the main home UI to a separate widget below
+    const MyWardrobeScreen(),
+    const OutfitSuggestionScreen(),
+    const EventPlannerScreen(),
+    const ProfileScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final horizontalPadding = size.width * 0.05;
-
-    // 🎯 THEME PROPERTIES
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : const Color(0xFF263238);
 
     return Scaffold(
       extendBody: true,
-      body: Stack(
-        children: [
-          // 1. Sophisticated Dynamic Background
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF0F172A), const Color(0xFF1E293B)] // Deep dark blues
-                    : [const Color(0xFFF8F9FF), const Color(0xFFE0F7FA)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-
-          SafeArea(
-            child: ListView(
-              padding: EdgeInsets.only(bottom: 120, top: size.height * 0.02),
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: const HomeHeader(),
-                ),
-                SizedBox(height: size.height * 0.03),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: const LookCard(),
-                ),
-                SizedBox(height: size.height * 0.04),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Wardrobe Insights',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          color: textColor,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      Icon(Icons.insights_rounded, color: AppColors.accentTeal),
-                    ],
-                  ),
-                ),
-                SizedBox(height: size.height * 0.02),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: const WardrobeStatsGrid(),
-                ),
-                SizedBox(height: size.height * 0.03),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: const CuratedForYou(),
-                ),
-              ],
-            ),
-          ),
-        ],
+      // 3. IndexedStack keeps the state of screens and allows switching
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
       ),
       bottomNavigationBar: _buildUnifiedBottomNavBar(isDark),
     );
   }
 
   Widget _buildUnifiedBottomNavBar(bool isDark) {
-    // 🎯 INVERSION LOGIC: Light Mode -> Dark Bar | Dark Mode -> Light Bar
-    final barColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-    final inactiveColor = isDark ? Colors.black38 : Colors.white54;
+    final barColor = isDark ? const Color(0xFF1A1A1A) : Colors.white;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
-      height: 70,
-      decoration: BoxDecoration(
-        color: barColor,
-        borderRadius: BorderRadius.circular(35),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10)
-          )
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.bottomCenter,
         children: [
-          _navIcon(Icons.home_filled, 0, inactiveColor),
-          _navIcon(Icons.checkroom_rounded, 1, inactiveColor),
-          _navIcon(Icons.auto_awesome_rounded, 2, inactiveColor),
-          _navIcon(Icons.calendar_today_rounded, 3, inactiveColor),
-          _navIcon(Icons.person_rounded, 4, inactiveColor),
+          // The Background Container (Dock)
+          Container(
+            height: 65,
+            decoration: BoxDecoration(
+              color: barColor,
+              borderRadius: BorderRadius.circular(35),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                )
+              ],
+            ),
+          ),
+          // The Icons Row
+          SizedBox(
+            height: 85, // Extra height to allow floating without overflow
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _navIcon(Icons.home_filled, 0, isDark),
+                _navIcon(Icons.checkroom_rounded, 1, isDark),
+                _navIcon(Icons.auto_awesome_rounded, 2, isDark),
+                _navIcon(Icons.calendar_today_rounded, 3, isDark),
+                _navIcon(Icons.person_rounded, 4, isDark),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _navIcon(IconData icon, int index, Color inactiveColor) {
+  Widget _navIcon(IconData icon, int index, bool isDark) {
     bool isSelected = _selectedIndex == index;
+
     return GestureDetector(
-      onTap: () => _onNavTapped(index),
-      child: Icon(
-          icon,
-          color: isSelected ? AppColors.accentTeal : inactiveColor,
-          size: 26
+      onTap: () {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutBack,
+        // Subtle float (Move up by 15 pixels)
+        transform: Matrix4.translationValues(0, isSelected ? -15 : 0, 0),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.accentTeal : Colors.transparent,
+            shape: BoxShape.circle,
+            boxShadow: isSelected
+                ? [
+              BoxShadow(
+                  color: AppColors.accentTeal.withOpacity(0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6))
+            ]
+                : [],
+          ),
+          child: Icon(
+            icon,
+            color: isSelected ? Colors.white : (isDark ? Colors.white38 : Colors.black38),
+            size: 26,
+          ),
+        ),
       ),
     );
   }
 }
+
+// --- Separated Home Content to allow IndexedStack switching ---
+class HomeContent extends StatelessWidget {
+  const HomeContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final horizontalPadding = size.width * 0.05;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF263238);
+
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFFF8F9FF), const Color(0xFFE0F7FA)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+        SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 120, top: 20),
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: const HomeHeader(),
+              ),
+              const SizedBox(height: 25),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: const LookCard(),
+              ),
+              const SizedBox(height: 30),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Wardrobe Insights',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: textColor,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    Icon(Icons.insights_rounded, color: AppColors.accentTeal),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 15),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: const WardrobeStatsGrid(),
+              ),
+              const SizedBox(height: 25),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: const CuratedForYou(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// --- Keep your existing HomeHeader, LookCard, WardrobeStatsGrid, and CuratedForYou classes below ---
+// (Make sure they are present in your file or imported)
 
 // --- Header Section ---
 class HomeHeader extends StatelessWidget {

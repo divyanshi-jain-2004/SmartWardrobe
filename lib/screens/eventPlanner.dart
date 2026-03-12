@@ -368,7 +368,7 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
 
     return Scaffold(
       backgroundColor: _scaffoldColor,
-      extendBodyBehindAppBar: true,
+      extendBody: true, // 🎯 Essential to work with the shell's navigation
       appBar: AppBar(
         backgroundColor: _scaffoldColor.withOpacity(0.8),
         elevation: 0,
@@ -386,7 +386,6 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
       ),
       body: Stack(
         children: [
-          // Background Gradient decoration
           Positioned(
             top: -100,
             left: -100,
@@ -409,10 +408,10 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
 
             return ListView.builder(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(size.width * 0.05, 120, size.width * 0.05, 100),
+              // 🎯 Added significant bottom padding (150) so cards aren't blocked by the bar
+              padding: EdgeInsets.fromLTRB(size.width * 0.05, 120, size.width * 0.05, 150),
               itemCount: eventController.events.length,
               itemBuilder: (context, index) {
-                // Determine if it's the last item to hide the timeline tail
                 bool isLast = index == eventController.events.length - 1;
                 return _ModernTimelineCard(
                   event: eventController.events[index],
@@ -421,13 +420,20 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
               },
             );
           }),
+
+          // 🎯 MANUALLY POSITIONED FAB
+          // This ensures the button sits above the navigation bar instead of behind it
+          Positioned(
+            bottom: 120, // Adjusted to sit exactly above the floating nav bar
+            right: 20,
+            child: _buildAddEventButton(),
+          ),
         ],
       ),
-      floatingActionButton: _buildAddEventButton(size),
     );
   }
 
-  Widget _buildAddEventButton(Size size) {
+  Widget _buildAddEventButton() {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -436,6 +442,7 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
         ],
       ),
       child: FloatingActionButton.extended(
+        heroTag: 'add_event_fab', // Unique tag to prevent hero errors
         onPressed: () => Get.to(() => const AddEventScreen()),
         label: const Text('SCHEDULE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
         icon: const Icon(Icons.add_rounded, size: 24),
@@ -446,6 +453,8 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
     );
   }
 }
+
+// ... Keep _ModernTimelineCard class as it was ...
 
 class _ModernTimelineCard extends StatelessWidget {
   final Event event;

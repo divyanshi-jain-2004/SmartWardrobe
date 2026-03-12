@@ -842,11 +842,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/wardrobe_category_model.dart';
 import '../models/wardrobe_item_model.dart';
 import '../utils/constants/colors.dart';
-import 'HomeScreen.dart';
 import 'addNewItem.dart';
-import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
-import 'package:smart_wardrobe_new/screens/eventPlanner.dart';
-import 'package:smart_wardrobe_new/screens/profile.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -859,7 +855,8 @@ class MyWardrobeScreen extends StatefulWidget {
 
 class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
   Gender _selectedGender = Gender.men;
-  int _selectedIndex = 1;
+  // REMOVED: _selectedIndex and _onNavTapped logic as it's now handled by the HomeScreen Shell
+
   Map<String, int> _categoryItemCounts = {};
   bool _isLoadingCounts = true;
 
@@ -911,19 +908,8 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
     return _allWardrobeData.where((category) => category.genders.contains(_selectedGender)).toList();
   }
 
-  void _onNavTapped(int index) {
-    if (index == _selectedIndex) return;
-    setState(() => _selectedIndex = index);
-    if (index == 0) Get.offAll(() => const HomeScreen());
-    else if (index == 2) Get.to(() => const OutfitSuggestionScreen());
-    else if (index == 3) Get.to(() => const EventPlannerScreen());
-    else if (index == 4) Get.to(() => const ProfileScreen());
-  }
-
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     // 🎯 DYNAMIC THEME COLORS
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
@@ -931,6 +917,7 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
     final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
 
     return Scaffold(
+      // extendBody set to true to handle the floating nav bar from the parent shell
       extendBody: true,
       backgroundColor: scaffoldBg,
       body: Stack(
@@ -983,6 +970,7 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
                 ),
 
                 SliverPadding(
+                  // Added bottom padding (150) to ensure content isn't hidden behind the floating bar
                   padding: const EdgeInsets.fromLTRB(25, 10, 25, 150),
                   sliver: SliverGrid(
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1011,11 +999,24 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
               ],
             ),
           ),
+
+          // Local Add Button (Optional: Keep it here or move it to the Shell)
+          Positioned(
+            bottom: 120,
+            right: 25,
+            child: FloatingActionButton(
+              heroTag: 'add_item',
+              onPressed: () async {
+                final result = await Get.to(() => const AddItemScreen());
+                if (result == true) _loadCategoryCounts();
+              },
+              backgroundColor: AppColors.accentTeal,
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
+          ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: _buildFabRow(size, isDark),
-      bottomNavigationBar: _buildModernBottomNavBar(isDark), // 🎯 Pass isDark for inversion
+      // REMOVED: bottomNavigationBar. It is now provided by the HomeScreen shell.
     );
   }
 
@@ -1030,83 +1031,9 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
       child: Icon(icon, color: iconCol, size: 24),
     );
   }
-
-  Widget _buildFabRow(Size size, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 100, right: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'ai',
-            onPressed: () => Get.to(() => const OutfitSuggestionScreen()),
-            backgroundColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-            foregroundColor: AppColors.accentTeal,
-            elevation: 4,
-            label: const Text("AI Stylist", style: TextStyle(fontWeight: FontWeight.bold)),
-            icon: const Icon(Icons.auto_awesome),
-          ),
-          const SizedBox(width: 12),
-          FloatingActionButton(
-            heroTag: 'add',
-            onPressed: () async {
-              final result = await Get.to(() => const AddItemScreen());
-              if (result == true) _loadCategoryCounts();
-            },
-            backgroundColor: AppColors.accentTeal,
-            child: const Icon(Icons.add, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModernBottomNavBar(bool isDark) {
-    // 🎯 INVERSION LOGIC: Light Mode -> Dark Bar | Dark Mode -> White Bar
-    final barColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-    final inactiveIconColor = isDark ? Colors.black38 : Colors.white54;
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
-      height: 70,
-      decoration: BoxDecoration(
-        color: barColor,
-        borderRadius: BorderRadius.circular(35),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10)
-          )
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _navIcon(Icons.home_filled, 0, inactiveIconColor),
-          _navIcon(Icons.checkroom_rounded, 1, inactiveIconColor),
-          _navIcon(Icons.auto_awesome_rounded, 2, inactiveIconColor),
-          _navIcon(Icons.calendar_today_rounded, 3, inactiveIconColor),
-          _navIcon(Icons.person_rounded, 4, inactiveIconColor),
-        ],
-      ),
-    );
-  }
-
-  Widget _navIcon(IconData icon, int index, Color inactiveColor) {
-    bool isSelected = _selectedIndex == index;
-    return GestureDetector(
-      onTap: () => _onNavTapped(index),
-      child: Icon(
-          icon,
-          color: isSelected ? AppColors.accentTeal : inactiveColor,
-          size: 26
-      ),
-    );
-  }
 }
 
-// ... _GenderToggle, _CategoryCard, and WardrobeItemScreen remain unchanged
+// ... _GenderToggle, _CategoryCard, and WardrobeItemScreen remain below ...
 
 // --- GENDER TOGGLE ---
 class _GenderToggle extends StatelessWidget {
