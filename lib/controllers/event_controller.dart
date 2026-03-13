@@ -14,7 +14,7 @@ class EventController extends GetxController {
 
   void addEvent(Event event) {
     events.insert(0, event);
-    _saveEventsToStorage(); // Save immediately after adding
+    _saveEventsToStorage();
   }
 
   void _saveEventsToStorage() {

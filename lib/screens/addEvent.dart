@@ -412,6 +412,7 @@ import 'package:get/get.dart';
 
 import '../controllers/event_controller.dart';
 import '../models/event_model.dart';
+import '../services/weather_service.dart';
 import '../utils/constants/colors.dart';
 
 class AddEventScreen extends StatefulWidget {
@@ -473,11 +474,16 @@ class _AddEventScreenState extends State<AddEventScreen> {
     if (picked != null && picked != _selectedTime) setState(() => _selectedTime = picked);
   }
 
-  void _addEvent() {
+  void _addEvent() async{
     if (_eventNameController.text.isEmpty || _selectedDate == null || _selectedTime == null) {
       Get.snackbar('Required Fields Missing', 'Please fill in Event Name, Date, and Time.',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.redAccent, colorText: Colors.white);
       return;
+    }
+
+    String fetchedWeather = "No data";
+    if (_locationController.text.isNotEmpty) {
+      fetchedWeather = await WeatherService().fetchWeather(_locationController.text);
     }
     final newEvent = Event(
       title: _eventNameController.text,
@@ -485,6 +491,8 @@ class _AddEventScreenState extends State<AddEventScreen> {
       time: _selectedTime!.format(context),
       timeLeft: "Upcoming",
       outfitImageUrls: [],
+      location: _locationController.text,
+      weatherInfo: fetchedWeather,
     );
     eventController.addEvent(newEvent);
     Get.back();

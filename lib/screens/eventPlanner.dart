@@ -542,11 +542,30 @@ class _ModernTimelineCard extends StatelessWidget {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primaryColor, letterSpacing: -0.5),
                     ),
                     const SizedBox(height: 16),
-                    Row(
+                    // Row(
+                    //   children: [
+                    //     _infoBadge(context, Icons.calendar_today_rounded, DateFormat('MMM d').format(event.date)),
+                    //     const SizedBox(width: 10),
+                    //     _infoBadge(context, Icons.access_time_filled_rounded, event.time),
+                    //
+                    //     if (event.weatherInfo != null && event.weatherInfo!.isNotEmpty) ...[
+                    //       const SizedBox(width: 10),
+                    //       _infoBadge(context, Icons.cloud_outlined, event.weatherInfo!),
+                    //     ],
+                    //   ],
+                    // ),
+                    // REPLACE the Row containing _infoBadges with this:
+                    Wrap(
+                      spacing: 10, // Horizontal space between badges
+                      runSpacing: 8, // Vertical space if it wraps to a new line
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         _infoBadge(context, Icons.calendar_today_rounded, DateFormat('MMM d').format(event.date)),
-                        const SizedBox(width: 10),
                         _infoBadge(context, Icons.access_time_filled_rounded, event.time),
+
+                        // Only show if weather exists
+                        if (event.weatherInfo != null && event.weatherInfo!.isNotEmpty)
+                          _infoBadge(context, Icons.cloud_outlined, event.weatherInfo!),
                       ],
                     ),
                     const SizedBox(height: 20),
