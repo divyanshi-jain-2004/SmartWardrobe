@@ -333,6 +333,12 @@ class LoginScreen extends StatelessWidget {
       child: TextField(
         controller: ctrl,
         obscureText: obscure,
+        // 🎯 ADD THIS STYLE BLOCK
+        style: const TextStyle(
+          color: Colors.black87, // Force text to be dark even in Dark Mode
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+        ),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),

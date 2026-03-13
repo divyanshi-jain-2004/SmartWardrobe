@@ -941,11 +941,33 @@ class WardrobeStatsGrid extends StatelessWidget {
       if (wardrobeController.isLoading.value) {
         return const Center(child: CircularProgressIndicator());
       }
+
       final counts = wardrobeController.categoryCounts;
+
+      // 🎯 Calculate total count using the new getter
+      final totalAll = wardrobeController.totalItemsCount;
+
       final stats = [
-        {'count': '${counts['Topwear'] ?? 0}', 'label': 'Tops', 'icon': Icons.dry_cleaning_rounded, 'color': isDark ? Colors.blue[900]?.withOpacity(0.3) : Colors.blue[50]},
-        {'count': '${counts['Bottomwear'] ?? 0}', 'label': 'Bottoms', 'icon': Icons.layers_rounded, 'color': isDark ? Colors.orange[900]?.withOpacity(0.3) : Colors.orange[50]},
+        // 🎯 1. New Total Card
+        {
+          'count': '$totalAll',
+          'label': 'Total Items',
+          'icon': Icons.all_inclusive_rounded,
+          'color': isDark ? Colors.purple[900]?.withOpacity(0.3) : Colors.purple[50]
+        },
+        // 2. Tops
+        {
+          // 🎯 Combine all possible "Top" category names from your DB
+          'count': '${(counts['Topwear'] ?? 0) + (counts['Tops/Blouses'] ?? 0) + (counts['Tops'] ?? 0)}',
+          'label': 'Tops',
+          'icon': Icons.dry_cleaning_rounded,
+          'color': isDark ? Colors.blue[900]?.withOpacity(0.3) : Colors.blue[50]
+        },
+        // 3. Bottoms
+        {'count': '${(counts['Bottomwear'] ?? 0)+(counts['Bottomwear(Women)']??0)}', 'label': 'Bottoms', 'icon': Icons.layers_rounded, 'color': isDark ? Colors.orange[900]?.withOpacity(0.3) : Colors.orange[50]},
+        // 4. Footwear
         {'count': '${counts['Footwear'] ?? 0}', 'label': 'Footwear', 'icon': Icons.ice_skating_rounded, 'color': isDark ? Colors.pink[900]?.withOpacity(0.3) : Colors.pink[50]},
+        // 5. Jewelry
         {'count': '${counts['Accessories'] ?? 0}', 'label': 'Jewelry', 'icon': Icons.watch_rounded, 'color': isDark ? Colors.green[900]?.withOpacity(0.3) : Colors.green[50]},
       ];
 
@@ -958,12 +980,11 @@ class WardrobeStatsGrid extends StatelessWidget {
           mainAxisSpacing: 15,
           childAspectRatio: 1.4,
         ),
-        itemCount: 4,
+        itemCount: stats.length, // 🎯 Changed to stats.length (which is 5 now)
         itemBuilder: (context, index) => _buildStatTile(context, stats[index]),
       );
     });
   }
-
   Widget _buildStatTile(BuildContext context, Map<String, dynamic> data) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(

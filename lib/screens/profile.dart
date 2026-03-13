@@ -597,12 +597,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _performLogout() async {
-    try {
-      await Supabase.instance.client.auth.signOut();
-      Get.offAllNamed('/login');
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to logout');
-    }
+    Get.defaultDialog(
+      title: "Sign out",
+      middleText: "Are you sure you want to sign out?",
+      backgroundColor: Colors.teal,
+      titleStyle: const TextStyle(color: Colors.white),
+      middleTextStyle: const TextStyle(color: Colors.white),
+      textCancel: "Cancel",
+      textConfirm: "Yes",
+      onCancel: (){
+        Get.back();
+      },
+      onConfirm: ()async{
+        try {
+          await Supabase.instance.client.auth.signOut();
+          Get.offAllNamed('/login');
+        } catch (e) {
+          Get.snackbar('Error', 'Failed to logout');
+        }
+      }
+
+    );
+
   }
 
   @override

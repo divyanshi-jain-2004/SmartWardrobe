@@ -8,6 +8,8 @@ class WardrobeController extends GetxController {
   var categoryCounts = <String, int>{}.obs;
   var isLoading = true.obs;
 
+  int get totalItemsCount => categoryCounts.values.fold(0, (sum, count) => sum + count);
+
   @override
   void onInit() {
     super.onInit();
