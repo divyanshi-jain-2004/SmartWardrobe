@@ -1,6 +1,7 @@
 // lib/models/outfit_model.dart
 
 class OutfitModel {
+  final int? id;
   final String name;
   final String imageUrl;
   final String season;
@@ -8,6 +9,7 @@ class OutfitModel {
   final bool isFavorite;
 
   OutfitModel({
+    this.id,
     required this.name,
     required this.imageUrl,
     required this.season,

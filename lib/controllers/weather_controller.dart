@@ -4,14 +4,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class WeatherController extends GetxController {
-  // ⚠️ अपनी वास्तविक API Key से बदलें
-  final String apiKey = '3d9b81063814692edb20759729cb46ad';
+  // ⚠️ Replace with your actual OpenWeatherMap API Key
+  final String apiKey = '20388c5b094a033e5fe0c2adb09ea8cd';
   final String baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
 
   // Observable Data
   final locationName = 'Loading...'.obs;
   final temperature = '--°C'.obs;
-  final weatherIcon = '🌤️'.obs; // Default icon
+  final weatherIcon = '🌤️'.obs;
   final isLoading = true.obs;
 
   @override
@@ -23,7 +23,7 @@ class WeatherController extends GetxController {
   Future<void> fetchWeather() async {
     isLoading.value = true;
     try {
-      // 1. Get Location (Latitude and Longitude)
+      // 1. Get Location
       Position position = await _determinePosition();
 
       final lat = position.latitude;
@@ -36,18 +36,19 @@ class WeatherController extends GetxController {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // 3. Update Observable Variables
-        temperature.value = '${data['main']['temp'].round()}°C';
-        locationName.value = data['name'] ?? 'Unknown Location';
-        weatherIcon.value = _getWeatherIcon(data['weather'][0]['icon']);
+        // Update Observables
+        locationName.value = data['name'] ?? "Unknown";
+        temperature.value = "${data['main']['temp'].round()}°C";
 
+        // Get icon code from API and convert to emoji
+        String iconCode = data['weather'][0]['icon'];
+        weatherIcon.value = _getWeatherIcon(iconCode);
       } else {
-        locationName.value = 'API Error';
-        throw Exception('Failed to load weather data');
+        locationName.value = "Error";
+        print("API Error: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
-      locationName.value = 'Location Off';
-      temperature.value = 'N/A';
+      locationName.value = "Offline";
       weatherIcon.value = '⚠️';
       print("Weather fetch error: $e");
     } finally {
@@ -83,16 +84,17 @@ class WeatherController extends GetxController {
   // Helper to convert OpenWeatherMap icon code to Emoji
   String _getWeatherIcon(String iconCode) {
     switch (iconCode) {
-      case '01d': return '☀️'; // clear sky day
-      case '01n': return '🌙'; // clear sky night
+      case '01d': return '☀️';
+      case '01n': return '🌙';
       case '02d':
-      case '03d': return '🌤️'; // few clouds day
-      case '04d': return '☁️'; // broken clouds
-      case '09d': return '🌧️'; // shower rain
-      case '10d': return '☔'; // rain day
-      case '13d': return '❄️'; // snow
-      case '50d': return '🌫️'; // mist
-      default: return '❓';
+      case '03d': return '🌤️';
+      case '04d': return '☁️';
+      case '09d':
+      case '10d': return '🌧️';
+      case '11d': return '⛈️';
+      case '13d': return '❄️';
+      case '50d': return '🌫️';
+      default: return '🌤️';
     }
   }
 }

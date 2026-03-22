@@ -49,18 +49,6 @@ class LoginController extends GetxController {
     }
   }
 
-  // Social Login (Google/Facebook)
-  Future<void> handleSocialLogin(OAuthProvider provider) async {
-    try {
-      await supabase.auth.signInWithOAuth(
-        provider,
-        redirectTo: 'smartwardrobe://login-callback',
-      );
-    } catch (e) {
-      showCustomSnackbar('Error', e.toString(), Colors.red);
-    }
-  }
-
   // Forgot Password
   Future<void> resetPassword(String email) async {
     if (!GetUtils.isEmail(email)) {
@@ -75,14 +63,14 @@ class LoginController extends GetxController {
       );
       showCustomSnackbar('Success', 'Reset link sent to $email', Colors.green);
     } catch (e) {
-      showCustomSnackbar('Error', 'Failed to send link', Colors.red);
+      showCustomSnackbar('Error', e.toString(), Colors.red);
     }
   }
 
   @override
-  void onClose() {
+  void dispose(){
+    super.dispose();
     emailController.dispose();
     passwordController.dispose();
-    super.onClose();
   }
 }

@@ -43,6 +43,7 @@ class OutfitController extends GetxController {
 
       // Map the DB response to the OutfitModel
       final List<OutfitModel> loadedOutfits = response.map((data) => OutfitModel(
+        id: data['id'],
         name: data['outfit_name'] ?? 'Untitled Outfit',
         imageUrl: data['image_url'] ?? 'assets/placeholder_error.png',
         season: 'N/A',
@@ -91,19 +92,22 @@ class OutfitController extends GetxController {
       Get.snackbar('Error', 'Please log in to remove outfits.', backgroundColor: Colors.red);
       return;
     }
+    if (userId == null || outfit.id == null) return;
 
     try {
       // डेटाबेस से हटाने के लिए user_id और outfit_name का उपयोग करें
       // (outfit_name को यूनिक होना चाहिए या आप ID का उपयोग करें)
       await supabase.from('saved_outfits')
           .delete()
+          .eq('id', outfit.id!)
           .eq('user_id', userId)
           .eq('outfit_name', outfit.name);
 
       // डेटाबेस से हटाने के बाद UI को अपडेट करने के लिए लिस्ट को फ़ेच करें
-      await fetchOutfits();
+      // await fetchOutfits();
+      savedOutfits.removeWhere((item) => item.id == outfit.id);
 
-      Get.snackbar('Unsaved!', 'Outfit removed from favorites.', backgroundColor: Colors.red);
+      Get.snackbar('Success', 'Outfit removed', backgroundColor: Colors.red, colorText: Colors.white);
 
     } catch (e) {
       Get.snackbar('Error', 'Failed to delete outfit.', backgroundColor: Colors.red);

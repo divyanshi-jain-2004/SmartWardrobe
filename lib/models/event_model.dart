@@ -4,6 +4,8 @@ class Event {
   final String time;
   final String timeLeft;
   final List<String> outfitImageUrls;
+  final String? location; // Added location
+  final String? weatherInfo;
 
   Event({
     required this.title,
@@ -11,6 +13,8 @@ class Event {
     required this.time,
     required this.timeLeft,
     required this.outfitImageUrls,
+    this.location,
+    this.weatherInfo,
   });
 
   // Convert a Map (from storage) back into an Event object
@@ -21,6 +25,8 @@ class Event {
       time: json['time'],
       timeLeft: json['timeLeft'],
       outfitImageUrls: List<String>.from(json['outfitImageUrls']),
+      location: json['location'],
+      weatherInfo: json['weatherInfo'],
     );
   }
 
@@ -32,6 +38,8 @@ class Event {
       'time': time,
       'timeLeft': timeLeft,
       'outfitImageUrls': outfitImageUrls,
+      'location': location,
+      'weatherInfo': weatherInfo,
     };
   }
 }
