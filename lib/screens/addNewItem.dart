@@ -30,7 +30,6 @@ class AddItemScreen extends StatefulWidget {
 
 class MLApiconfig {
   static const String baseUrl = 'http://172.8.5.226:5000/api';
-  // 🆕 Reduced timeout for better UX
   static const Duration timeout = Duration(seconds: 15);
 }
 
@@ -48,7 +47,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   String? _detectedColor;
   double? _predictionConfidence;
   bool _isProcessing = false;
-  bool _mlProcessingFailed = false; // 🆕 Track ML failure
+  bool _mlProcessingFailed = false; // Track ML failure
 
   // 🔧 FIXED: Updated categories to match your UI
   final Map<String, String> _categoryMapping = {
@@ -78,7 +77,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   Color get _scaffoldColor => Theme.of(context).scaffoldBackgroundColor;
   Color get _dividerColor => Theme.of(context).dividerColor;
 
-  // 🆕 OPTIMIZED IMAGE COMPRESSION
+  // OPTIMIZED IMAGE COMPRESSION
   Future<File?> _compressImage(File file) async {
     try {
       final dir = await getTemporaryDirectory();
@@ -98,11 +97,11 @@ class _AddItemScreenState extends State<AddItemScreen> {
       if (result != null) {
         final compressedFile = File(result.path);
         final compressedSize = await compressedFile.length();
-        print('✅ Compressed file size: ${(compressedSize / 1024 / 1024).toStringAsFixed(2)} MB');
+        print('Compressed file size: ${(compressedSize / 1024 / 1024).toStringAsFixed(2)} MB');
 
         // More aggressive compression if still too large
         if (compressedSize > 3 * 1024 * 1024) {
-          print('⚠️ Still too large, compressing more aggressively...');
+          print('Still too large, compressing more aggressively...');
           final targetPath2 = '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_compressed2.jpg';
           final result2 = await FlutterImageCompress.compressAndGetFile(
             compressedFile.absolute.path,
@@ -285,7 +284,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
           throw Exception('Server Error: ${response.statusCode}');
         }
       } catch (e) {
-        print('❌ BG Removal Error: $e');
+        print('BG Removal Error: $e');
         Get.snackbar('Error', 'Failed to remove background. Server might be down.');
         setState(() => _removeBackground = false);
       }
@@ -359,7 +358,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
         if (compressedFile != null) {
           imageFile = compressedFile;
-          print('✅ Using compressed image');
+          print('Using compressed image');
         }
 
         _originalImageFile = imageFile;
@@ -370,7 +369,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     }
   }
 
-  // 🆕 IMPROVED ML PROCESSING with better error handling
+  // IMPROVED ML PROCESSING with better error handling
   Future<void> _processImageWithML(File imageFile) async {
     try {
       setState(() {
@@ -391,7 +390,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
       final bytes = await imageFile.readAsBytes();
       final base64Image = base64Encode(bytes);
 
-      print('📡 Calling ML API: ${MLApiconfig.baseUrl}/process-clothing');
+      print('Calling ML API: ${MLApiconfig.baseUrl}/process-clothing');
 
       // 🔧 FIXED: Reduced timeout to 15 seconds
       final response = await http.post(
@@ -400,7 +399,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         body: jsonEncode({'image': base64Image}),
       ).timeout(MLApiconfig.timeout);
 
-      print('📥 Response status: ${response.statusCode}');
+      print('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -408,7 +407,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         if (data['success'] == true) {
           String mlCategory = data['category'];
 
-          // 🔧 FIXED: Map ML category to UI category
+          // FIXED: Map ML category to UI category
           String uiCategory = _categoryMapping[mlCategory] ?? mlCategory;
 
           setState(() {
@@ -424,7 +423,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
           Get.closeCurrentSnackbar();
           Get.snackbar(
-            'AI Analysis Complete! ✨',
+            'AI Analysis Complete!',
             'Detected: $uiCategory • Color: ${data['color']} (${(data['confidence'] * 100).toStringAsFixed(1)}% confident)',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.green.withOpacity(0.8),
@@ -436,7 +435,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         throw Exception('API returned status ${response.statusCode}');
       }
     } on TimeoutException catch (_) {
-      print('⏱️ ML Processing Timeout');
+      print('ML Processing Timeout');
       setState(() => _mlProcessingFailed = true);
       Get.closeCurrentSnackbar();
       Get.snackbar(
@@ -448,7 +447,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         duration: const Duration(seconds: 4),
       );
     } catch (e) {
-      print('❌ ML Processing Error: $e');
+      print('ML Processing Error: $e');
       setState(() => _mlProcessingFailed = true);
       Get.closeCurrentSnackbar();
       Get.snackbar(
@@ -537,7 +536,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         );
       }
     } catch (e) {
-      print('❌ Crop Error: $e');
+      print('Crop Error: $e');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Error',
@@ -653,7 +652,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   //   }
   // }
 
-  // 🆕 IMPROVED: Add item to wardrobe with proper validation
+  // IMPROVED: Add item to wardrobe with proper validation
   void _addItemToWardrobe() async {
     if (_itemName.isEmpty || _selectedCategory == null || !_isImageUploaded) {
       Get.snackbar(
@@ -679,7 +678,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     try {
       final userId = supabase.auth.currentUser?.id;
 
-      // 🔧 FIXED: Proper data structure for database
+      //  FIXED: Proper data structure for database
       final newItem = {
         'user_id': userId,
         'item_name': _itemName.trim(),
@@ -690,15 +689,15 @@ class _AddItemScreenState extends State<AddItemScreen> {
         'created_at': DateTime.now().toIso8601String(),
       };
 
-      print('📝 Inserting item: $newItem');
+      print('Inserting item: $newItem');
 
       await supabase.from('wardrobe_items').insert(newItem);
 
-      print('✅ Item Added to Wardrobe Successfully!');
+      print('Item Added to Wardrobe Successfully!');
 
       Get.closeCurrentSnackbar();
       Get.snackbar(
-        'Success! 🎉',
+        'Success! ',
         'Item added to your wardrobe',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green.withOpacity(0.8),
@@ -709,7 +708,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
       Get.back(result: true);
 
     } on PostgrestException catch (error) {
-      print('❌ Supabase Insert Error: ${error.message}');
+      print('Supabase Insert Error: ${error.message}');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Database Error',
@@ -719,7 +718,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         colorText: Colors.white,
       );
     } catch (e) {
-      print('❌ General Error: $e');
+      print('General Error: $e');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Error',
@@ -894,7 +893,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🆕 Show AI detection status
+          // Show AI detection status
           if (_predictedCategory != null) ...[
             Container(
               padding: EdgeInsets.all(size.width * 0.03),
