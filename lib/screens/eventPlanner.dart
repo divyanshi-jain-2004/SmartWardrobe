@@ -1,353 +1,18 @@
-// import 'package:smart_wardrobe_new/screens/addEvent.dart';
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart'; // 🎯 GetX Import
-// import 'package:intl/intl.dart';
-//
-// import '../controllers/event_controller.dart';
-// import '../models/event_model.dart';
-// import '../utils/constants/colors.dart'; // Date formatting के लिए
-//
-// // --- Custom Colors ---
-// // class AppColors {
-// //   static const Color accentTeal = Color(0xFF00ADB5);
-// // // ⚠️ बाकी Hardcoded Colors हटा दिए गए हैं, वे Theme से आएंगे।
-// // }
-//
-// // --- Data Model for an Event (unchanged) ---
-// // class Event {
-// //   final String title;
-// //   final DateTime date;
-// //   final String time;
-// //   final String timeLeft;
-// //   final List<String> outfitImageUrls;
-// //
-// //   Event({
-// //     required this.title,
-// //     required this.date,
-// //     required this.time,
-// //     required this.timeLeft,
-// //     required this.outfitImageUrls,
-// //   });
-// // }
-//
-// // --- Main Event Planner Screen ---
-// class EventPlannerScreen extends StatefulWidget {
-//   const EventPlannerScreen({super.key});
-//
-//   @override
-//   State<EventPlannerScreen> createState() => _EventPlannerScreenState();
-// }
-//
-// class _EventPlannerScreenState extends State<EventPlannerScreen> {
-//
-//   final EventController eventController = Get.put(EventController());
-//   // Mock Data (unchanged)
-//   // final List<Event> _events = [
-//   //   Event(
-//   //     title: "Gala Charity Event",
-//   //     date: DateTime(2024, 8, 10),
-//   //     time: "6:00 PM",
-//   //     timeLeft: "3 weeks left",
-//   //     outfitImageUrls: [
-//   //       'https://i.pravatar.cc/150?img=60',
-//   //       'https://i.pravatar.cc/150?img=62',
-//   //     ],
-//   //   ),
-//   //   Event(
-//   //     title: "Summer Fashion Show - Casual Collection",
-//   //     date: DateTime(2024, 9, 1),
-//   //     time: "2:30 PM",
-//   //     timeLeft: "5 weeks left",
-//   //     outfitImageUrls: [
-//   //       'https://i.pravatar.cc/150?img=4',
-//   //       'https://i.pravatar.cc/150?img=12',
-//   //     ],
-//   //   ),
-//   //   Event(
-//   //     title: "Networking Mixer - Professional Wear",
-//   //     date: DateTime(2024, 10, 25),
-//   //     time: "7:00 PM",
-//   //     timeLeft: "2 months left",
-//   //     outfitImageUrls: [
-//   //       'https://i.pravatar.cc/150?img=20',
-//   //     ],
-//   //   ),
-//   // ];
-//
-//   // 🎯 Theme Getters
-//   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
-//   Color get _scaffoldColor => Theme.of(context).scaffoldBackgroundColor;
-//   Color get _surfaceColor => Theme.of(context).colorScheme.surface;
-//
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final size = MediaQuery.of(context).size;
-//     final horizontalPadding = size.width * 0.05;
-//
-//     return Scaffold(
-//       // 🎯 Theme-Aware Background Color
-//       backgroundColor: _scaffoldColor,
-//       appBar: AppBar(
-//         // AppBar Background color Theme से आएगा
-//         elevation: 0,
-//         toolbarHeight: size.height * 0.08,
-//         title: Text(
-//           'Event Planner',
-//           style: TextStyle(
-//             // 🎯 Theme-Aware Text Color
-//             color: _primaryTextColor,
-//             fontWeight: FontWeight.bold,
-//             fontSize: size.width * 0.05,
-//           ),
-//         ),
-//         centerTitle: true,
-//         // 🎯 Theme-Aware Icon Color
-//         iconTheme: IconThemeData(color: _primaryTextColor),
-//       ),
-//       body: Obx(() {
-//         // GetX needs to see 'eventController.events' being accessed right here
-//         if (eventController.events.isEmpty) {
-//           return const Center(
-//             child: Text("No events planned yet. Tap '+' to add one!"),
-//           );
-//         }
-//
-//         return ListView.builder(
-//           padding: EdgeInsets.symmetric(
-//               horizontal: size.width * 0.05,
-//               vertical: size.height * 0.02
-//           ),
-//           itemCount: eventController.events.length, // 🎯 Accessing the .obs variable
-//           itemBuilder: (context, index) {
-//             return Padding(
-//               padding: EdgeInsets.only(bottom: size.height * 0.02),
-//               child: _EventCard(event: eventController.events[index]),
-//             );
-//           },
-//         );
-//       }),
-//
-//       // Floating Action Button
-//       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-//       floatingActionButton: _buildAddEventButton(size),
-//     );
-//   }
-//
-//   Widget _buildAddEventButton(Size size) {
-//     return FloatingActionButton.extended(
-//       onPressed: () {
-//         // 🎯 GetX Navigation
-//         Get.to(() => const AddEventScreen());
-//       },
-//       label: Text(
-//         'Add New Event',
-//         style: TextStyle(
-//           fontSize: size.width * 0.04,
-//           fontWeight: FontWeight.bold,
-//         ),
-//       ),
-//       icon: Icon(Icons.add, size: size.width * 0.06),
-//       backgroundColor: AppColors.accentTeal,
-//       foregroundColor: Colors.white, // Text color is white on teal
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(size.width * 0.04),
-//       ),
-//       elevation: 6,
-//     );
-//   }
-// }
-//
-// // --- Event Card Widget (Responsive and Theme-Aware) ---
-// class _EventCard extends StatelessWidget {
-//   final Event event;
-//
-//   const _EventCard({required this.event});
-//
-//   // 🎯 Theme Getters for StatelessWidget
-//   Color _primaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyLarge!.color!;
-//   Color _secondaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
-//   Color _surfaceColor(BuildContext context) => Theme.of(context).colorScheme.surface;
-//   Color _scaffoldColor(BuildContext context) => Theme.of(context).scaffoldBackgroundColor;
-//
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final size = MediaQuery.of(context).size;
-//
-//     return Container(
-//       decoration: BoxDecoration(
-//         color: _surfaceColor(context), // 🎯 Theme-Aware Card Background
-//         borderRadius: BorderRadius.circular(12),
-//         boxShadow: [
-//           BoxShadow(
-//             // 🎯 Theme-Aware Shadow Color
-//             color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05),
-//             blurRadius: 8,
-//             offset: const Offset(0, 4),
-//           ),
-//         ],
-//       ),
-//       child: IntrinsicHeight(
-//         child: Row(
-//           children: [
-//             // Left Border/Indicator Line (Remains Accent Teal)
-//             Container(
-//               width: 5,
-//               decoration: const BoxDecoration(
-//                 color: AppColors.accentTeal,
-//                 borderRadius: BorderRadius.only(
-//                   topLeft: Radius.circular(12),
-//                   bottomLeft: Radius.circular(12),
-//                 ),
-//               ),
-//             ),
-//
-//             // Event Details Content
-//             Expanded(
-//               child: Padding(
-//                 padding: EdgeInsets.all(size.width * 0.04),
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     // Title
-//                     Row(
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         Expanded(
-//                           child: Text(
-//                             event.title,
-//                             style: TextStyle(
-//                               fontSize: size.width * 0.045,
-//                               fontWeight: FontWeight.bold,
-//                               color: _primaryTextColor(context), // 🎯 Theme-Aware Text Color
-//                             ),
-//                             maxLines: 2,
-//                             overflow: TextOverflow.ellipsis,
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                     SizedBox(height: size.height * 0.015),
-//
-//                     // Date & Time
-//                     _buildIconText(
-//                       context: context, // Pass context
-//                       icon: Icons.calendar_today_outlined,
-//                       text: DateFormat('MMM d, yyyy').format(event.date), // Using intl for better formatting
-//                       size: size,
-//                     ),
-//                     _buildIconText(
-//                       context: context, // Pass context
-//                       icon: Icons.access_time,
-//                       text: event.time,
-//                       size: size,
-//                     ),
-//
-//                     SizedBox(height: size.height * 0.01),
-//
-//                     // Time Left Indicator (Remains Accent Teal)
-//                     Row(
-//                       children: [
-//                         const Icon(
-//                           Icons.query_builder,
-//                           size: 14, // Fixed size for consistency
-//                           color: AppColors.accentTeal,
-//                         ),
-//                         SizedBox(width: size.width * 0.01),
-//                         Text(
-//                           event.timeLeft,
-//                           style: TextStyle(
-//                             fontSize: size.width * 0.035,
-//                             fontWeight: FontWeight.w600,
-//                             color: AppColors.accentTeal,
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//
-//                     SizedBox(height: size.height * 0.02),
-//
-//                     // Linked Outfits
-//                     Text(
-//                       'Linked Outfits:',
-//                       style: TextStyle(
-//                         fontSize: size.width * 0.035,
-//                         color: _secondaryTextColor(context), // 🎯 Theme-Aware Secondary Text Color
-//                       ),
-//                     ),
-//                     SizedBox(height: size.height * 0.01),
-//
-//                     _buildOutfitAvatars(event.outfitImageUrls, size, context), // Pass context
-//                   ],
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   // Helper for Icon and Text rows
-//   Widget _buildIconText({required BuildContext context, required IconData icon, required String text, required Size size}) {
-//     return Padding(
-//       padding: EdgeInsets.only(bottom: size.height * 0.005),
-//       child: Row(
-//         children: [
-//           Icon(
-//             icon,
-//             size: size.width * 0.04,
-//             color: _secondaryTextColor(context), // 🎯 Theme-Aware Icon Color
-//           ),
-//           SizedBox(width: size.width * 0.02),
-//           Text(
-//             text,
-//             style: TextStyle(
-//               fontSize: size.width * 0.038,
-//               color: _primaryTextColor(context), // 🎯 Theme-Aware Text Color
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   // Helper for Outfit Avatars
-//   Widget _buildOutfitAvatars(List<String> urls, Size size, BuildContext context) {
-//     final double avatarRadius = size.width * 0.04;
-//     return Row(
-//       children: urls.map((url) {
-//         return Padding(
-//           padding: EdgeInsets.only(right: size.width * 0.015),
-//           child: CircleAvatar(
-//             radius: avatarRadius,
-//             // 🎯 Theme-Aware Placeholder Background
-//             backgroundColor: _scaffoldColor(context),
-//             backgroundImage: NetworkImage(url),
-//             onBackgroundImageError: (exception, stackTrace) {
-//               print('Error loading image: $url');
-//             },
-//             child: (url.isEmpty || url.contains('placehold') || url.contains('pravatar'))
-//             // 🎯 Theme-Aware Fallback Icon Color
-//                 ? Icon(Icons.checkroom, color: _secondaryTextColor(context))
-//                 : null,
-//           ),
-//         );
-//       }).toList(),
-//     );
-//   }
-// }
+// event_planner_screen.dart (updated _ModernTimelineCard)
+// Sirf _ModernTimelineCard aur _EventOutfitBottomSheet replace/add karo.
+// Baaki code same rehta hai.
 
 import 'dart:ui';
-import 'package:smart_wardrobe_new/screens/addEvent.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../controllers/event_controller.dart';
 import '../models/event_model.dart';
+import '../services/event_outfit_service.dart'; // 🆕
 import '../utils/constants/colors.dart';
+import 'addEvent.dart';
 
 class EventPlannerScreen extends StatefulWidget {
   const EventPlannerScreen({super.key});
@@ -368,11 +33,16 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
 
     return Scaffold(
       backgroundColor: _scaffoldColor,
-      extendBody: true, // 🎯 Essential to work with the shell's navigation
+      extendBody: true,
       appBar: AppBar(
-        backgroundColor: _scaffoldColor.withOpacity(0.8),
+        backgroundColor: _scaffoldColor.withValues(alpha: 0.8),
         elevation: 0,
-        flexibleSpace: ClipRect(child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), child: Container(color: Colors.transparent))),
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
         title: Text(
           'UPCOMING EVENTS',
           style: TextStyle(
@@ -389,27 +59,30 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
           Positioned(
             top: -100,
             left: -100,
-            child: CircleAvatar(radius: 200, backgroundColor: AppColors.accentTeal.withOpacity(0.05)),
+            child: CircleAvatar(
+              radius: 200,
+              backgroundColor: AppColors.accentTeal.withValues(alpha: 0.05),
+            ),
           ),
-
           Obx(() {
             if (eventController.events.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.calendar_today_outlined, size: 64, color: Colors.grey.withOpacity(0.3)),
+                    Icon(Icons.calendar_today_outlined,
+                        size: 64, color: Colors.grey.withValues(alpha: 0.3)),
                     const SizedBox(height: 16),
-                    const Text("Your schedule is clear.", style: TextStyle(color: Colors.grey, fontSize: 16)),
+                    const Text("Your schedule is clear.",
+                        style: TextStyle(color: Colors.grey, fontSize: 16)),
                   ],
                 ),
               );
             }
-
             return ListView.builder(
               physics: const BouncingScrollPhysics(),
-              // 🎯 Added significant bottom padding (150) so cards aren't blocked by the bar
-              padding: EdgeInsets.fromLTRB(size.width * 0.05, 120, size.width * 0.05, 150),
+              padding: EdgeInsets.fromLTRB(
+                  size.width * 0.05, 120, size.width * 0.05, 150),
               itemCount: eventController.events.length,
               itemBuilder: (context, index) {
                 bool isLast = index == eventController.events.length - 1;
@@ -420,11 +93,8 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
               },
             );
           }),
-
-          // 🎯 MANUALLY POSITIONED FAB
-          // This ensures the button sits above the navigation bar instead of behind it
           Positioned(
-            bottom: 120, // Adjusted to sit exactly above the floating nav bar
+            bottom: 120,
             right: 20,
             child: _buildAddEventButton(),
           ),
@@ -438,13 +108,17 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: AppColors.accentTeal.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+          BoxShadow(
+              color: AppColors.accentTeal.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10)),
         ],
       ),
       child: FloatingActionButton.extended(
-        heroTag: 'add_event_fab', // Unique tag to prevent hero errors
+        heroTag: 'add_event_fab',
         onPressed: () => Get.to(() => const AddEventScreen()),
-        label: const Text('SCHEDULE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+        label: const Text('SCHEDULE',
+            style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
         icon: const Icon(Icons.add_rounded, size: 24),
         backgroundColor: AppColors.accentTeal,
         foregroundColor: Colors.white,
@@ -454,8 +128,7 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
   }
 }
 
-// ... Keep _ModernTimelineCard class as it was ...
-
+// ─── Timeline Card (Updated) ─────────────────────────────────────────────────
 class _ModernTimelineCard extends StatelessWidget {
   final Event event;
   final bool isLast;
@@ -467,12 +140,13 @@ class _ModernTimelineCard extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final primaryColor = Theme.of(context).textTheme.bodyLarge!.color!;
     final surfaceColor = Theme.of(context).colorScheme.surface;
+    final service = EventOutfitService();
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Timeline Logic
+          // Timeline dot + line
           Column(
             children: [
               Container(
@@ -482,7 +156,11 @@ class _ModernTimelineCard extends StatelessWidget {
                   color: AppColors.accentTeal,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: [BoxShadow(color: AppColors.accentTeal.withOpacity(0.4), blurRadius: 10)],
+                  boxShadow: [
+                    BoxShadow(
+                        color: AppColors.accentTeal.withValues(alpha: 0.4),
+                        blurRadius: 10)
+                  ],
                 ),
               ),
               if (!isLast)
@@ -491,7 +169,10 @@ class _ModernTimelineCard extends StatelessWidget {
                     width: 2,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.accentTeal.withOpacity(0.5), Colors.transparent],
+                        colors: [
+                          AppColors.accentTeal.withValues(alpha: 0.5),
+                          Colors.transparent
+                        ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -502,7 +183,7 @@ class _ModernTimelineCard extends StatelessWidget {
           ),
           const SizedBox(width: 20),
 
-          // Card Content
+          // Card
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 30),
@@ -511,72 +192,136 @@ class _ModernTimelineCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: surfaceColor,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 10)),
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10)),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Top row: timeLeft chip + menu
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppColors.accentTeal.withOpacity(0.1),
+                            color: AppColors.accentTeal.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
                             event.timeLeft.toUpperCase(),
-                            style: const TextStyle(color: AppColors.accentTeal, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                            style: const TextStyle(
+                                color: AppColors.accentTeal,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5),
                           ),
                         ),
-                        Icon(Icons.more_horiz, color: primaryColor.withOpacity(0.3)),
+                        PopupMenuButton<String>(
+                          icon: Icon(Icons.more_horiz,
+                              color: primaryColor.withValues(alpha: 0.3)),
+                          onSelected: (value) {
+                            if (value == 'delete') _confirmDelete(context);
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                                value: 'delete',
+                                child: Text('Delete Event')),
+                          ],
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
+
+                    // Title
                     Text(
                       event.title,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primaryColor, letterSpacing: -0.5),
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: primaryColor,
+                          letterSpacing: -0.5),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // 🆕 Occasion chip
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        service.occasionLabel(event.title),
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: primaryColor.withValues(alpha: 0.6)),
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    // Row(
-                    //   children: [
-                    //     _infoBadge(context, Icons.calendar_today_rounded, DateFormat('MMM d').format(event.date)),
-                    //     const SizedBox(width: 10),
-                    //     _infoBadge(context, Icons.access_time_filled_rounded, event.time),
-                    //
-                    //     if (event.weatherInfo != null && event.weatherInfo!.isNotEmpty) ...[
-                    //       const SizedBox(width: 10),
-                    //       _infoBadge(context, Icons.cloud_outlined, event.weatherInfo!),
-                    //     ],
-                    //   ],
-                    // ),
-                    // REPLACE the Row containing _infoBadges with this:
+
+                    // Date / time / weather badges
                     Wrap(
-                      spacing: 10, // Horizontal space between badges
-                      runSpacing: 8, // Vertical space if it wraps to a new line
+                      spacing: 10,
+                      runSpacing: 8,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        _infoBadge(context, Icons.calendar_today_rounded, DateFormat('MMM d').format(event.date)),
-                        _infoBadge(context, Icons.access_time_filled_rounded, event.time),
-
-                        // Only show if weather exists
-                        if (event.weatherInfo != null && event.weatherInfo!.isNotEmpty)
-                          _infoBadge(context, Icons.cloud_outlined, event.weatherInfo!),
+                        _infoBadge(context, Icons.calendar_today_rounded,
+                            DateFormat('MMM d').format(event.date)),
+                        _infoBadge(context, Icons.access_time_filled_rounded,
+                            event.time),
+                        if (event.weatherInfo != null &&
+                            event.weatherInfo!.isNotEmpty)
+                          _infoBadge(
+                              context, Icons.cloud_outlined, event.weatherInfo!),
                       ],
                     ),
                     const SizedBox(height: 20),
                     const Divider(height: 1),
                     const SizedBox(height: 16),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('OUTFIT LINEUP', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: primaryColor.withOpacity(0.4), letterSpacing: 1)),
+                        Text('OUTFIT LINEUP',
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: primaryColor.withValues(alpha: 0.4),
+                                letterSpacing: 1)),
                         _buildStackedAvatars(event.outfitImageUrls),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 🆕 Suggest Outfit Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _showOutfitSuggestions(context),
+                        icon: const Icon(Icons.auto_awesome_rounded, size: 16),
+                        label: const Text('SUGGEST OUTFIT',
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.accentTeal,
+                          side: BorderSide(
+                              color: AppColors.accentTeal.withValues(alpha: 0.5)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -588,16 +333,76 @@ class _ModernTimelineCard extends StatelessWidget {
     );
   }
 
+  // ─── Outfit Suggestions Bottom Sheet ──────────────────────────────────────
+  void _showOutfitSuggestions(BuildContext context) {
+    final box = GetStorage();
+
+    // Wardrobe GetStorage se lo (aapka existing wardrobe key yahan use karo)
+    // Adjust 'wardrobe_items' key to match your actual storage key
+    final List<dynamic> raw = box.read('wardrobe_items') ?? [];
+    final List<Map<String, dynamic>> wardrobe =
+    raw.map((e) => Map<String, dynamic>.from(e)).toList();
+
+    if (wardrobe.isEmpty) {
+      Get.snackbar(
+        'Wardrobe Empty',
+        'Please add clothes to your wardrobe first!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final service = EventOutfitService();
+    final outfits = service.generateOutfitsForEvent(
+      event: event,
+      wardrobeItems: wardrobe,
+      count: 3,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _EventOutfitBottomSheet(event: event, outfits: outfits),
+    );
+  }
+
   Widget _infoBadge(BuildContext context, IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: AppColors.accentTeal),
           const SizedBox(width: 6),
-          Text(text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyLarge!.color!.withOpacity(0.7))),
+          Text(text,
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge!
+                      .color!
+                      .withValues(alpha: 0.7))),
         ],
       ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    final controller = Get.find<EventController>();
+    Get.defaultDialog(
+      title: "Delete Event",
+      middleText: "Are you sure you want to delete this event?",
+      textCancel: "Cancel",
+      textConfirm: "Delete",
+      confirmTextColor: Colors.white,
+      onConfirm: () {
+        controller.events.remove(event);
+        Get.back();
+      },
     );
   }
 
@@ -608,18 +413,22 @@ class _ModernTimelineCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: List.generate(urls.length, (index) {
           return Align(
-            widthFactor: 0.6, // This creates the "Stacked" effect
+            widthFactor: 0.6,
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)
+                ],
               ),
               child: CircleAvatar(
                 radius: 16,
                 backgroundColor: Colors.grey[200],
                 backgroundImage: NetworkImage(urls[index]),
-                child: (urls[index].isEmpty || urls[index].contains('placehold'))
+                child: (urls[index].isEmpty ||
+                    urls[index].contains('placehold'))
                     ? const Icon(Icons.checkroom, size: 14, color: Colors.grey)
                     : null,
               ),
@@ -628,5 +437,310 @@ class _ModernTimelineCard extends StatelessWidget {
         }),
       ),
     );
+  }
+}
+
+// ─── Outfit Suggestions Bottom Sheet ────────────────────────────────────────
+class _EventOutfitBottomSheet extends StatelessWidget {
+  final Event event;
+  final List<Map<String, dynamic>> outfits;
+
+  const _EventOutfitBottomSheet(
+      {required this.event, required this.outfits});
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).textTheme.bodyLarge!.color!;
+    final surfaceColor = Theme.of(context).colorScheme.surface;
+    final service = EventOutfitService();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.65,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      builder: (_, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            // Header
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('AI OUTFIT PICKS',
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          color: AppColors.accentTeal)),
+                  const SizedBox(height: 4),
+                  Text(event.title,
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: primaryColor)),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(service.occasionLabel(event.title),
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: primaryColor.withValues(alpha: 0.5))),
+                      if (event.weatherInfo != null &&
+                          event.weatherInfo!.isNotEmpty) ...[
+                        Text(' · ',
+                            style: TextStyle(
+                                color: primaryColor.withValues(alpha: 0.3))),
+                        Icon(Icons.thermostat_rounded,
+                            size: 14,
+                            color: primaryColor.withValues(alpha: 0.5)),
+                        Text(' ${event.weatherInfo}',
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: primaryColor.withValues(alpha: 0.5))),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+
+            // Outfit cards list
+            Expanded(
+              child: outfits.isEmpty
+                  ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.checkroom_outlined,
+                        size: 48,
+                        color: primaryColor.withValues(alpha: 0.2)),
+                    const SizedBox(height: 12),
+                    Text('No matching outfits found',
+                        style: TextStyle(
+                            color: primaryColor.withValues(alpha: 0.5))),
+                    const SizedBox(height: 6),
+                    Text('Try adding more clothes!',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: primaryColor.withValues(alpha: 0.3))),
+                  ],
+                ),
+              )
+                  : ListView.separated(
+                controller: scrollController,
+                padding: const EdgeInsets.all(20),
+                itemCount: outfits.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (_, index) =>
+                    _OutfitSuggestionCard(outfit: outfits[index], rank: index + 1),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Single Outfit Card ───────────────────────────────────────────────────────
+class _OutfitSuggestionCard extends StatelessWidget {
+  final Map<String, dynamic> outfit;
+  final int rank;
+
+  const _OutfitSuggestionCard({required this.outfit, required this.rank});
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).textTheme.bodyLarge!.color!;
+    final top = outfit['top'] as Map<String, dynamic>;
+    final bottom = outfit['bottom'] as Map<String, dynamic>;
+    final score = outfit['score'] as int;
+    final season = outfit['season'] as String? ?? '';
+    final subType = outfit['sub_type'] as String? ?? '';
+
+    String seasonEmoji = switch (season) {
+      'Hot'  => '☀️',
+      'Warm' => '🌤️',
+      'Cool' => '🍂',
+      'Cold' => '❄️',
+      _      => '🌡️',
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: rank == 1
+            ? AppColors.accentTeal.withValues(alpha: 0.08)
+            : primaryColor.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: rank == 1
+              ? AppColors.accentTeal.withValues(alpha: 0.3)
+              : Colors.transparent,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Rank + Score
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  if (rank == 1)
+                    const Text('👑 ', style: TextStyle(fontSize: 16)),
+                  Text(
+                    rank == 1 ? 'TOP PICK' : 'OPTION $rank',
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        color: rank == 1
+                            ? AppColors.accentTeal
+                            : primaryColor.withValues(alpha: 0.4)),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text('$seasonEmoji ',
+                      style: const TextStyle(fontSize: 12)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentTeal.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text('Score: $score',
+                        style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.accentTeal)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Top item
+          _itemRow(
+            context: context,
+            icon: Icons.checkroom_rounded,
+            label: 'TOP',
+            name: top['item_name'] ?? 'Top',
+            color: top['color'] ?? '',
+            extra: top['style'] ?? '',
+          ),
+          const SizedBox(height: 10),
+
+          // Bottom item
+          _itemRow(
+            context: context,
+            icon: Icons.accessibility_new_rounded,
+            label: 'BOTTOM',
+            name: bottom['item_name'] ?? 'Bottom',
+            color: bottom['color'] ?? '',
+            extra: subType.isNotEmpty && subType != 'Unknown' ? subType : (bottom['style'] ?? ''),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _itemRow({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String name,
+    required String color,
+    required String extra,
+  }) {
+    final primaryColor = Theme.of(context).textTheme.bodyLarge!.color!;
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: _parseColor(color).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon,
+              size: 20, color: _parseColor(color).withValues(alpha: 0.8)),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      color: primaryColor.withValues(alpha: 0.4))),
+              const SizedBox(height: 2),
+              Text(name,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: primaryColor)),
+              if (color.isNotEmpty || extra.isNotEmpty)
+                Text(
+                    [color, extra]
+                        .where((s) => s.isNotEmpty)
+                        .join(' · ')
+                        .capitalizeFirst!,
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: primaryColor.withValues(alpha: 0.5))),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Color string se Flutter Color banao (basic mapping)
+  Color _parseColor(String colorStr) {
+    final c = colorStr.toLowerCase();
+    if (c.contains('red'))    return Colors.red;
+    if (c.contains('blue'))   return Colors.blue;
+    if (c.contains('green'))  return Colors.green;
+    if (c.contains('black'))  return Colors.black87;
+    if (c.contains('white'))  return Colors.grey;
+    if (c.contains('yellow')) return Colors.amber;
+    if (c.contains('orange')) return Colors.orange;
+    if (c.contains('pink'))   return Colors.pink;
+    if (c.contains('purple') || c.contains('violet')) return Colors.purple;
+    if (c.contains('brown') || c.contains('caramel')) return Colors.brown;
+    if (c.contains('teal') || c.contains('cyan'))     return Colors.teal;
+    if (c.contains('navy'))   return const Color(0xFF001F5B);
+    if (c.contains('grey') || c.contains('gray'))     return Colors.grey;
+    if (c.contains('beige') || c.contains('cream'))   return const Color(0xFFF5F0E8);
+    return AppColors.accentTeal;
   }
 }

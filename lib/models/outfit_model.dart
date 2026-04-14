@@ -16,4 +16,12 @@ class OutfitModel {
     required this.gender,
     this.isFavorite = true,
   });
-}
+
+  // Getter to handle multiple images merged into a single string
+  List<String> get splitImages {
+    if (imageUrl.contains(',')) {
+      return imageUrl.split(',');
+    }
+    return [imageUrl];
+  }
+}

@@ -836,6 +836,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:smart_wardrobe_new/controllers/wardrobe_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Your existing imports
@@ -854,8 +855,7 @@ class MyWardrobeScreen extends StatefulWidget {
 }
 
 class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
-  Gender _selectedGender = Gender.men;
-  // REMOVED: _selectedIndex and _onNavTapped logic as it's now handled by the HomeScreen Shell
+  // Removed gender toggle logic
 
   Map<String, int> _categoryItemCounts = {};
   bool _isLoadingCounts = true;
@@ -883,29 +883,27 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
         counts[category] = (counts[category] ?? 0) + 1;
       }
 
+      print('MyWardrobe counts response: $response');
       setState(() {
         _categoryItemCounts = counts;
         _isLoadingCounts = false;
       });
     } catch (e) {
+      print('MyWardrobe counts error: $e');
       setState(() => _isLoadingCounts = false);
     }
   }
 
   final List<WardrobeCategory> _allWardrobeData = [
-    WardrobeCategory(title: "Topwear", icon: Icons.checkroom_outlined, itemImage: 'assets/shirt.jpg', tags: ["Blue", "Summer", "Casual"], genders: [Gender.men]),
-    WardrobeCategory(title: "Bottomwear", icon: Icons.unfold_more, itemImage: 'assets/pant.png', tags: ["Denim", "Dark", "Slim Fit"], genders: [Gender.men]),
-    WardrobeCategory(title: "Footwear", icon: Icons.directions_walk_outlined, itemImage: 'assets/shoes.png', tags: ["White", "Sneakers", "Sport"], genders: [Gender.men]),
-    WardrobeCategory(title: "Accessories", icon: Icons.watch_outlined, itemImage: 'assets/watch.png', tags: ["Brown", "Watch", "Belt"], genders: [Gender.men]),
-    WardrobeCategory(title: "Tops/Blouses", icon: Icons.checkroom, itemImage: 'assets/women_top.jpg', tags: ["Silk", "Floral", "Party"], genders: [Gender.women]),
-    WardrobeCategory(title: "Bottomwear (Women)", icon: Icons.scatter_plot_outlined, itemImage: 'assets/women_jeans.jpg', tags: ["Pleated", "High-waist", "Work"], genders: [Gender.women]),
+    WardrobeCategory(title: "Topwear", icon: Icons.checkroom, itemImage: 'assets/women_top.jpg', tags: ["Silk", "Floral", "Party"], genders: [Gender.women]),
+    WardrobeCategory(title: "Bottomwear", icon: Icons.scatter_plot_outlined, itemImage: 'assets/women_jeans.jpg', tags: ["Pleated", "High-waist", "Work"], genders: [Gender.women]),
     WardrobeCategory(title: "Dresses", icon: Icons.woman_outlined, itemImage: 'assets/women_dress.jpg', tags: ["Maxi", "Cocktail", "Summer"], genders: [Gender.women]),
     WardrobeCategory(title: "Footwear", icon: Icons.directions_walk_outlined, itemImage: 'assets/women_footwear.jpg', tags: ["Heels", "Sandals", "Boots"], genders: [Gender.women]),
     WardrobeCategory(title: "Jewellery/Scarves", icon: Icons.watch_outlined, itemImage: 'assets/women_accesories.png', tags: ["Silver", "Necklace", "Scarf"], genders: [Gender.women]),
   ];
 
   List<WardrobeCategory> _getFilteredWardrobeData() {
-    return _allWardrobeData.where((category) => category.genders.contains(_selectedGender)).toList();
+    return _allWardrobeData;
   }
 
   @override
@@ -957,17 +955,8 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
                   ),
                 ),
 
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                    child: _GenderToggle(
-                      selectedGender: _selectedGender,
-                      onGenderSelected: (g) => setState(() => _selectedGender = g),
-                      isDark: isDark,
-                      cardColor: cardColor,
-                    ),
-                  ),
-                ),
+                // Removed GenderToggle Sliver
+
 
                 SliverPadding(
                   // Added bottom padding (150) to ensure content isn't hidden behind the floating bar
@@ -1035,49 +1024,7 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
 
 // ... _GenderToggle, _CategoryCard, and WardrobeItemScreen remain below ...
 
-// --- GENDER TOGGLE ---
-class _GenderToggle extends StatelessWidget {
-  final Gender selectedGender;
-  final Function(Gender) onGenderSelected;
-  final bool isDark;
-  final Color cardColor;
-
-  const _GenderToggle({required this.selectedGender, required this.onGenderSelected, required this.isDark, required this.cardColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _chip(Gender.men, "Men", Icons.male),
-        const SizedBox(width: 10),
-        _chip(Gender.women, "Women", Icons.female),
-      ],
-    );
-  }
-
-  Widget _chip(Gender gender, String label, IconData icon) {
-    bool isSelected = selectedGender == gender;
-    return GestureDetector(
-      onTap: () => onGenderSelected(gender),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.accentTeal : cardColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? AppColors.accentTeal : Colors.grey.withOpacity(0.2)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: isSelected ? Colors.white : Colors.grey),
-            const SizedBox(width: 8),
-            Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.grey, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// --- GENDER TOGGLE REMOVED ---
 
 // --- PREMIUM CATEGORY CARD ---
 class _CategoryCard extends StatelessWidget {
@@ -1175,12 +1122,92 @@ class _WardrobeItemScreenState extends State<WardrobeItemScreen> {
           .eq('user_id', userId!)
           .eq('category', widget.categoryTitle);
 
+      print('WardrobeItemScreen response for ${widget.categoryTitle}: $response');
       setState(() {
         _items = List<Map<String, dynamic>>.from(response);
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stacktrace) {
+      print('WardrobeItemScreen load error: $e');
+      print(stacktrace);
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _deleteItem(Map<String, dynamic> item) async {
+    final itemId = item['id'];
+    // Show confirmation dialog
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Item'),
+        content: const Text('Are you sure you want to delete this item?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (!confirmDelete) return;
+
+    try {
+      // 1. Detele from DB and verify it was deleted by returning the row
+      final response = await supabase.from('wardrobe_items').delete().eq('id', itemId).select();
+
+      // If it returned empty, it means no row was matched/deleted (maybe due to RLS)
+      if (response.isEmpty) {
+        throw Exception('Item could not be deleted from database.');
+      }
+
+      // 2. Try to delete the image from storage to free up space
+      try {
+        final imageUrl = item['image_url'] as String?;
+        if (imageUrl != null && imageUrl.contains('wardrobe_image/')) {
+          // Extract the path after 'wardrobe_image/'
+          final pathParts = imageUrl.split('wardrobe_image/');
+          if (pathParts.length > 1) {
+            final storagePath = pathParts[1];
+            await supabase.storage.from('wardrobe_image').remove([storagePath]);
+            print('Deleted from storage: $storagePath');
+          }
+        }
+      } catch (e) {
+        print('Warning: Failed to delete image from storage: $e');
+        // We don't throw here, as the row was successfully deleted
+      }
+
+      setState(() {
+        _items.removeWhere((element) => element['id'] == itemId);
+      });
+
+      // 3. ✨ CRITICAL: Update the global WardrobeController so the Home Screen Stats refresh
+      if (Get.isRegistered<WardrobeController>()) {
+        Get.find<WardrobeController>().fetchCounts();
+      }
+
+      Get.snackbar(
+        'Success',
+        'Item deleted successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      print('Delete error: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to delete item',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -1222,14 +1249,37 @@ class _WardrobeItemScreenState extends State<WardrobeItemScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Image.network(item['image_url'], fit: BoxFit.cover, width: double.infinity),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.network(item['image_url'], fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: GestureDetector(
+                            onTap: () => _deleteItem(item),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(10),
-                    child: Text(item['item_name'], style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+                    child: Text(item['item_name'], style: TextStyle(fontWeight: FontWeight.bold, color: textColor), maxLines: 1, overflow: TextOverflow.ellipsis),
                   )
                 ],
               ),

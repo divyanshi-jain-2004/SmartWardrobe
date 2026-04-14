@@ -107,7 +107,7 @@
 //
 //     // 🎯 Theme-Aware Color References
 //     final primaryTextColor = Theme.of(context).textTheme.bodyLarge!.color;
-//     final secondaryTextColor = Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
+//     final secondaryTextColor = Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6);
 //     final cardColor = Theme.of(context).colorScheme.surface;
 //
 //     return Obx(() { // 🎯 Obx से रैप करें ताकि यूजर/वेदर डेटा बदलने पर यह रीबिल्ड हो
@@ -173,7 +173,7 @@
 //               shape: BoxShape.circle,
 //               boxShadow: [
 //                 BoxShadow(
-//                   color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05),
+//                   color: Colors.black.withValues(alpha:Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05),
 //                   blurRadius: 10,
 //                   offset: const Offset(0, 4),
 //                 ),
@@ -209,7 +209,7 @@
 //         borderRadius: BorderRadius.circular(size.width * 0.05),
 //         boxShadow: [
 //           BoxShadow(
-//             color: AppColors.accentTeal.withOpacity(0.3),
+//             color: AppColors.accentTeal.withValues(alpha:0.3),
 //             blurRadius: 15,
 //             offset: const Offset(0, 8),
 //           ),
@@ -222,7 +222,7 @@
 //             borderRadius: BorderRadius.circular(size.width * 0.05),
 //             child: ColorFiltered(
 //               colorFilter: ColorFilter.mode(
-//                 Colors.black.withOpacity(0.2),
+//                 Colors.black.withValues(alpha:0.2),
 //                 BlendMode.darken,
 //               ),
 //               child: Image.asset(
@@ -248,7 +248,7 @@
 //                       fontWeight: FontWeight.bold,
 //                       shadows: [
 //                         Shadow(
-//                           color: Colors.black.withOpacity(0.8),
+//                           color: Colors.black.withValues(alpha:0.8),
 //                           blurRadius: 4,
 //                           offset: const Offset(1, 1),
 //                         )
@@ -388,13 +388,13 @@
 //
 //     final cardColor = Theme.of(context).colorScheme.surface;
 //     final primaryTextColor = Theme.of(context).textTheme.bodyLarge!.color;
-//     final secondaryTextColor = Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
+//     final secondaryTextColor = Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6);
 //
 //     return Container(
 //       decoration: BoxDecoration(
 //         color: cardColor,
 //         borderRadius: BorderRadius.circular(size.width * 0.04),
-//         border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+//         border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha:0.2)),
 //       ),
 //       padding: EdgeInsets.all(size.width * 0.04),
 //       child: Column(
@@ -432,7 +432,7 @@
 //     final size = MediaQuery.of(context).size;
 //     final cardColor = Theme.of(context).colorScheme.surface;
 //     final primaryTextColor = Theme.of(context).textTheme.bodyLarge!.color;
-//     final secondaryTextColor = Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
+//     final secondaryTextColor = Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6);
 //
 //     return Container(
 //       padding: EdgeInsets.all(size.width * 0.05),
@@ -441,7 +441,7 @@
 //         borderRadius: BorderRadius.circular(size.width * 0.04),
 //         boxShadow: [
 //           BoxShadow(
-//             color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05),
+//             color: Colors.black.withValues(alpha:Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05),
 //             blurRadius: 10,
 //             offset: const Offset(0, 4),
 //           ),
@@ -480,14 +480,14 @@
 //   Widget build(BuildContext context) {
 //     final size = MediaQuery.of(context).size;
 //     final cardColor = Theme.of(context).colorScheme.surface;
-//     final unselectedColor = Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.5);
+//     final unselectedColor = Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.5);
 //
 //     return Container(
 //       decoration: BoxDecoration(
 //         color: cardColor,
 //         boxShadow: [
 //           BoxShadow(
-//             color: Colors.black.withOpacity(0.08),
+//             color: Colors.black.withValues(alpha:0.08),
 //             blurRadius: 10,
 //             offset: const Offset(0, -5),
 //           ),
@@ -546,22 +546,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:smart_wardrobe_new/controllers/outfit_controller.dart';
 
 // Controllers
 import 'package:smart_wardrobe_new/controllers/user_controller.dart';
 import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
 import 'package:smart_wardrobe_new/controllers/wardrobe_controller.dart';
-
-// Screens & Utils
-import 'dart:ui';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-
-// Controllers
-import 'package:smart_wardrobe_new/controllers/user_controller.dart';
-import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
-import 'package:smart_wardrobe_new/controllers/wardrobe_controller.dart';
-
 // Screens
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
 import 'package:smart_wardrobe_new/screens/eventPlanner.dart';
@@ -621,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(35),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha:0.15),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 )
@@ -670,7 +660,7 @@ class _HomeScreenState extends State<HomeScreen> {
             boxShadow: isSelected
                 ? [
               BoxShadow(
-                  color: AppColors.accentTeal.withOpacity(0.4),
+                  color: AppColors.accentTeal.withValues(alpha:0.4),
                   blurRadius: 12,
                   offset: const Offset(0, 6))
             ]
@@ -829,13 +819,13 @@ class HomeHeader extends StatelessWidget {
               ),
             ],
           ),
-          _buildGlassIconButton(context, Icons.notifications_none_rounded, () => Get.toNamed('/body-scan')),
+          _buildGlassIconButton(context, "assets/body.png", () => Get.toNamed('/body-scan')),
         ],
       );
     });
   }
 
-  Widget _buildGlassIconButton(BuildContext context, IconData icon, VoidCallback onTap) {
+  Widget _buildGlassIconButton(BuildContext context, String img, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),
@@ -846,11 +836,11 @@ class HomeHeader extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.5),
+              color: isDark ? Colors.white.withValues(alpha:0.1) : Colors.white.withValues(alpha:0.5),
               shape: BoxShape.circle,
-              border: Border.all(color: isDark ? Colors.white10 : Colors.white.withOpacity(0.3)),
+              border: Border.all(color: isDark ? Colors.white10 : Colors.white.withValues(alpha:0.3)),
             ),
-            child: Icon(icon, color: isDark ? Colors.white : Colors.black87),
+            child: Image.asset(img,height: 24,width: 24,),
           ),
         ),
       ),
@@ -865,66 +855,137 @@ class LookCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final OutfitController outfitController = Get.find<OutfitController>();
 
-    return Container(
-      height: size.height * 0.42,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(35),
-        boxShadow: [
-          BoxShadow(color: AppColors.accentTeal.withOpacity(0.2), blurRadius: 30, offset: const Offset(0, 15)),
-        ],
-      ),
-      child: Stack(
-        children: [
-          ClipRRect(
+    return Obx(() {
+      if (outfitController.isGenerating.value) {
+        return Container(
+          height: size.height * 0.42,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
             borderRadius: BorderRadius.circular(35),
-            child: Image.asset(
-              "assets/outfit_spring_casual.jpg",
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(color: AppColors.accentTeal),
+          ),
+        );
+      }
+
+      if (outfitController.dailyOutfit.isEmpty) {
+        return Container(
+          height: size.height * 0.42,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(35),
+          ),
+          child: const Center(
+            child: Text(
+              "Add more items to get\nDaily AI Outfits!",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
+        );
+      }
+
+      var dailyCombo = outfitController.dailyOutfit;
+      var top = dailyCombo['top'];
+      var bot = dailyCombo['bottom'];
+      String outfitName = dailyCombo['name'] ?? 'Daily Styling';
+      String topUrl = top['image_url'] ?? '';
+      String botUrl = bot['image_url'] ?? '';
+
+      return Container(
+        height: size.height * 0.42,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(35),
+          boxShadow: [
+            BoxShadow(color: AppColors.accentTeal.withValues(alpha:0.2), blurRadius: 30, offset: const Offset(0, 15)),
+          ],
+        ),
+        child: Stack(
+          children: [
+            ClipRRect(
               borderRadius: BorderRadius.circular(35),
-              gradient: LinearGradient(
-                colors: [Colors.black.withOpacity(0.8), Colors.transparent],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
+              child: Container(
+                color: Colors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                   Expanded(
+                     child: Padding(
+                       padding: const EdgeInsets.only(top: 15, bottom: 5, left: 15, right: 15),
+                       child: _buildImage(topUrl),
+                     )
+                   ),
+                   Expanded(
+                     child: Padding(
+                       padding: const EdgeInsets.only(top: 5, bottom: 65, left: 15, right: 15),
+                       child: _buildImage(botUrl),
+                     ),
+                   ),
+                ],
               ),
             ),
-          ),
-          Positioned(
-            bottom: 25, left: 20, right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('AI Daily Pick', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 12)),
-                      Text('Spring Casual Look', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () => Get.to(() => const OutfitSuggestionScreen()),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    shape: const StadiumBorder(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                  child: const Text('Try it On', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
             ),
-          ),
-        ],
-      ),
-    );
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(35),
+                gradient: LinearGradient(
+                  colors: [Colors.black.withValues(alpha:0.8), Colors.transparent],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 25, left: 20, right: 20,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('AI Daily Pick', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 12)),
+                        Text(outfitName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Get.to(() => const OutfitSuggestionScreen()),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
+                    child: const Text('Try it On', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildImage(String path) {
+    if (path.isEmpty) return Container(color: Colors.grey[300]);
+    if (path.startsWith('http')) {
+      return Image.network(
+        path,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[200]),
+      );
+    } else {
+      return Image.asset(
+        path,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[200]),
+      );
+    }
   }
 }
 
@@ -953,7 +1014,7 @@ class WardrobeStatsGrid extends StatelessWidget {
           'count': '$totalAll',
           'label': 'Total Items',
           'icon': Icons.all_inclusive_rounded,
-          'color': isDark ? Colors.purple[900]?.withOpacity(0.3) : Colors.purple[50]
+          'color': isDark ? Colors.purple[900]?.withValues(alpha:0.3) : Colors.purple[50]
         },
         // 2. Tops
         {
@@ -961,14 +1022,14 @@ class WardrobeStatsGrid extends StatelessWidget {
           'count': '${(counts['Topwear'] ?? 0) + (counts['Tops/Blouses'] ?? 0) + (counts['Tops'] ?? 0)}',
           'label': 'Tops',
           'icon': Icons.dry_cleaning_rounded,
-          'color': isDark ? Colors.blue[900]?.withOpacity(0.3) : Colors.blue[50]
+          'color': isDark ? Colors.blue[900]?.withValues(alpha:0.3) : Colors.blue[50]
         },
         // 3. Bottoms
-        {'count': '${(counts['Bottomwear'] ?? 0)+(counts['Bottomwear(Women)']??0)}', 'label': 'Bottoms', 'icon': Icons.layers_rounded, 'color': isDark ? Colors.orange[900]?.withOpacity(0.3) : Colors.orange[50]},
+        {'count': '${(counts['Bottomwear'] ?? 0)+(counts['Bottomwear(Women)']??0)}', 'label': 'Bottoms', 'icon': Icons.layers_rounded, 'color': isDark ? Colors.orange[900]?.withValues(alpha:0.3) : Colors.orange[50]},
         // 4. Footwear
-        {'count': '${counts['Footwear'] ?? 0}', 'label': 'Footwear', 'icon': Icons.ice_skating_rounded, 'color': isDark ? Colors.pink[900]?.withOpacity(0.3) : Colors.pink[50]},
+        {'count': '${counts['Footwear'] ?? 0}', 'label': 'Footwear', 'icon': Icons.ice_skating_rounded, 'color': isDark ? Colors.pink[900]?.withValues(alpha:0.3) : Colors.pink[50]},
         // 5. Jewelry
-        {'count': '${counts['Accessories'] ?? 0}', 'label': 'Jewelry', 'icon': Icons.watch_rounded, 'color': isDark ? Colors.green[900]?.withOpacity(0.3) : Colors.green[50]},
+        {'count': '${counts['Accessories'] ?? 0}', 'label': 'Jewelry', 'icon': Icons.watch_rounded, 'color': isDark ? Colors.green[900]?.withValues(alpha:0.3) : Colors.green[50]},
       ];
 
       return GridView.builder(
@@ -990,12 +1051,12 @@ class WardrobeStatsGrid extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha:0.05) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: isDark ? Colors.white10 : Colors.white),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+              color: Colors.black.withValues(alpha:isDark ? 0.2 : 0.03),
               blurRadius: 10,
               offset: const Offset(0, 5)
           )

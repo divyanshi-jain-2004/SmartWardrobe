@@ -63,8 +63,6 @@ class MyApp extends StatelessWidget {
     final ThemeController themeController = Get.find<ThemeController>();
 
     return GetMaterialApp(
-      // ✅ FIX: navigatorKey हटा दिया - GetX को अपना key manage करने दें
-      // navigatorKey: globalNavigatorKey,  // ❌ REMOVED
 
       debugShowCheckedModeBanner: false,
       title: 'AI Smart Wardrobe',
@@ -73,10 +71,9 @@ class MyApp extends StatelessWidget {
       darkTheme: AppThemes.darkTheme,
       themeMode: themeController.theme,
 
-      // ✅ Splash Screen से शुरुआत
+      // ✅ Splash Screen
       initialRoute: "/splash",
-
-      // ✅ FIX: सभी routes को getPages में convert करें
+      
       getPages: [
         GetPage(name: '/splash', page: () => const SplashScreen()),
         GetPage(name: '/onboarding', page: () => const OnboardingScreen()),

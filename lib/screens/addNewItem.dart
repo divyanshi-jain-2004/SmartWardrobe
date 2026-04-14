@@ -1,3 +1,4 @@
+
 // FIXED VERSION OF addNewItem.dart
 // Changes:
 // 1. Better error handling for ML API timeouts
@@ -29,8 +30,8 @@ class AddItemScreen extends StatefulWidget {
 }
 
 class MLApiconfig {
-  static const String baseUrl = 'http://172.8.5.226:5000/api';
-  static const Duration timeout = Duration(seconds: 15);
+  static const String baseUrl = 'https://smart-wardrobe-api-q42p.onrender.com';
+  static const Duration timeout = Duration(seconds: 60);
 }
 
 class _AddItemScreenState extends State<AddItemScreen> {
@@ -45,34 +46,58 @@ class _AddItemScreenState extends State<AddItemScreen> {
   File? _originalImageFile;
   String? _predictedCategory;
   String? _detectedColor;
+  String? _detectedJeansType;
+  String? _detectedFootwearType;
   double? _predictionConfidence;
   bool _isProcessing = false;
   bool _mlProcessingFailed = false; // Track ML failure
 
-  // 🔧 FIXED: Updated categories to match your UI
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _wakeUpServer();
+  }
+
+  Future<void> _wakeUpServer() async {
+    try {
+      await http.get(
+        Uri.parse('${MLApiconfig.baseUrl}/health'),
+      ).timeout(const Duration(seconds: 10));
+      print('Server is awake!');
+    } catch (e) {
+      print('Server wake-up failed: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  // 🔧 ONLY WOMEN'S CATEGORIES 
   final Map<String, String> _categoryMapping = {
-    'Tops': 'Tops/Blouses',          // For Women's Tops
-    'Bottoms': 'Bottomwear (Women)', // For Women's Bottoms
+    'Tops': 'Topwear',
+    'Bottoms': 'Bottomwear',
     'Dresses': 'Dresses',
-    'Outerwear': 'Tops/Blouses',     // Mapping outerwear to Tops for now
+    'Outerwear': 'Topwear',
     'Footwear': 'Footwear',
-    'Accessories': 'Jewellery/Scarves', // For Women's Accessories
+    'Accessories': 'Jewellery/Scarves',
   };
 
   final List<String> _categories = [
-    'Topwear',           // Matches Men's category title
-    'Bottomwear',        // Matches Men's category title
-    'Tops/Blouses',      // Matches Women's category title
-    'Bottomwear (Women)',// Matches Women's category title
-    'Dresses',           // Matches Women's category title
-    'Footwear',          // Matches both genders
-    'Accessories',       // Matches Men's category title
-    'Jewellery/Scarves'  // Matches Women's category title
+    'Topwear',
+    'Bottomwear',
+    'Dresses',
+    'Footwear',
+    'Jewellery/Scarves'
   ];
 
   // Theme Getters
   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
-  Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
+  Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.6);
   Color get _surfaceColor => Theme.of(context).colorScheme.surface;
   Color get _scaffoldColor => Theme.of(context).scaffoldBackgroundColor;
   Color get _dividerColor => Theme.of(context).dividerColor;
@@ -88,147 +113,24 @@ class _AddItemScreenState extends State<AddItemScreen> {
       final result = await FlutterImageCompress.compressAndGetFile(
         file.absolute.path,
         targetPath,
-        quality: 80, // Reduced from 85 for faster upload
-        minWidth: 800, // Reduced from 1024
-        minHeight: 800,
-        format: CompressFormat.jpeg,
+        quality: 75,        // ✅ Reduced for faster upload
+        minWidth: 600,      // ✅ Smaller size
+        minHeight: 600,
+        format: CompressFormat.jpeg, // ✅ JPEG instead of PNG
       );
 
       if (result != null) {
         final compressedFile = File(result.path);
         final compressedSize = await compressedFile.length();
         print('Compressed file size: ${(compressedSize / 1024 / 1024).toStringAsFixed(2)} MB');
-
-        // More aggressive compression if still too large
-        if (compressedSize > 3 * 1024 * 1024) {
-          print('Still too large, compressing more aggressively...');
-          final targetPath2 = '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_compressed2.jpg';
-          final result2 = await FlutterImageCompress.compressAndGetFile(
-            compressedFile.absolute.path,
-            targetPath2,
-            quality: 60,
-            minWidth: 600,
-            minHeight: 600,
-            format: CompressFormat.jpeg,
-          );
-          return result2 != null ? File(result2.path) : compressedFile;
-        }
-
         return compressedFile;
       }
       return null;
     } catch (e) {
       print('Compression error: $e');
-      return null;
+      return file; // ✅ Return original if compression fails
     }
   }
-
-  // 🆕 IMPROVED BACKGROUND REMOVAL with timeout handling
-  // Future<void> _handleBackgroundRemoval(bool shouldRemove) async {
-  //   if (_originalImageFile == null) {
-  //     Get.snackbar(
-  //       'Error',
-  //       'Please upload an image first.',
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: Colors.red.withOpacity(0.8),
-  //       colorText: Colors.white,
-  //     );
-  //     setState(() => _removeBackground = false);
-  //     return;
-  //   }
-  //
-  //   setState(() => _isProcessing = true);
-  //
-  //   if (shouldRemove) {
-  //     try {
-  //       Get.snackbar(
-  //         'Processing',
-  //         'Removing background... This may take a moment.',
-  //         snackPosition: SnackPosition.BOTTOM,
-  //         backgroundColor: _kPrimaryTeal,
-  //         colorText: Colors.white,
-  //         showProgressIndicator: true,
-  //         duration: const Duration(seconds: 20),
-  //       );
-  //
-  //       final bytes = await _originalImageFile!.readAsBytes();
-  //       final base64Image = base64Encode(bytes);
-  //
-  //       // 🔧 FIXED: Reduced timeout to 15 seconds
-  //       final response = await http.post(
-  //         Uri.parse('${MLApiconfig.baseUrl}/remove-background'),
-  //         headers: {'Content-Type': 'application/json'},
-  //         body: jsonEncode({'image': base64Image}),
-  //       ).timeout(MLApiconfig.timeout);
-  //
-  //       if (response.statusCode == 200) {
-  //         final data = jsonDecode(response.body);
-  //
-  //         if (data['success'] == true) {
-  //           final processedBase64 = data['processed_image'].split(',')[1];
-  //           final processedBytes = base64Decode(processedBase64);
-  //
-  //           final dir = await getTemporaryDirectory();
-  //           final tempPath = '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_nobg.png';
-  //           final tempFile = File(tempPath);
-  //           await tempFile.writeAsBytes(processedBytes);
-  //
-  //           final compressedFile = await _compressImage(tempFile);
-  //
-  //           Get.closeCurrentSnackbar();
-  //           await _uploadImage(compressedFile ?? tempFile);
-  //
-  //           Get.snackbar(
-  //             'Success',
-  //             'Background removed successfully!',
-  //             snackPosition: SnackPosition.BOTTOM,
-  //             backgroundColor: Colors.green.withOpacity(0.8),
-  //             colorText: Colors.white,
-  //           );
-  //         } else {
-  //           throw Exception('Background removal failed');
-  //         }
-  //       } else {
-  //         throw Exception('API returned status ${response.statusCode}');
-  //       }
-  //     } on TimeoutException catch (_) {
-  //       print('⏱️ Background removal timeout');
-  //       Get.closeCurrentSnackbar();
-  //       Get.snackbar(
-  //         'Timeout',
-  //         'Background removal took too long. Please try again or continue without it.',
-  //         snackPosition: SnackPosition.BOTTOM,
-  //         backgroundColor: Colors.orange.withOpacity(0.8),
-  //         colorText: Colors.white,
-  //       );
-  //       setState(() => _removeBackground = false);
-  //     } catch (e) {
-  //       print('Background removal error: $e');
-  //       Get.closeCurrentSnackbar();
-  //       Get.snackbar(
-  //         'Error',
-  //         'Failed to remove background. You can continue without it.',
-  //         snackPosition: SnackPosition.BOTTOM,
-  //         backgroundColor: Colors.orange.withOpacity(0.8),
-  //         colorText: Colors.white,
-  //       );
-  //       setState(() => _removeBackground = false);
-  //     }
-  //   } else {
-  //     Get.snackbar(
-  //       'Restoring',
-  //       'Restoring original image...',
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: _kPrimaryTeal,
-  //       colorText: Colors.white,
-  //     );
-  //
-  //     await _uploadImage(_originalImageFile!);
-  //     Get.closeCurrentSnackbar();
-  //   }
-  //
-  //   setState(() => _isProcessing = false);
-  // }
 
   Future<void> _handleBackgroundRemoval(bool shouldRemove) async {
     if (_originalImageFile == null) {
@@ -245,7 +147,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         final base64Image = base64Encode(bytes);
 
         final response = await http.post(
-          Uri.parse('${MLApiconfig.baseUrl}/remove-background'),
+            Uri.parse('${MLApiconfig.baseUrl}/api/remove-background'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'image': base64Image}),
         ).timeout(MLApiconfig.timeout);
@@ -274,7 +176,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
               _selectedImageFile = compressedFile ?? tempFile;
             });
 
-            await _uploadImage(_selectedImageFile!,shouldProcessML: false);
+            await _updateLocalImage(_selectedImageFile!, shouldProcessML: false);
 
             Get.snackbar('Success', 'Background removed!');
           } else {
@@ -291,7 +193,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     } else {
       // Restore original if toggle turned off
       if (_originalImageFile != null) {
-        await _uploadImage(_originalImageFile!);
+        await _updateLocalImage(_originalImageFile!);
         setState(() => _selectedImageFile = _originalImageFile);
       }
     }
@@ -363,13 +265,14 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
         _originalImageFile = imageFile;
 
-        await _uploadImage(imageFile,shouldProcessML: true);
+        await _updateLocalImage(imageFile, shouldProcessML: true);
         Get.closeCurrentSnackbar();
       }
     }
   }
 
   // IMPROVED ML PROCESSING with better error handling
+// 🔧 FIX 2: Better ML processing with name update
   Future<void> _processImageWithML(File imageFile) async {
     try {
       setState(() {
@@ -392,9 +295,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
       print('Calling ML API: ${MLApiconfig.baseUrl}/process-clothing');
 
-      // 🔧 FIXED: Reduced timeout to 15 seconds
       final response = await http.post(
-        Uri.parse('${MLApiconfig.baseUrl}/process-clothing'),
+          Uri.parse('${MLApiconfig.baseUrl}/api/process-clothing')
+        ,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'image': base64Image}),
       ).timeout(MLApiconfig.timeout);
@@ -406,27 +309,59 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
         if (data['success'] == true) {
           String mlCategory = data['category'];
-
-          // FIXED: Map ML category to UI category
           String uiCategory = _categoryMapping[mlCategory] ?? mlCategory;
+
+          // ✅ FIX: Extract values first, then build name
+          final String detectedColor = data['color'] ?? 'Fashion';
+          final String? subType = (uiCategory == 'Bottomwear' && data['sub_type'] != null)
+              ? data['sub_type']
+              : null;
+          // ✅ NEW: Extract footwear type if detected
+          final String? footwearType = (uiCategory == 'Footwear' && data['footwear_type'] != null)
+              ? data['footwear_type']
+              : null;
 
           setState(() {
             _predictedCategory = uiCategory;
-            _detectedColor = data['color'];
+            _detectedColor = detectedColor;
+            _detectedJeansType = subType;
+            _detectedFootwearType = footwearType;
             _predictionConfidence = data['confidence'];
 
-            // Auto-select if category matches
             if (_categories.contains(uiCategory)) {
               _selectedCategory = uiCategory;
             }
+
+            // ✅ FIX: Build name AFTER setting all values
+            String newName = detectedColor;
+            if (subType != null) {
+              newName += ' $subType';
+            } else if(footwearType != null){
+              newName += '$footwearType';
+            }
+            newName += ' $uiCategory';
+
+            _itemName = newName.trim();
+            _nameController.text = _itemName;
           });
 
           Get.closeCurrentSnackbar();
+
+          String detectionDetails = 'Detected: $uiCategory';
+          if (subType != null) {
+            detectionDetails += ' • $subType';
+          } else if (footwearType != null) {
+            detectionDetails += ' • $footwearType';
+          }
+          detectionDetails += ' • Color: $detectedColor (${(data['confidence'] * 100).toStringAsFixed(1)}% confident)';
+
           Get.snackbar(
             'AI Analysis Complete!',
-            'Detected: $uiCategory • Color: ${data['color']} (${(data['confidence'] * 100).toStringAsFixed(1)}% confident)',
+            'Detected: $uiCategory'
+                '${subType != null ? " • $subType" : ""}'
+                ' • Color: $detectedColor (${(data['confidence'] * 100).toStringAsFixed(1)}% confident)',
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withOpacity(0.8),
+            backgroundColor: Colors.green.withValues(alpha: 0.8),
             colorText: Colors.white,
             duration: const Duration(seconds: 4),
           );
@@ -442,7 +377,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         'AI Timeout',
         'Auto-detection took too long. Please select category manually.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
         duration: const Duration(seconds: 4),
       );
@@ -454,7 +389,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         'Manual Selection Required',
         'AI detection unavailable. Please select category manually.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
         duration: const Duration(seconds: 4),
       );
@@ -469,7 +404,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         'Error',
         'Please upload an image first.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -524,14 +459,14 @@ class _AddItemScreenState extends State<AddItemScreen> {
           duration: const Duration(seconds: 10),
         );
 
-        await _uploadImage(newImageFile,shouldProcessML: false);
+        await _updateLocalImage(newImageFile, shouldProcessML: false);
 
         Get.closeCurrentSnackbar();
         Get.snackbar(
           'Success',
           'Image cropped and updated!',
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withOpacity(0.8),
+          backgroundColor: Colors.green.withValues(alpha: 0.8),
           colorText: Colors.white,
         );
       }
@@ -542,34 +477,21 @@ class _AddItemScreenState extends State<AddItemScreen> {
         'Error',
         'Cropping failed: $e',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
     }
   }
 
-  Future<void> _uploadImage(File imageFile,{bool shouldProcessML = false}) async {
+  Future<void> _updateLocalImage(File imageFile, {bool shouldProcessML = false}) async {
     try {
-      // 1. Show an immediate loading overlay instead of a snackbar
       Get.showOverlay(
         asyncFunction: () async {
-          final userId = supabase.auth.currentUser!.id;
-          final fileName = '$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-          await supabase.storage.from('wardrobe_image').upload(
-            fileName,
-            imageFile,
-            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-          );
-
-          final publicUrl = supabase.storage.from('wardrobe_image').getPublicUrl(fileName);
-
           if (shouldProcessML) {
             await _processImageWithML(imageFile);
           }
 
           setState(() {
-            _itemImageUrl = publicUrl;
             _selectedImageFile = imageFile;
             _isImageUploaded = true;
           });
@@ -579,91 +501,26 @@ class _AddItemScreenState extends State<AddItemScreen> {
         ),
       );
     } catch (e) {
-      Get.snackbar('Error', 'Upload failed: $e', backgroundColor: Colors.red);
+      Get.snackbar('Error', 'Failed to update image: $e', backgroundColor: Colors.red);
     }
   }
 
-  // Future<void> _uploadImage(File imageFile) async {
-  //   try {
-  //     final userId = supabase.auth.currentUser!.id;
-  //     final fileName = '$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
-  //
-  //     final fileSize = await imageFile.length();
-  //     final fileSizeMB = fileSize / 1024 / 1024;
-  //     print('📤 Uploading file size: ${fileSizeMB.toStringAsFixed(2)} MB');
-  //
-  //     if (fileSizeMB > 10) {
-  //       throw Exception('File too large (${fileSizeMB.toStringAsFixed(1)}MB). Maximum is 10MB.');
-  //     }
-  //
-  //     Get.snackbar(
-  //       'Uploading',
-  //       'Uploading image to cloud...',
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: const Color(0xFF00C7B1),
-  //       colorText: Colors.white,
-  //       showProgressIndicator: true,
-  //       duration: const Duration(seconds: 15),
-  //     );
-  //
-  //     await supabase.storage.from('wardrobe_image').upload(
-  //       fileName,
-  //       imageFile,
-  //       fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-  //     );
-  //
-  //     final publicUrl = supabase.storage.from('wardrobe_image').getPublicUrl(fileName);
-  //
-  //     Get.closeCurrentSnackbar();
-  //
-  //     // Try ML processing (non-blocking)
-  //     await _processImageWithML(imageFile);
-  //
-  //     if (mounted) {
-  //       setState(() {
-  //         _itemImageUrl = publicUrl;
-  //         _selectedImageFile = imageFile;
-  //         _isImageUploaded = true;
-  //       });
-  //     }
-  //
-  //     print('✅ Image uploaded successfully. URL: $publicUrl');
-  //
-  //   } on StorageException catch (e) {
-  //     print('❌ Supabase Storage Error: ${e.message}');
-  //     Get.closeCurrentSnackbar();
-  //     Get.snackbar(
-  //       'Storage Error',
-  //       e.message,
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: Colors.red.withOpacity(0.8),
-  //       colorText: Colors.white,
-  //     );
-  //   } catch (e) {
-  //     print('❌ General Image Upload Error: $e');
-  //     Get.closeCurrentSnackbar();
-  //     Get.snackbar(
-  //       'Error',
-  //       'Failed to upload image: $e',
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: Colors.red.withOpacity(0.8),
-  //       colorText: Colors.white,
-  //     );
-  //   }
-  // }
+
 
   // IMPROVED: Add item to wardrobe with proper validation
   void _addItemToWardrobe() async {
-    if (_itemName.isEmpty || _selectedCategory == null || !_isImageUploaded) {
+    if (_itemName.isEmpty || _selectedCategory == null || _selectedImageFile == null) {
       Get.snackbar(
         'Validation',
         'Please fill all details and upload an image.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
     }
+
+    setState(() => _isProcessing = true);
 
     Get.snackbar(
       'Saving',
@@ -678,12 +535,29 @@ class _AddItemScreenState extends State<AddItemScreen> {
     try {
       final userId = supabase.auth.currentUser?.id;
 
-      //  FIXED: Proper data structure for database
+      // ✅ Upload with proper extension
+      final extension = _removeBackground ? 'png' : 'jpg';
+      final fileName = '$userId/${DateTime.now().millisecondsSinceEpoch}.$extension';
+
+      await supabase.storage.from('wardrobe_image').upload(
+        fileName,
+        _selectedImageFile!,
+        fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+      );
+
+      final finalPublicUrl = supabase.storage.from('wardrobe_image').getPublicUrl(fileName);
+      String? finalSubType;
+      if (_selectedCategory == 'Bottomwear') {
+        finalSubType = _detectedJeansType;
+      } else if (_selectedCategory == 'Footwear') {
+        finalSubType = _detectedFootwearType; // ✅ NEW: Use footwear type for Footwear category
+      }
       final newItem = {
         'user_id': userId,
         'item_name': _itemName.trim(),
         'category': _selectedCategory,
-        'image_url': _itemImageUrl,
+        'sub_type': finalSubType,
+        'image_url': finalPublicUrl,
         'color': _detectedColor ?? 'Unknown',
         'remove_background': _removeBackground,
         'created_at': DateTime.now().toIso8601String(),
@@ -693,40 +567,51 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
       await supabase.from('wardrobe_items').insert(newItem);
 
-      print('Item Added to Wardrobe Successfully!');
+      print('✅ Item Added Successfully!');
 
       Get.closeCurrentSnackbar();
       Get.snackbar(
-        'Success! ',
+        'Success!',
         'Item added to your wardrobe',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.8),
+        backgroundColor: Colors.green.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
 
-      // 🔧 FIXED: Return with result flag to trigger refresh
       Get.back(result: true);
 
+    } on StorageException catch (e) {
+      print('❌ Storage Error: ${e.message}');
+      Get.closeCurrentSnackbar();
+      Get.snackbar(
+        'Upload Failed',
+        e.message,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
+        colorText: Colors.white,
+      );
     } on PostgrestException catch (error) {
-      print('Supabase Insert Error: ${error.message}');
+      print('❌ Database Error: ${error.message}');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Database Error',
         error.message,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
     } catch (e) {
-      print('General Error: $e');
+      print('❌ General Error: $e');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Error',
         'Failed to add item. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
+    } finally {
+      setState(() => _isProcessing = false);
     }
   }
 
@@ -789,7 +674,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     final cardHeight = size.height * 0.22;
     final iconSize = size.width * 0.12;
     final uploadCardColor = _scaffoldColor;
-    final uploadCardBorderColor = _kPrimaryTeal.withOpacity(0.5);
+    final uploadCardBorderColor = _kPrimaryTeal.withValues(alpha: 0.5);
 
     return GestureDetector(
       onTap: _pickImage,
@@ -822,8 +707,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
       decoration: BoxDecoration(
         color: _surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _dividerColor.withOpacity(0.5)),
-        boxShadow: [BoxShadow(color: _dividerColor.withOpacity(0.2), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 3))],
+        border: Border.all(color: _dividerColor.withValues(alpha: 0.5)),
+        boxShadow: [BoxShadow(color: _dividerColor.withValues(alpha: 0.2), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 3))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -837,7 +722,12 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 decoration: BoxDecoration(
                   color: _scaffoldColor,
                   borderRadius: BorderRadius.circular(4),
-                  image: DecorationImage(image: NetworkImage(_itemImageUrl), fit: BoxFit.cover),
+                  image: DecorationImage(
+                    image: _selectedImageFile != null 
+                        ? FileImage(_selectedImageFile!) as ImageProvider 
+                        : NetworkImage(_itemImageUrl), 
+                    fit: BoxFit.cover
+                  ),
                 ),
               ),
               SizedBox(width: size.width * 0.04),
@@ -887,8 +777,8 @@ class _AddItemScreenState extends State<AddItemScreen> {
       decoration: BoxDecoration(
         color: _surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _dividerColor.withOpacity(0.5)),
-        boxShadow: [BoxShadow(color: _dividerColor.withOpacity(0.2), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 3))],
+        border: Border.all(color: _dividerColor.withValues(alpha: 0.5)),
+        boxShadow: [BoxShadow(color: _dividerColor.withValues(alpha: 0.2), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 3))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -898,20 +788,72 @@ class _AddItemScreenState extends State<AddItemScreen> {
             Container(
               padding: EdgeInsets.all(size.width * 0.03),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.withOpacity(0.3)),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: size.width * 0.05),
-                  SizedBox(width: size.width * 0.02),
-                  Expanded(
-                    child: Text(
-                      'AI detected: $_predictedCategory${_detectedColor != null ? " ($_detectedColor)" : ""}',
-                      style: TextStyle(color: Colors.green, fontSize: size.width * 0.035, fontWeight: FontWeight.w600),
-                    ),
+                  Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: size.width * 0.05),
+                      SizedBox(width: size.width * 0.02),
+                      Expanded(
+                        child: Text(
+                          'AI detected: $_predictedCategory${_detectedColor != null ? " • $_detectedColor" : ""}',
+                          style: TextStyle(color: Colors.green, fontSize: size.width * 0.035, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
+                  // 🆕 Jeans type badge — sirf Bottomwear ke liye dikhega
+                  if (_detectedJeansType != null) ...[
+                    SizedBox(height: 8),
+                    Padding(
+                      padding: EdgeInsets.only(left: size.width * 0.07),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _kPrimaryTeal.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: _kPrimaryTeal.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          '👖 $_detectedJeansType',
+                          style: TextStyle(
+                            color: _kPrimaryTeal,
+                            fontSize: size.width * 0.032,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // ✅ NEW: Show Footwear type badge
+                  if (_detectedFootwearType != null) ...[
+                    SizedBox(height: 8),
+                    Padding(
+                      padding: EdgeInsets.only(left: size.width * 0.07),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _kPrimaryTeal.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: _kPrimaryTeal.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          '👟 $_detectedFootwearType',
+                          style: TextStyle(
+                            color: _kPrimaryTeal,
+                            fontSize: size.width * 0.032,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -921,9 +863,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
             Container(
               padding: EdgeInsets.all(size.width * 0.03),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -943,6 +885,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
           Text('Item Name', style: TextStyle(fontSize: size.width * 0.04, fontWeight: FontWeight.w600, color: _primaryTextColor)),
           SizedBox(height: size.height * 0.01),
           TextField(
+            controller: _nameController,
             onChanged: (value) => setState(() => _itemName = value),
             style: TextStyle(color: _primaryTextColor),
             decoration: InputDecoration(
@@ -983,7 +926,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
       padding: EdgeInsets.symmetric(horizontal: padding, vertical: size.height * 0.015),
       decoration: BoxDecoration(
         color: _surfaceColor,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -5))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -5))],
       ),
       child: SizedBox(
         height: buttonHeight,
@@ -994,7 +937,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 4,
-            disabledBackgroundColor: _kPrimaryTeal.withOpacity(0.5),
+            disabledBackgroundColor: _kPrimaryTeal.withValues(alpha: 0.5),
           ),
           child: Text('Add to Wardrobe', style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold)),
         ),
