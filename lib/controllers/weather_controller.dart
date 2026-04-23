@@ -2,8 +2,9 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 
-class WeatherController extends GetxController {
+class WeatherController extends GetxController with WidgetsBindingObserver {
   // ⚠️ Replace with your actual OpenWeatherMap API Key
   final String apiKey = '20388c5b094a033e5fe0c2adb09ea8cd';
   final String baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
@@ -17,7 +18,21 @@ class WeatherController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
     fetchWeather();
+  }
+
+  @override
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.onClose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      fetchWeather();
+    }
   }
 
   Future<void> fetchWeather() async {
@@ -48,7 +63,13 @@ class WeatherController extends GetxController {
         print("API Error: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
-      locationName.value = "Offline";
+      if (e.toString().contains('Location services are disabled')) {
+        locationName.value = "Location Off";
+      } else if (e.toString().contains('denied')) {
+        locationName.value = "Permission Denied";
+      } else {
+        locationName.value = "Offline";
+      }
       weatherIcon.value = '⚠️';
       print("Weather fetch error: $e");
     } finally {
@@ -79,6 +100,24 @@ class WeatherController extends GetxController {
     }
 
     return await Geolocator.getCurrentPosition();
+  }
+
+  // 🖱️ Handle Tap to fix location issues or refresh
+  Future<void> handleLocationTap() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+      // Note: We don't await the user coming back, but next fetch will try again
+    } else {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      } else if (permission == LocationPermission.deniedForever) {
+        await Geolocator.openAppSettings();
+      }
+    }
+    // Try to refresh even if we just opened settings (user might toggle it quickly)
+    fetchWeather();
   }
 
   // Helper to convert OpenWeatherMap icon code to Emoji

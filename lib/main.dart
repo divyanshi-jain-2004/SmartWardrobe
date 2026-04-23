@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:get/get.dart';
 import 'package:smart_wardrobe_new/controllers/user_controller.dart';
 import 'package:smart_wardrobe_new/controllers/weather_controller.dart';
+import 'package:smart_wardrobe_new/controllers/wardrobe_controller.dart';
 import 'package:smart_wardrobe_new/screens/HomeScreen.dart';
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
 import 'package:smart_wardrobe_new/screens/ResetPasswordScreen.dart';
@@ -42,6 +43,7 @@ Future<void> main() async {
   Get.put(UserController());
   Get.put(OutfitController());
   Get.put(WeatherController());
+  Get.put(WardrobeController());
 
   runApp(const MyApp());
 

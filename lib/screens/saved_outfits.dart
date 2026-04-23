@@ -47,14 +47,14 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
           )
       ),
       centerTitle: true,
-      actions: [
-        IconButton(
-          icon: Icon(Icons.share_outlined, color: _secondaryTextColor(context)),
-          onPressed: () {
-            Get.snackbar('Share', 'Sharing functionality is not yet implemented.', snackPosition: SnackPosition.TOP);
-          },
-        ),
-      ],
+      // actions: [
+      //   IconButton(
+      //     icon: Icon(Icons.share_outlined, color: _secondaryTextColor(context)),
+      //     onPressed: () {
+      //       Get.snackbar('Share', 'Sharing functionality is not yet implemented.', snackPosition: SnackPosition.TOP);
+      //     },
+      //   ),
+      // ],
     );
   }
 
@@ -133,28 +133,7 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
         )
             : Column(
           children: [
-            // Search Bar Placeholder
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                    color: _surfaceColor(context),
-                    borderRadius: BorderRadius.circular(15.0),
-                    boxShadow: [
-                      BoxShadow(color: Theme.of(context).dividerColor.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))
-                    ]
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.search, color: _secondaryTextColor(context)),
-                    const SizedBox(width: 8),
-                    // 💡 Display the size of the live list
-                    Text('Showing all ${liveOutfits.length} saved outfits', style: TextStyle(color: _secondaryTextColor(context))),
-                  ],
-                ),
-              ),
-            ),
+
 
             Expanded(
               child: GridView.builder(
@@ -184,7 +163,7 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
             ),
           ],
         ),
-        bottomNavigationBar: _buildBottomNavigationBar(context),
+
       );
     });
   }
@@ -217,17 +196,30 @@ class _OutfitCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Outfit Image (Using Image.asset for locally saved suggestions)
-          Image.asset(
-            outfit.imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              // Fallback for missing asset
-              return Container(
-                color: Theme.of(context).dividerColor.withOpacity(0.5),
-                child: Center(
-                  child: Icon(Icons.style_outlined, color: _primaryTextColor(context).withOpacity(0.5)),
-                ),
+          // Outfit Image (Handling both local assets and network URLs)
+          Builder(
+            builder: (context) {
+              final images = outfit.imageUrl.split(',');
+              return Column(
+                children: images.map((path) {
+                  return Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      color: const Color(0xFFF4F4F4),
+                      child: path.startsWith('http')
+                          ? Image.network(
+                              path,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.grey),
+                            )
+                          : Image.asset(
+                              path,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.grey),
+                            ),
+                    ),
+                  );
+                }).toList(),
               );
             },
           ),
@@ -247,13 +239,13 @@ class _OutfitCard extends StatelessWidget {
                   },
                 ),
                 const SizedBox(width: 4),
-                _buildIconChip(
-                  icon: Icons.edit_outlined,
-                  color: _primaryTextColor(context),
-                  onTap: () {
-                    Get.snackbar('Edit', 'Editing ${outfit.name}.', snackPosition: SnackPosition.TOP);
-                  },
-                ),
+                // _buildIconChip(
+                //   icon: Icons.edit_outlined,
+                //   color: _primaryTextColor(context),
+                //   onTap: () {
+                //     Get.snackbar('Edit', 'Editing ${outfit.name}.', snackPosition: SnackPosition.TOP);
+                //   },
+                // ),
               ],
             ),
           ),

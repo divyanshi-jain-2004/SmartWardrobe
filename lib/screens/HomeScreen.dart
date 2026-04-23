@@ -687,6 +687,8 @@ class HomeContent extends StatelessWidget {
     final horizontalPadding = size.width * 0.05;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : const Color(0xFF263238);
+    final WeatherController weatherController = Get.find<WeatherController>();
+    final WardrobeController wardrobeController = Get.find<WardrobeController>();
 
     return Stack(
       children: [
@@ -702,9 +704,15 @@ class HomeContent extends StatelessWidget {
           ),
         ),
         SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: 120, top: 20),
-            children: [
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await weatherController.fetchWeather();
+              await wardrobeController.fetchCounts();
+            },
+            color: AppColors.accentTeal,
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 120, top: 20),
+              children: [
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: const HomeHeader(),
@@ -746,7 +754,9 @@ class HomeContent extends StatelessWidget {
             ],
           ),
         ),
+        )
       ],
+
     );
   }
 }
@@ -802,30 +812,44 @@ class HomeHeader extends StatelessWidget {
                         color: isDark ? Colors.white : Colors.black87
                     ),
                   ),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on, size: 12, color: AppColors.accentTeal),
-                      Text(
-                        ' $location • $temp $icon',
-                        style: TextStyle(
-                            color: isDark ? Colors.white60 : Colors.grey[600],
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500
+                  GestureDetector(
+                    onTap: () => weatherController.handleLocationTap(),
+                    behavior: HitTestBehavior.opaque,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.location_on, size: 12, color: AppColors.accentTeal),
+                        Text(
+                          ' $location • $temp $icon',
+                          style: TextStyle(
+                              color: isDark ? Colors.white60 : Colors.grey[600],
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
             ],
           ),
-          _buildGlassIconButton(context, "assets/body.png", () => Get.toNamed('/body-scan')),
+          Row(
+            children: [
+              _buildGlassIconButton(context, Icons.refresh_rounded, () {
+                weatherController.fetchWeather();
+                Get.find<WardrobeController>().fetchCounts();
+              }),
+              const SizedBox(width: 8),
+              _buildGlassIconButton(context, "assets/body.png", () => Get.toNamed('/body-scan')),
+            ],
+          ),
         ],
       );
     });
   }
 
-  Widget _buildGlassIconButton(BuildContext context, String img, VoidCallback onTap) {
+  Widget _buildGlassIconButton(BuildContext context, dynamic iconOrImage, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),
@@ -840,7 +864,9 @@ class HomeHeader extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: isDark ? Colors.white10 : Colors.white.withValues(alpha:0.3)),
             ),
-            child: Image.asset(img,height: 24,width: 24,),
+            child: iconOrImage is IconData
+                ? Icon(iconOrImage, size: 24, color: isDark ? Colors.white : Colors.black87)
+                : Image.asset(iconOrImage, height: 24, width: 24),
           ),
         ),
       ),
@@ -896,7 +922,7 @@ class LookCard extends StatelessWidget {
       String botUrl = bot['image_url'] ?? '';
 
       return Container(
-        height: size.height * 0.42,
+        height: size.height * 0.52,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(35),
           boxShadow: [
@@ -928,41 +954,41 @@ class LookCard extends StatelessWidget {
               ),
             ),
             ),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(35),
-                gradient: LinearGradient(
-                  colors: [Colors.black.withValues(alpha:0.8), Colors.transparent],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                ),
-              ),
-            ),
+
             Positioned(
-              bottom: 25, left: 20, right: 20,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('AI Daily Pick', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 12)),
-                        Text(outfitName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                      ],
+              bottom: 15, left: 15, right: 15,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha:0.5),
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('AI Daily Pick', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 12)),
+                          Text(outfitName, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => Get.to(() => const OutfitSuggestionScreen()),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ElevatedButton(
+                      onPressed: () => Get.to(() => const OutfitSuggestionScreen()),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      ),
+                      child: const Text('Try it On', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ),
-                    child: const Text('Try it On', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -995,7 +1021,7 @@ class WardrobeStatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final WardrobeController wardrobeController = Get.put(WardrobeController());
+    final WardrobeController wardrobeController = Get.find<WardrobeController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Obx(() {
@@ -1008,29 +1034,17 @@ class WardrobeStatsGrid extends StatelessWidget {
       // 🎯 Calculate total count using the new getter
       final totalAll = wardrobeController.totalItemsCount;
 
-      final stats = [
-        // 🎯 1. New Total Card
-        {
-          'count': '$totalAll',
-          'label': 'Total Items',
-          'icon': Icons.all_inclusive_rounded,
-          'color': isDark ? Colors.purple[900]?.withValues(alpha:0.3) : Colors.purple[50]
-        },
-        // 2. Tops
-        {
-          // 🎯 Combine all possible "Top" category names from your DB
-          'count': '${(counts['Topwear'] ?? 0) + (counts['Tops/Blouses'] ?? 0) + (counts['Tops'] ?? 0)}',
-          'label': 'Tops',
-          'icon': Icons.dry_cleaning_rounded,
-          'color': isDark ? Colors.blue[900]?.withValues(alpha:0.3) : Colors.blue[50]
-        },
-        // 3. Bottoms
-        {'count': '${(counts['Bottomwear'] ?? 0)+(counts['Bottomwear(Women)']??0)}', 'label': 'Bottoms', 'icon': Icons.layers_rounded, 'color': isDark ? Colors.orange[900]?.withValues(alpha:0.3) : Colors.orange[50]},
-        // 4. Footwear
-        {'count': '${counts['Footwear'] ?? 0}', 'label': 'Footwear', 'icon': Icons.ice_skating_rounded, 'color': isDark ? Colors.pink[900]?.withValues(alpha:0.3) : Colors.pink[50]},
-        // 5. Jewelry
-        {'count': '${counts['Accessories'] ?? 0}', 'label': 'Jewelry', 'icon': Icons.watch_rounded, 'color': isDark ? Colors.green[900]?.withValues(alpha:0.3) : Colors.green[50]},
-      ];
+      final stats = [];
+
+      // 🎯 1. Dynamic Category Cards from Controller
+      for (var cat in wardrobeController.categories) {
+        stats.add({
+          'count': '${counts[cat.title] ?? 0}',
+          'label': cat.title,
+          'icon': cat.icon,
+          'color': _getCategoryColor(cat.title, isDark),
+        });
+      }
 
       return GridView.builder(
         shrinkWrap: true,
@@ -1041,11 +1055,20 @@ class WardrobeStatsGrid extends StatelessWidget {
           mainAxisSpacing: 15,
           childAspectRatio: 1.4,
         ),
-        itemCount: stats.length, // 🎯 Changed to stats.length (which is 5 now)
+        itemCount: stats.length,
         itemBuilder: (context, index) => _buildStatTile(context, stats[index]),
       );
     });
   }
+
+  Color? _getCategoryColor(String title, bool isDark) {
+    if (title.contains('Top')) return isDark ? Colors.blue[900]?.withValues(alpha:0.3) : Colors.blue[50];
+    if (title.contains('Bottom')) return isDark ? Colors.orange[900]?.withValues(alpha:0.3) : Colors.orange[50];
+    if (title.contains('Footwear')) return isDark ? Colors.pink[900]?.withValues(alpha:0.3) : Colors.pink[50];
+    if (title.contains('Jewellery') || title.contains('Accessory')) return isDark ? Colors.green[900]?.withValues(alpha:0.3) : Colors.green[50];
+    return isDark ? Colors.cyan[900]?.withValues(alpha:0.3) : Colors.cyan[50];
+  }
+
   Widget _buildStatTile(BuildContext context, Map<String, dynamic> data) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
