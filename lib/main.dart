@@ -33,6 +33,10 @@ Future<void> main() async {
   await Supabase.initialize(
     url: 'https://srzyhowfebtkueubwyqr.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyenlob3dmZWJ0a3VldWJ3eXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3ODk5OTMsImV4cCI6MjA3ODM2NTk5M30.tbzSYGXo80I6nWogAOOMHq_paxTQhuBilk-irfeJWMk',
+      realtimeClientOptions: const RealtimeClientOptions(
+        eventsPerSecond: 10,
+        timeout: Duration(seconds: 30),
+      )
   );
 
   await GetStorage.init();

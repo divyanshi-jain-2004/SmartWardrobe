@@ -736,6 +736,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_wardrobe_new/controllers/outfit_controller.dart';
@@ -880,10 +881,17 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                 );
               }
 
+              final box = GetStorage();
+              final String profileGender = box.read('user_gender') ?? 'Women';
+
               // Safely get currentCombo
-              final currentCombo = outfitController.generatedOutfits.isNotEmpty 
-                  ? outfitController.generatedOutfits[_currentOutfitIndex % outfitController.generatedOutfits.length] 
+              final currentCombo = outfitController.generatedOutfits.isNotEmpty
+                  ? outfitController.generatedOutfits[_currentOutfitIndex % outfitController.generatedOutfits.length]
                   : null;
+
+              String currentGender = currentCombo?['gender'] ??
+                  currentCombo?['bottom']?['gender'] ??
+                  'Women';
 
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -898,16 +906,19 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                     _buildControlPanel(),
                     const SizedBox(height: 40),
 
+
                     if (currentCombo != null)
+
                       ShoppableGrid(
                         // 1. Get the category from the bottom (e.g., 'Jeans')
-                        category: currentCombo['bottom']?['category'] ?? 'Jeans',
+                        topCategory: currentCombo['top']?['category'] ?? 'Tops',
+                        bottomCategory: currentCombo['bottom']?['category'] ?? 'Jeans',
 
                         // 2. Get the sub_type from the recommendation (e.g., 'Wide Leg')
                         subType: currentCombo['sub_type'] ?? '',
 
                         // 3. Get gender (Use your GetStorage or currentCombo metadata)
-                        gender: currentCombo['gender'] ?? 'Women',
+                        gender:profileGender,
                       ),
                     const SizedBox(height: 40),
                   ],
@@ -961,69 +972,233 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   }
 }
 
+// class ShoppableGrid extends StatelessWidget {
+//   final String category;
+//   final String subType;
+//   final String gender;
+//
+//   const ShoppableGrid({
+//     super.key,
+//     required this.category,
+//     required this.subType,
+//     required this.gender,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return StreamBuilder(
+//       stream: Supabase.instance.client
+//           .from('shopping_deals')
+//           .stream(primaryKey: ['id']),
+//           // .eq('category', category)
+//           // .eq('gender', gender),
+//       // We use .ilike on the item_name to find the specific sub-type (e.g., 'Wide Leg')
+//       // .ilike('item_name', '%$subType%'),
+//       builder: (context, snapshot) {
+//         if (snapshot.hasError) print("Supabase Error: ${snapshot.error}");
+//
+//         if (snapshot.connectionState == ConnectionState.waiting) {
+//           return const Center(child: CircularProgressIndicator());
+//         }
+//         final List<Map<String, dynamic>> items =
+//             (snapshot.data as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+//         // final filteredItems = items.where((item) => item['category'].toString().toLowerCase() == category).toList();
+//         final filteredItems = items.where((item) {
+//           // 🎯 Use lowercase and trim to ignore any spelling/space issues
+//           String dbCategory = (item['category'] ?? "").toString().toLowerCase().trim();
+//           String uiCategory = category.toLowerCase().trim();
+//
+//           String dbGender = (item['gender'] ?? "").toString().toLowerCase().trim();
+//           String uiGender = gender.toLowerCase().trim();
+//
+//           return dbCategory == uiCategory && dbGender == uiGender;
+//         }).toList();
+//         if (filteredItems.isEmpty) {
+//           return Center(
+//             child: Text("No items found for $gender's $category"),
+//           );
+//         }
+//
+//         if (!snapshot.hasData || (snapshot.data as List).isEmpty) {
+//           return Center(
+//             child: Padding(
+//               padding: const EdgeInsets.symmetric(vertical: 20),
+//               child: Text(
+//                 "No $gender's $subType $category found.",
+//                 style: const TextStyle(color: Colors.grey, fontSize: 12),
+//               ),
+//             ),
+//           );
+//         }
+//
+//         return Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             const Text("Shop the Look", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+//             const SizedBox(height: 16),
+//             GridView.builder(
+//               shrinkWrap: true,
+//               physics: const NeverScrollableScrollPhysics(),
+//               itemCount: items.length,
+//               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//                 crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
+//                 crossAxisSpacing: 15, mainAxisSpacing: 15, childAspectRatio: 0.65,
+//               ),
+//               itemBuilder: (context, index) => _buildProductCard(items[index]),
+//             ),
+//           ],
+//         );
+//       },
+//     );
+//   }
+//
+//   Widget _buildProductCard(Map<String, dynamic> item) {
+//     return GestureDetector(
+//       onTap: () => launchUrl(Uri.parse(item['link']), mode: LaunchMode.externalApplication),
+//       child: Container(
+//         decoration: BoxDecoration(
+//             color: Colors.white,
+//             borderRadius: BorderRadius.circular(20),
+//             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)]
+//         ),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Expanded(
+//                 child: ClipRRect(
+//                     borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+//                     child: Image.network(
+//                       item['image_url'],
+//                       fit: BoxFit.cover,
+//                       width: double.infinity,
+//                       errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
+//                     )
+//                 )
+//             ),
+//             Padding(
+//               padding: const EdgeInsets.all(12.0),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(item['platform'].toString().toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.accentTeal)),
+//                   Text(item['item_name'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+//                   Text("₹${item['price']}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900)),
+//                 ],
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
 class ShoppableGrid extends StatelessWidget {
-  final String category;
+  final String topCategory;    // 🎯 Added
+  final String bottomCategory;
   final String subType;
   final String gender;
 
   const ShoppableGrid({
     super.key,
-    required this.category,
+
     required this.subType,
-    required this.gender,
+    required this.gender, required this.topCategory, required this.bottomCategory,
   });
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
+    return StreamBuilder<List<Map<String, dynamic>>>(
       stream: Supabase.instance.client
           .from('shopping_deals')
           .stream(primaryKey: ['id'])
-          // .eq('category', category)
           .eq('gender', gender),
-      // We use .ilike on the item_name to find the specific sub-type (e.g., 'Wide Leg')
-      // .ilike('item_name', '%$subType%'),
+        // .limit(20),// Filter by Gender at the DB level
       builder: (context, snapshot) {
-        if (snapshot.hasError) print("Supabase Error: ${snapshot.error}");
+        if (snapshot.hasError) return Text("Error: ${snapshot.error}");
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        final List<Map<String, dynamic>> items =
-            (snapshot.data as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
-        final filteredItems = items.where((item) => item['category'] == category).toList();
+
+        final List<Map<String, dynamic>> allItems = snapshot.data ?? [];
+
+
+        print("---------------------------------------");
+        print("🔍 DEBUGGING SHOPPABLE GRID");
+        print("🎯 UI is looking for Category: '$topCategory'");
+        print("🎯 UI is looking for Gender: '$gender'");
+        print("📦 Total items received from Supabase: ${allItems.length}");
+
+        if (allItems.isNotEmpty) {
+          print("📋 Sample DB Category from first item: '${allItems[0]['category']}'");
+          print("📋 Sample DB Gender from first item: '${allItems[0]['gender']}'");
+        }
+        print("---------------------------------------");
+
+        // 🎯 1. FILTER LOGIC
+        // This matches 'Jeans' with 'Jeans' and 'Women' with 'Women'
+        final filteredItems = allItems.where((item) {
+          String dbCat = (item['category'] ?? "").toString().toLowerCase().trim();
+          String targetTop = topCategory.toLowerCase().trim();
+          String targetBottom = bottomCategory.toLowerCase().trim();
+
+          // Match if it's a top OR a bottom for this outfit
+          return dbCat == targetTop || dbCat == targetBottom;
+        }).toList();
+        filteredItems.shuffle();
+        // final filteredItems = allItems.where((item) {
+        //   String dbCat = (item['category'] ?? "").toString().toLowerCase().trim();
+        //   String uiCat = category.toLowerCase().trim();
+        //
+        //   // 🎯 THE FIX: If UI says 'bottomwear', treat it as 'jeans'
+        //   // because that's what your Python script saved.
+        //   if (uiCat == 'bottomwear') {
+        //     return dbCat == 'jeans';
+        //   }
+        //
+        //   return dbCat == uiCat;
+        // }).toList();
+
+        // 🎯 2. DEBUG PRINT
+        // Look at your VS Code terminal to see these values!
+        print("🔍 UI Category: $topCategory | DB Items Found: ${filteredItems.length}");
+
         if (filteredItems.isEmpty) {
           return Center(
-            child: Text("No items found for $gender's $category"),
-          );
-        }
-
-        if (!snapshot.hasData || (snapshot.data as List).isEmpty) {
-          return Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.symmetric(vertical: 30),
               child: Text(
-                "No $gender's $subType $category found.",
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                "No items found for $gender's $topCategory",
+                style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
             ),
           );
         }
 
+        // 🎯 3. UI RENDERING
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Shop the Look", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+            const Text(
+              "Shop the Look",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+            ),
             const SizedBox(height: 16),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: items.length,
+              itemCount: filteredItems.length, // ✅ Use filtered length
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-                crossAxisSpacing: 15, mainAxisSpacing: 15, childAspectRatio: 0.65,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 15,
+                childAspectRatio: 0.65,
               ),
-              itemBuilder: (context, index) => _buildProductCard(items[index]),
+              itemBuilder: (context, index) {
+                // ✅ Use the specific filtered item
+                return _buildProductCard(filteredItems[index]);
+              },
             ),
           ],
         );
@@ -1036,32 +1211,43 @@ class ShoppableGrid extends StatelessWidget {
       onTap: () => launchUrl(Uri.parse(item['link']), mode: LaunchMode.externalApplication),
       child: Container(
         decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)]
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-                child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                    child: Image.network(
-                      item['image_url'],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
-                    )
-                )
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                child: Image.network(
+                  item['image_url'],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item['platform'].toString().toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.accentTeal)),
-                  Text(item['item_name'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                  Text("₹${item['price']}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900)),
+                  Text(
+                    item['platform'].toString().toUpperCase(),
+                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.teal),
+                  ),
+                  Text(
+                    item['item_name'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    "₹${item['price']}",
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+                  ),
                 ],
               ),
             ),
@@ -1117,8 +1303,50 @@ class OutfitCard extends StatelessWidget {
     );
   }
 
+  // Widget _buildImage(String path) {
+  //   if (path.isEmpty) return const SizedBox();
+  //   return path.startsWith('http') ? Image.network(path, fit: BoxFit.contain) : Image.asset(path, fit: BoxFit.contain);
+  // }
+
   Widget _buildImage(String path) {
     if (path.isEmpty) return const SizedBox();
-    return path.startsWith('http') ? Image.network(path, fit: BoxFit.contain) : Image.asset(path, fit: BoxFit.contain);
+
+    // 🎯 Use Image.network for Supabase URLs
+    if (path.startsWith('http')) {
+      return Image.network(
+        path,
+        fit: BoxFit.contain,
+        // 🛡️ FIX: This catches the 400 error and shows an icon instead of an exception
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: const Color(0xFFF4F4F4), // Match your card background
+            child: const Center(
+              child: Icon(
+                Icons.image_not_supported_outlined,
+                color: Colors.grey,
+                size: 40,
+              ),
+            ),
+          );
+        },
+        // 🌀 Optional: Show a tiny spinner while the image loads
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.grey,
+            ),
+          );
+        },
+      );
+    }
+
+    // Use Image.asset for your local mock images
+    return Image.asset(
+      path,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+    );
   }
 }
