@@ -543,7 +543,6 @@
 //     );
 //   }
 // }
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smart_wardrobe_new/controllers/outfit_controller.dart';
@@ -570,14 +569,23 @@ class _HomeScreenState extends State<HomeScreen> {
   // 1. Current Index Tracker
   int _selectedIndex = 0;
 
-  // 2. List of screens to switch between
-  final List<Widget> _screens = [
-    const HomeContent(), // Extracted the main home UI to a separate widget below
-    const MyWardrobeScreen(),
-    const OutfitSuggestionScreen(),
-    const EventPlannerScreen(),
-    const ProfileScreen(),
+  // 2. Lazy screen cache — only build a screen the first time it is tapped
+  final Map<int, Widget> _builtScreens = {};
+
+  static const _screenBuilders = [
+    HomeContent.new,
+    MyWardrobeScreen.new,
+    OutfitSuggestionScreen.new,
+    EventPlannerScreen.new,
+    ProfileScreen.new,
   ];
+
+  Widget _getScreen(int index) {
+    return _builtScreens.putIfAbsent(
+      index,
+      () => _screenBuilders[index](),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -585,10 +593,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       extendBody: true,
-      // 3. IndexedStack keeps the state of screens and allows switching
+      // Only the screens that have been visited are kept in the stack
       body: IndexedStack(
         index: _selectedIndex,
-        children: _screens,
+        children: List.generate(
+          _screenBuilders.length,
+          (i) => _builtScreens.containsKey(i) || i == _selectedIndex
+              ? _getScreen(i)
+              : const SizedBox.shrink(),
+        ),
       ),
       bottomNavigationBar: _buildUnifiedBottomNavBar(isDark),
     );
@@ -851,24 +864,27 @@ class HomeHeader extends StatelessWidget {
 
   Widget _buildGlassIconButton(BuildContext context, dynamic iconOrImage, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(50),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha:0.1) : Colors.white.withValues(alpha:0.5),
-              shape: BoxShape.circle,
-              border: Border.all(color: isDark ? Colors.white10 : Colors.white.withValues(alpha:0.3)),
+    // BackdropFilter/blur removed — it forces a full offscreen compositing pass
+    // every frame and is a significant cause of jank on mid-range devices.
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha:0.15) : Colors.white.withValues(alpha:0.75),
+          shape: BoxShape.circle,
+          border: Border.all(color: isDark ? Colors.white24 : Colors.white.withValues(alpha:0.5)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-            child: iconOrImage is IconData
-                ? Icon(iconOrImage, size: 24, color: isDark ? Colors.white : Colors.black87)
-                : Image.asset(iconOrImage, height: 24, width: 24),
-          ),
+          ],
         ),
+        child: iconOrImage is IconData
+            ? Icon(iconOrImage, size: 24, color: isDark ? Colors.white : Colors.black87)
+            : Image.asset(iconOrImage, height: 24, width: 24),
       ),
     );
   }

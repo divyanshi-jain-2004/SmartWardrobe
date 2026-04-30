@@ -2,7 +2,6 @@
 // Sirf _ModernTimelineCard aur _EventOutfitBottomSheet replace/add karo.
 // Baaki code same rehta hai.
 
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -35,14 +34,8 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
       backgroundColor: _scaffoldColor,
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: _scaffoldColor.withValues(alpha: 0.8),
+        backgroundColor: _scaffoldColor,
         elevation: 0,
-        flexibleSpace: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(color: Colors.transparent),
-          ),
-        ),
         title: Text(
           'UPCOMING EVENTS',
           style: TextStyle(

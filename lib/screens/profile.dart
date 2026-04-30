@@ -506,7 +506,6 @@
 //   }
 // }
 import 'dart:io';
-import 'dart:ui'; // Required for BackdropFilter (Glass effect)
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -725,35 +724,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // --- FLOATING NAV BAR WIDGET ---
   Widget _buildFloatingBottomNav() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Glass effect
-        child: Container(
-          height: 70,
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor.withOpacity(0.85),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+    return Container(
+      height: 70,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor.withOpacity(0.97),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navIcon(Icons.home_max_rounded, 0, () => Get.to(() => const HomeScreen())),
-              _navIcon(Icons.checkroom_rounded, 1, () => Get.to(() => const MyWardrobeScreen())),
-              _navIcon(Icons.auto_awesome_rounded, 2, () => Get.to(() => const OutfitSuggestionScreen())),
-              _navIcon(Icons.calendar_today_rounded, 3, () => Get.to(() => EventPlannerScreen())),
-              _navIcon(Icons.person_rounded, 4, null),
-            ],
-          ),
-        ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _navIcon(Icons.home_max_rounded, 0, () => Get.to(() => const HomeScreen())),
+          _navIcon(Icons.checkroom_rounded, 1, () => Get.to(() => const MyWardrobeScreen())),
+          _navIcon(Icons.auto_awesome_rounded, 2, () => Get.to(() => const OutfitSuggestionScreen())),
+          _navIcon(Icons.calendar_today_rounded, 3, () => Get.to(() => EventPlannerScreen())),
+          _navIcon(Icons.person_rounded, 4, null),
+        ],
       ),
     );
   }

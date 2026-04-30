@@ -39,8 +39,6 @@ Future<void> main() async {
       )
   );
 
-  await GetStorage.init();
-
   final session = Supabase.instance.client.auth.currentSession;
 
   Get.put(ThemeController());
