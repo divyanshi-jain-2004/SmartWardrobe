@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smart_wardrobe_new/main.dart';
-import 'package:smart_wardrobe_new/screens/login.dart'; // LoginScreen के लिए
+import 'package:smart_wardrobe_new/screens/login.dart';
 
-// --- App Colors (LoginScreen से लिए गए) ---
 const Color accentTeal = Color(0xFF0F766E);
-const Color originalGradientStart = Color(0xFFD8B4FE); // Lavender
-const Color originalGradientEnd = Color(0xFFA5F3FC);   // Teal Pastel
+const Color originalGradientStart = Color(0xFFD8B4FE);
+const Color originalGradientEnd = Color(0xFFA5F3FC);
 
 
 class PasswordResetScreen extends StatefulWidget {
@@ -42,9 +41,6 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
     );
   }
 
-  // ######################################################################
-  //                   🎯 SUPABASE PASSWORD CHANGE LOGIC (Unchanged)
-  // ######################################################################
 
   Future<void> _updatePassword() async {
     if (_newPasswordController.text != _confirmPasswordController.text) {
@@ -93,7 +89,6 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // LoginScreen जैसा Gradient Background
     final backgroundDecoration = const BoxDecoration(
       gradient: LinearGradient(
         colors: [originalGradientStart, originalGradientEnd],
@@ -103,15 +98,15 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
     );
 
     return Scaffold(
-      // 🎯 FIX: AppBar हटा दिया गया
+
       backgroundColor: Colors.transparent,
 
-      // extendBodyBehindAppBar: true, // AppBar हटाने पर इसकी आवश्यकता नहीं है
+
       body: Container(
         decoration: backgroundDecoration,
         child: Center(
           child: SingleChildScrollView(
-            // Vertical padding समायोजित किया गया
+
             padding: EdgeInsets.symmetric(horizontal: 30, vertical: screenHeight * 0.2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -179,7 +174,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
     );
   }
 
-  // 🛠️ Helper Method: Password Field (Must be present in the file)
+
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String hintText,

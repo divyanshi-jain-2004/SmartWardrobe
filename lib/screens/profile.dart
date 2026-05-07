@@ -678,7 +678,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _sectionLabel("ACCOUNT SETTINGS"),
                       _buildProfileCard([
-                        _buildModernItem(Icons.person_outline_rounded, "Edit Personal Info", () => Get.to(() => EditPersonalInfoScreen())),
+                        _buildModernItem(Icons.person_outline_rounded, "Edit Personal Info", () async {
+                          await Get.to(() => EditPersonalInfoScreen());
+                          if (mounted) setState(() {});
+                        }),
                         _buildModernItem(Icons.favorite_rounded, "Saved Outfits", () => Get.to(() => const SavedOutfitsScreen())),
                         _buildModernItem(Icons.lock_reset_rounded, "Change Password", () => Get.to(() => ChangePasswordScreen())),
                       ]),

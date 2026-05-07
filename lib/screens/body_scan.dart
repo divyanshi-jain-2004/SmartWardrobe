@@ -68,51 +68,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
     }
   }
 
-  // Future<void> _initializeCamera() async {
-  //   if (_isDisposed) return;
-  //
-  //   try {
-  //     final cameras = await availableCameras();
-  //
-  //     if (cameras.isEmpty) {
-  //       if (mounted) {
-  //         Get.snackbar('Error', 'No camera found');
-  //       }
-  //       return;
-  //     }
-  //
-  //     CameraDescription? frontCamera;
-  //     for (var camera in cameras) {
-  //       if (camera.lensDirection == CameraLensDirection.front) {
-  //         frontCamera = camera;
-  //         break;
-  //       }
-  //     }
-  //
-  //     final selectedCamera = frontCamera ?? cameras.first;
-  //
-  //     _cameraController = CameraController(
-  //       selectedCamera,
-  //       ResolutionPreset.medium, // Changed from high to medium for better fit
-  //       enableAudio: false,
-  //       imageFormatGroup: ImageFormatGroup.jpeg,
-  //     );
-  //
-  //     _initializeControllerFuture = _cameraController!.initialize();
-  //     await _initializeControllerFuture;
-  //
-  //     if (!_isDisposed && mounted) {
-  //       setState(() {
-  //         _isCameraInitialized = true;
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print('Camera error: $e');
-  //     if (mounted) {
-  //       Get.snackbar('Camera Error', 'Failed to start camera: $e');
-  //     }
-  //   }
-  // }
+
 
   Future<void> _initializeCamera() async {
     if (_isDisposed) return;
@@ -127,7 +83,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
         return;
       }
 
-      // ✅ Selection logic modified to use _currentDirection
+      //  Selection logic modified to use _currentDirection
       CameraDescription? selectedCamera;
       for (var camera in cameras) {
         if (camera.lensDirection == _currentDirection) {
@@ -305,174 +261,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
     );
   }
 
-  // Widget _buildCameraPreview() {
-  //   return Stack(
-  //     fit: StackFit.expand,
-  //     children: [
-  //       // ✅ FIXED CAMERA PREVIEW - No excessive zoom
-  //       _buildFullScreenCameraAlt1(),
-  //
-  //       // Scanning Animation
-  //       Obx(() {
-  //         if (scanController.isScanning.value) {
-  //           return AnimatedBuilder(
-  //             animation: _scanAnimation,
-  //             builder: (context, child) {
-  //               return CustomPaint(
-  //                 painter: ScannerPainter(
-  //                   scanProgress: _scanAnimation.value,
-  //                   color: AppColors.accentTeal,
-  //                 ),
-  //                 child: Container(),
-  //               );
-  //             },
-  //           );
-  //         }
-  //         return SizedBox.shrink();
-  //       }),
-  //
-  //       // Body Outline Guide
-  //       Obx(() {
-  //         if (!scanController.isScanning.value) {
-  //           return Positioned.fill(
-  //             child: CustomPaint(
-  //               painter: BodyOutlinePainter(),
-  //             ),
-  //           );
-  //         }
-  //         return SizedBox.shrink();
-  //       }),
-  //
-  //       // Top Instructions
-  //       Positioned(
-  //         top: 60,
-  //         left: 20,
-  //         right: 20,
-  //         child: Obx(() => Container(
-  //           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-  //           decoration: BoxDecoration(
-  //             color: scanController.isScanning.value
-  //                 ? AppColors.accentTeal.withOpacity(0.9)
-  //                 : Colors.black.withOpacity(0.6),
-  //             borderRadius: BorderRadius.circular(12),
-  //           ),
-  //           child: Column(
-  //             children: [
-  //               Text(
-  //                 scanController.isScanning.value
-  //                     ? scanController.scanningStage.value
-  //                     : 'Position Your Full Body',
-  //                 style: TextStyle(
-  //                   color: Colors.white,
-  //                   fontSize: 18,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //                 textAlign: TextAlign.center,
-  //               ),
-  //               if (!scanController.isScanning.value) ...[
-  //                 SizedBox(height: 8),
-  //                 Text(
-  //                   'Stand 3-4 feet away • Face camera • Arms slightly away',
-  //                   style: TextStyle(color: Colors.white70, fontSize: 12),
-  //                   textAlign: TextAlign.center,
-  //                 ),
-  //               ],
-  //             ],
-  //           ),
-  //         )),
-  //       ),
-  //
-  //       // Bottom Controls
-  //       Positioned(
-  //         bottom: 40,
-  //         left: 0,
-  //         right: 0,
-  //         child: Obx(() => Column(
-  //           children: [
-  //             if (scanController.isScanning.value)
-  //               Container(
-  //                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-  //                 margin: EdgeInsets.only(bottom: 20),
-  //                 decoration: BoxDecoration(
-  //                   color: Colors.black.withOpacity(0.7),
-  //                   borderRadius: BorderRadius.circular(25),
-  //                 ),
-  //                 child: Row(
-  //                   mainAxisSize: MainAxisSize.min,
-  //                   children: [
-  //                     SizedBox(
-  //                       width: 20,
-  //                       height: 20,
-  //                       child: CircularProgressIndicator(
-  //                         color: AppColors.accentTeal,
-  //                         strokeWidth: 2,
-  //                       ),
-  //                     ),
-  //                     SizedBox(width: 10),
-  //                     Text(
-  //                       'Please hold still...',
-  //                       style: TextStyle(color: Colors.white, fontSize: 14),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //
-  //             // Capture Button
-  //             GestureDetector(
-  //               onTap: scanController.isScanning.value ? null : _captureAndAnalyze,
-  //               child: Container(
-  //                 width: 75,
-  //                 height: 75,
-  //                 decoration: BoxDecoration(
-  //                   shape: BoxShape.circle,
-  //                   color: scanController.isScanning.value
-  //                       ? Colors.grey
-  //                       : AppColors.accentTeal,
-  //                   border: Border.all(color: Colors.white, width: 4),
-  //                   boxShadow: scanController.isScanning.value
-  //                       ? null
-  //                       : [
-  //                     BoxShadow(
-  //                       color: AppColors.accentTeal.withOpacity(0.5),
-  //                       blurRadius: 20,
-  //                       spreadRadius: 2,
-  //                     ),
-  //                   ],
-  //                 ),
-  //                 child: Icon(
-  //                   Icons.camera_alt,
-  //                   color: Colors.white,
-  //                   size: 35,
-  //                 ),
-  //               ),
-  //             ),
-  //
-  //             SizedBox(height: 15),
-  //
-  //             if (!scanController.isScanning.value)
-  //               TextButton(
-  //                 onPressed: _skipScan,
-  //                 child: Text(
-  //                   'Skip for now',
-  //                   style: TextStyle(color: Colors.white70, fontSize: 14),
-  //                 ),
-  //               ),
-  //           ],
-  //         )),
-  //       ),
-  //
-  //       // Close button
-  //       Positioned(
-  //         top: 50,
-  //         right: 20,
-  //         child: IconButton(
-  //           icon: Icon(Icons.close, color: Colors.white, size: 30),
-  //           onPressed: scanController.isScanning.value ? null : _skipScan,
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
+
 
   Widget _buildCameraPreview() {
     return Stack(
@@ -556,7 +345,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
           )),
         ),
 
-        // ✅ ADDED: Flip Camera Button
+
         Positioned(
           bottom: 120, // Adjusted to sit above your capture button
           right: 30,
@@ -661,14 +450,13 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
     );
   }
 
-  // ✅ FIXED: Better camera scaling with proper aspect ratio handling
+
   Widget _buildFullScreenCamera() {
     final size = MediaQuery.of(context).size;
 
-    // Calculate scale to fill screen completely
+
     var scale = size.aspectRatio * _cameraController!.value.aspectRatio;
 
-    // If camera aspect ratio is less than screen, scale up
     if (scale < 1) scale = 1 / scale;
 
     return ClipRect(
@@ -684,7 +472,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
     );
   }
 
-  // ALTERNATIVE METHOD 1: Fit camera to screen height (use this if above doesn't work)
+
   Widget _buildFullScreenCameraAlt1() {
     final size = MediaQuery.of(context).size;
     final deviceRatio = size.width / size.height;
@@ -702,14 +490,13 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
     );
   }
 
-  // ALTERNATIVE METHOD 2: Use Transform.scale with better calculation
+
   Widget _buildFullScreenCameraAlt2() {
     final size = MediaQuery.of(context).size;
     final cameraAspectRatio = _cameraController!.value.aspectRatio;
     final screenAspectRatio = size.width / size.height;
 
-    // Calculate scale to cover screen without excessive zoom
-    // This ensures camera fills screen but doesn't zoom too much
+
     double scale;
     if (cameraAspectRatio > screenAspectRatio) {
       // Camera is wider - fit to height
@@ -782,69 +569,6 @@ class ScannerPainter extends CustomPainter {
   }
 }
 
-// Body Outline Painter
-// class BodyOutlinePainter extends CustomPainter {
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final paint = Paint()
-//       ..color = AppColors.accentTeal.withOpacity(0.3)
-//       ..style = PaintingStyle.stroke
-//       ..strokeWidth = 2;
-//
-//     final dashedPaint = Paint()
-//       ..color = AppColors.accentTeal.withOpacity(0.5)
-//       ..style = PaintingStyle.stroke
-//       ..strokeWidth = 2;
-//
-//     final centerX = size.width / 2;
-//     final topY = size.height * 0.15;
-//     final bottomY = size.height * 0.85;
-//
-//     canvas.drawCircle(Offset(centerX, topY + 30), 25, paint);
-//
-//     final bodyRect = RRect.fromRectAndRadius(
-//       Rect.fromCenter(
-//         center: Offset(centerX, size.height / 2),
-//         width: size.width * 0.5,
-//         height: bottomY - topY - 60,
-//       ),
-//       Radius.circular(15),
-//     );
-//
-//     _drawDashedRRect(canvas, bodyRect, dashedPaint);
-//
-//     final markerPaint = Paint()
-//       ..color = AppColors.accentTeal
-//       ..style = PaintingStyle.fill;
-//
-//     canvas.drawCircle(Offset(centerX, topY), 4, markerPaint);
-//     canvas.drawCircle(Offset(centerX, bottomY), 4, markerPaint);
-//   }
-//
-//   void _drawDashedRRect(Canvas canvas, RRect rrect, Paint paint) {
-//     final path = Path()..addRRect(rrect);
-//     const dashWidth = 10;
-//     const dashSpace = 5;
-//
-//     final pathMetrics = path.computeMetrics();
-//     for (final metric in pathMetrics) {
-//       double distance = 0;
-//       while (distance < metric.length) {
-//         final start = distance;
-//         final end = distance + dashWidth;
-//         canvas.drawPath(
-//           metric.extractPath(start, end > metric.length ? metric.length : end),
-//           paint,
-//         );
-//         distance += dashWidth + dashSpace;
-//       }
-//     }
-//   }
-//
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-// }
-
 class BodyOutlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -862,8 +586,7 @@ class BodyOutlinePainter extends CustomPainter {
     final topY = size.height * 0.15;
     final bottomY = size.height * 0.85;
 
-    // ✅ ADDED: Specific Face Oval for ML Skin Detection
-    // This helps the FaceDetector find the face quickly
+
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(centerX, topY + 60),
@@ -885,7 +608,7 @@ class BodyOutlinePainter extends CustomPainter {
 
     _drawDashedRRect(canvas, bodyRect, paint);
 
-    // ✅ ADDED: Shoulder Line
+    // : Shoulder Line
     // Helps user level their shoulders for accurate Body Type ratios
     canvas.drawLine(
       Offset(centerX - 100, topY + 120),

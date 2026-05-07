@@ -1,6 +1,4 @@
-// event_planner_screen.dart (updated _ModernTimelineCard)
-// Sirf _ModernTimelineCard aur _EventOutfitBottomSheet replace/add karo.
-// Baaki code same rehta hai.
+
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -121,7 +119,7 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
   }
 }
 
-// ─── Timeline Card (Updated) ─────────────────────────────────────────────────
+
 class _ModernTimelineCard extends StatelessWidget {
   final Event event;
   final bool isLast;
@@ -295,7 +293,7 @@ class _ModernTimelineCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // 🆕 Suggest Outfit Button
+
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
@@ -326,12 +324,11 @@ class _ModernTimelineCard extends StatelessWidget {
     );
   }
 
-  // ─── Outfit Suggestions Bottom Sheet ──────────────────────────────────────
+
   void _showOutfitSuggestions(BuildContext context) {
     final box = GetStorage();
 
-    // Wardrobe GetStorage se lo (aapka existing wardrobe key yahan use karo)
-    // Adjust 'wardrobe_items' key to match your actual storage key
+
     final List<dynamic> raw = box.read('wardrobe_items') ?? [];
     final List<Map<String, dynamic>> wardrobe =
     raw.map((e) => Map<String, dynamic>.from(e)).toList();
@@ -433,7 +430,7 @@ class _ModernTimelineCard extends StatelessWidget {
   }
 }
 
-// ─── Outfit Suggestions Bottom Sheet ────────────────────────────────────────
+
 class _EventOutfitBottomSheet extends StatelessWidget {
   final Event event;
   final List<Map<String, dynamic>> outfits;
@@ -555,7 +552,7 @@ class _EventOutfitBottomSheet extends StatelessWidget {
   }
 }
 
-// ─── Single Outfit Card ───────────────────────────────────────────────────────
+
 class _OutfitSuggestionCard extends StatelessWidget {
   final Map<String, dynamic> outfit;
   final int rank;
@@ -717,7 +714,7 @@ class _OutfitSuggestionCard extends StatelessWidget {
     );
   }
 
-  // Color string se Flutter Color banao (basic mapping)
+
   Color _parseColor(String colorStr) {
     final c = colorStr.toLowerCase();
     if (c.contains('red'))    return Colors.red;

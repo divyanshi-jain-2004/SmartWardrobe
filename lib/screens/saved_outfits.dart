@@ -1,39 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// ⚠️ Ensure these paths are correct
+
 import 'package:smart_wardrobe_new/models/outfit_model.dart';
 import 'package:smart_wardrobe_new/controllers/outfit_controller.dart';
 import 'package:smart_wardrobe_new/screens/HomeScreen.dart';
 import 'package:smart_wardrobe_new/screens/OutfitSuggestion.dart';
 import 'package:smart_wardrobe_new/screens/profile.dart';
 
-import '../utils/constants/colors.dart'; // 🎯 OutfitSuggestionScreen इम्पोर्ट करें
+import '../utils/constants/colors.dart';
 
-// --- App Colors (Unchanged) ---
-// class AppColors {
-//   static const Color accentTeal = Color(0xFF00C7B1);
-//   static const Color mintGreen = Color(0xFFA8E6CF);
-// }
 
-// 🎯 Changed to GetView to access the controller directly
+
 class SavedOutfitsScreen extends GetView<OutfitController> {
-  // ❌ initialSavedOutfits फ़ील्ड हटा दिया गया है
-  // final List<OutfitModel> initialSavedOutfits;
 
-  // 🎯 FIX: कंस्ट्रक्टर को ठीक किया गया (कोई आवश्यक पैरामीटर नहीं)
   const SavedOutfitsScreen({super.key});
-  // Note: यदि आप ProfileScreen में बिना बदलाव के पुरानी नेविगेशन (जो डेटा पास कर रही थी)
-  // का उपयोग करना चाहती हैं, तो कंस्ट्रक्टर को केवल एक dummy variable स्वीकार करना होगा:
-  // const SavedOutfitsScreen({super.key, required List<OutfitModel> initialSavedOutfits});
-  // लेकिन GetX के सर्वोत्तम अभ्यास के लिए, इसे हटा देना चाहिए।
 
-  // 🎯 Theme Getters for StatelessWidget (Unchanged)
   Color _primaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyLarge!.color!;
   Color _secondaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
   Color _surfaceColor(BuildContext context) => Theme.of(context).colorScheme.surface;
   Color _scaffoldColor(BuildContext context) => Theme.of(context).scaffoldBackgroundColor;
 
-  // --- WIDGET BUILDERS ---
+
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       elevation: 0,
@@ -47,14 +34,7 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
           )
       ),
       centerTitle: true,
-      // actions: [
-      //   IconButton(
-      //     icon: Icon(Icons.share_outlined, color: _secondaryTextColor(context)),
-      //     onPressed: () {
-      //       Get.snackbar('Share', 'Sharing functionality is not yet implemented.', snackPosition: SnackPosition.TOP);
-      //     },
-      //   ),
-      // ],
+
     );
   }
 
@@ -97,9 +77,9 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
   // --- BUILD METHOD ---
   @override
   Widget build(BuildContext context) {
-    // 🎯 Obx used to listen to controller's live list
+
     return Obx(() {
-      // 💡 Controller से लाइव डेटा प्राप्त करें (इसमें Mock Data या यूजर डेटा होगा)
+
       final liveOutfits = controller.savedOutfits;
       final bool isEmpty = liveOutfits.isEmpty;
 
@@ -122,7 +102,7 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  // 🎯 मैसेज बदला गया है ताकि 'Planner' पर जाने का संकेत मिले
+
                   'Start saving your favorite styles from the AI Suggestions screen.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, color: _secondaryTextColor(context)),
@@ -150,7 +130,7 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
 
                   return GestureDetector(
                     onTap: () {
-                      // 🎯 GetX Navigation: आउटफिट डेटा पास करें
+
                       Get.to(() => OutfitSuggestionScreen(
                         initialOutfitName: outfit.name,
                         initialOutfitImagePath: outfit.imageUrl,
@@ -169,7 +149,6 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
   }
 }
 
-// --- OUTFIT CARD WIDGET (Unchanged Logic) ---
 
 class _OutfitCard extends StatelessWidget {
   final OutfitModel outfit;
@@ -183,7 +162,7 @@ class _OutfitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 💡 Controller को एक्सेस करें
+
     final OutfitController controller = Get.find<OutfitController>();
 
     return Card(
@@ -196,7 +175,7 @@ class _OutfitCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Outfit Image (Handling both local assets and network URLs)
+
           Builder(
             builder: (context) {
               final images = outfit.imageUrl.split(',');
@@ -224,7 +203,7 @@ class _OutfitCard extends StatelessWidget {
             },
           ),
 
-          // ... (Icons and Text positioning remain unchanged) ...
+
           Positioned(
             top: 8,
             right: 8,
@@ -234,18 +213,12 @@ class _OutfitCard extends StatelessWidget {
                   icon: Icons.favorite,
                   color: Colors.red,
                   onTap: () {
-                    // 🎯 FIX: Controller से removeOutfit को कॉल करें
+
                     controller.removeOutfit(outfit);
                   },
                 ),
                 const SizedBox(width: 4),
-                // _buildIconChip(
-                //   icon: Icons.edit_outlined,
-                //   color: _primaryTextColor(context),
-                //   onTap: () {
-                //     Get.snackbar('Edit', 'Editing ${outfit.name}.', snackPosition: SnackPosition.TOP);
-                //   },
-                // ),
+
               ],
             ),
           ),
@@ -272,7 +245,7 @@ class _OutfitCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  // ❌ Menu Book Icon HATA DIYA GAYA HAI
+
                 ],
               ),
             ),

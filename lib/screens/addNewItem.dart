@@ -234,40 +234,44 @@ class _AddItemScreenState extends State<AddItemScreen> {
     );
 
     if (source != null) {
-      final picker = ImagePicker();
+      await _pickImageFromSource(source);
+    }
+  }
 
-      final pickedFile = await picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+  Future<void> _pickImageFromSource(ImageSource source) async {
+    final picker = ImagePicker();
+
+    final pickedFile = await picker.pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+
+    if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
+
+      Get.snackbar(
+        'Processing',
+        'Optimizing image...',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: _kPrimaryTeal,
+        colorText: Colors.white,
+        showProgressIndicator: true,
+        duration: const Duration(seconds: 10),
       );
 
-      if (pickedFile != null) {
-        File imageFile = File(pickedFile.path);
+      final compressedFile = await _compressImage(imageFile);
 
-        Get.snackbar(
-          'Processing',
-          'Optimizing image...',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: _kPrimaryTeal,
-          colorText: Colors.white,
-          showProgressIndicator: true,
-          duration: const Duration(seconds: 10),
-        );
-
-        final compressedFile = await _compressImage(imageFile);
-
-        if (compressedFile != null) {
-          imageFile = compressedFile;
-          print('Using compressed image');
-        }
-
-        _originalImageFile = imageFile;
-
-        await _updateLocalImage(imageFile, shouldProcessML: true);
-        Get.closeCurrentSnackbar();
+      if (compressedFile != null) {
+        imageFile = compressedFile;
+        print('Using compressed image');
       }
+
+      _originalImageFile = imageFile;
+
+      await _updateLocalImage(imageFile, shouldProcessML: true);
+      Get.closeCurrentSnackbar();
     }
   }
 
@@ -578,7 +582,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         colorText: Colors.white,
       );
 
-      Get.back(result: true);
+      _resetForm();
 
     } on StorageException catch (e) {
       print('❌ Storage Error: ${e.message}');
@@ -615,6 +619,26 @@ class _AddItemScreenState extends State<AddItemScreen> {
     }
   }
 
+  void _resetForm() {
+    _nameController.clear();
+    setState(() {
+      _isImageUploaded      = false;
+      _removeBackground     = false;
+      _itemName             = '';
+      _selectedCategory     = null;
+      _itemImageUrl         = 'https://placehold.co/100x100/CCCCCC/000000?text=No+Image';
+      _selectedImageFile    = null;
+      _originalImageFile    = null;
+      _predictedCategory    = null;
+      _detectedColor        = null;
+      _detectedJeansType    = null;
+      _detectedFootwearType = null;
+      _predictionConfidence = null;
+      _isProcessing         = false;
+      _mlProcessingFailed   = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -639,60 +663,156 @@ class _AddItemScreenState extends State<AddItemScreen> {
             : null,
 
       ),
-      body: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(bottom: bottomSpace),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0),
+      body: !_isImageUploaded
+          // ── No image yet: center the upload card + button ──────────────
+          ? Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildUploadImageCard(size),
-                  if (_isImageUploaded) ...[
-                    SizedBox(height: size.height * 0.03),
-                    _buildPreviewAndProcessingCard(size),
-                    SizedBox(height: size.height * 0.03),
-                    _buildItemDetailsSection(size),
-                  ],
+                  SizedBox(height: size.height * 0.04),
+                  _buildFixedActionButton(size, 0),
                 ],
               ),
+            )
+          // ── Image chosen: scrollable details + fixed bottom button ──────
+          : Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(bottom: bottomSpace),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding, vertical: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildPreviewAndProcessingCard(size),
+                        SizedBox(height: size.height * 0.03),
+                        _buildItemDetailsSection(size),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildFixedActionButton(size, horizontalPadding),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildUploadImageCard(Size size) {
+    return Container(
+      width: double.infinity,
+      height: size.height * 0.26,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _kPrimaryTeal.withOpacity(0.07),
+            _kPrimaryTeal.withOpacity(0.03),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: _kPrimaryTeal.withOpacity(0.35),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Icon circle
+          Container(
+            width: size.width * 0.16,
+            height: size.width * 0.16,
+            decoration: BoxDecoration(
+              color: _kPrimaryTeal.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.add_photo_alternate_outlined,
+              size: size.width * 0.09,
+              color: _kPrimaryTeal,
             ),
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _buildFixedActionButton(size, horizontalPadding),
+          SizedBox(height: size.height * 0.018),
+          Text(
+            'Upload Photo',
+            style: TextStyle(
+              fontSize: size.width * 0.045,
+              fontWeight: FontWeight.bold,
+              color: _primaryTextColor,
+            ),
+          ),
+          SizedBox(height: size.height * 0.006),
+          Text(
+            'Choose how you want to add your photo',
+            style: TextStyle(
+              fontSize: size.width * 0.032,
+              color: _secondaryTextColor,
+            ),
+          ),
+          SizedBox(height: size.height * 0.018),
+          // Camera / Gallery pills — each opens directly
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _uploadPill(
+                icon: Icons.camera_alt_outlined,
+                label: 'Camera',
+                size: size,
+                onTap: () => _pickImageFromSource(ImageSource.camera),
+              ),
+              SizedBox(width: size.width * 0.03),
+              _uploadPill(
+                icon: Icons.photo_library_outlined,
+                label: 'Gallery',
+                size: size,
+                onTap: () => _pickImageFromSource(ImageSource.gallery),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUploadImageCard(Size size) {
-    final cardHeight = size.height * 0.22;
-    final iconSize = size.width * 0.12;
-    final uploadCardColor = _scaffoldColor;
-    final uploadCardBorderColor = _kPrimaryTeal.withValues(alpha: 0.5);
-
+  Widget _uploadPill({
+    required IconData icon,
+    required String label,
+    required Size size,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
-      onTap: _pickImage,
+      onTap: onTap,
       child: Container(
-        height: cardHeight,
-        decoration: BoxDecoration(
-          color: uploadCardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: uploadCardBorderColor, style: BorderStyle.solid, width: 2),
+        padding: EdgeInsets.symmetric(
+          horizontal: size.width * 0.04,
+          vertical: size.height * 0.007,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        decoration: BoxDecoration(
+          color: _kPrimaryTeal.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: _kPrimaryTeal.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.camera_alt_outlined, size: iconSize, color: _secondaryTextColor),
-            SizedBox(height: size.height * 0.01),
+            Icon(icon, size: size.width * 0.038, color: _kPrimaryTeal),
+            SizedBox(width: size.width * 0.015),
             Text(
-              'Tap to upload or take a photo',
-              style: TextStyle(fontSize: size.width * 0.04, color: _secondaryTextColor, fontWeight: FontWeight.w500),
+              label,
+              style: TextStyle(
+                fontSize: size.width * 0.03,
+                color: _kPrimaryTeal,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -926,20 +1046,63 @@ class _AddItemScreenState extends State<AddItemScreen> {
       padding: EdgeInsets.symmetric(horizontal: padding, vertical: size.height * 0.015),
       decoration: BoxDecoration(
         color: _surfaceColor,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: SizedBox(
         height: buttonHeight,
         child: ElevatedButton(
           onPressed: isFormValid ? _addItemToWardrobe : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: _kPrimaryTeal,
+            backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 4,
-            disabledBackgroundColor: _kPrimaryTeal.withValues(alpha: 0.5),
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            elevation: 0,
+            disabledBackgroundColor: _kPrimaryTeal.withOpacity(0.35),
+            padding: EdgeInsets.zero,
           ),
-          child: Text('Add to Wardrobe', style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold)),
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: isFormValid
+                  ? const LinearGradient(
+                      colors: [Color(0xFF00C7B1), Color(0xFF009688)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    )
+                  : null,
+              color: isFormValid ? null : _kPrimaryTeal.withOpacity(0.35),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: isFormValid
+                  ? [
+                      BoxShadow(
+                        color: _kPrimaryTeal.withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Container(
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.checkroom_rounded, size: 22),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Add to Wardrobe',
+                    style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

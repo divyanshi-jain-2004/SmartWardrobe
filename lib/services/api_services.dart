@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  // ✅ Apna IP yahan daalo
-  // Local test ke liye: http://192.168.x.x:8080
+
   static const String baseUrl = 'http://192.168.x.x:8080';
 
   static Future<Map<String, dynamic>> classifyImage(File imageFile) async {
@@ -19,7 +18,7 @@ class ApiService {
       );
 
       var response = await request.send().timeout(
-        const Duration(seconds: 60), // rembg time leta hai
+        const Duration(seconds: 60),
       );
 
       var responseBody = await response.stream.bytesToString();

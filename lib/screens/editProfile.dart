@@ -66,7 +66,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
     _box.write('last_name',  _lastNameController.text.trim());
     _box.write('gender',     _selectedGender ?? '');
 
-    // Delegate rest to editController
+
     editController.saveProfileUpdates();
 
     Get.back();
@@ -147,7 +147,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
             ),
           ),
 
-          // ── Save Button ──────────────────────────────────────
+
           Positioned(
             bottom: 0,
             left: 0,
@@ -174,7 +174,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
     );
   }
 
-  // ── Body Type Card ───────────────────────────────────────────
+
   Widget _buildBodyTypeCard(Size size) {
     final bodyType  = scanController.getStoredBodyType();
     final hasScanned = scanController.hasCompletedScan();
@@ -343,7 +343,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
     }
   }
 
-  // ── Skin Tone Palette ────────────────────────────────────────
+  //  Skin Tone Palette
   Widget _buildSkinTonePalette(EditProfileController controller) {
     return Center(
       child: Wrap(
@@ -410,7 +410,6 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
     );
   }
 
-  // ── Reusable Widgets ─────────────────────────────────────────
   Widget _buildInfoCard({required Size size, required String title, required List<Widget> children}) {
     return Container(
       width: double.infinity,

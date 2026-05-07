@@ -113,7 +113,7 @@ class OnboardingScreen extends StatelessWidget {
     );
   }
 
-  // ✨ UPDATED: Skin Tone Slide with Labels
+
   Widget _buildPersonalizationPage(OnboardingController controller, double screenWidth) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),

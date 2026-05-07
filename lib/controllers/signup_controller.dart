@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../main.dart'; // Jahan aapka supabase client define hai
+import '../main.dart';
 
 class SignUpController extends GetxController {
   // Controllers
@@ -17,7 +17,6 @@ class SignUpController extends GetxController {
 
   final Color accentTeal = const Color(0xFF0F766E);
 
-  // Snackbar Helper
   void showSnackbar(String title, String message, Color color) {
     Get.snackbar(
       title,
@@ -29,7 +28,6 @@ class SignUpController extends GetxController {
     );
   }
 
-  // 🛠️ Supabase Sign Up Logic
   Future<void> signUp() async {
     // Basic Validation
     if (nameController.text.isEmpty || emailController.text.isEmpty || passwordController.text.isEmpty) {
@@ -53,7 +51,7 @@ class SignUpController extends GetxController {
 
       if (res.user != null) {
         showSnackbar('Success', 'Registration successful!', accentTeal);
-        // Direct home par le jayein
+
         Get.offAllNamed('/home');
       } else if (res.session == null) {
         showSnackbar('Check Email', 'Please verify your email to continue.', Colors.blue);

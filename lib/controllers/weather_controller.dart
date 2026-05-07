@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 
 class WeatherController extends GetxController with WidgetsBindingObserver {
-  // ⚠️ Replace with your actual OpenWeatherMap API Key
+
   final String apiKey = '20388c5b094a033e5fe0c2adb09ea8cd';
   final String baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
 

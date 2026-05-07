@@ -162,7 +162,7 @@ class OutfitController extends GetxController {
       // await fetchOutfits();
       savedOutfits.removeWhere((item) => item.id == outfit.id);
 
-      Get.snackbar('Success', 'Outfit removed', backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar('Success', 'Outfit removed', backgroundColor: Colors.green, colorText: Colors.white);
 
     } catch (e) {
       Get.snackbar('Error', 'Failed to delete outfit.', backgroundColor: Colors.red);

@@ -11,7 +11,6 @@ class UserModel {
     this.avatarUrl,
   });
 
-  // Supabase metadata se data nikalne ke liye
   factory UserModel.fromSupabase(dynamic user) {
     return UserModel(
       id: user.id,

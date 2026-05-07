@@ -79,14 +79,6 @@ class EditProfileController extends GetxController {
     box.write('waist', waistController.text);
     box.write('hip', hipController.text);
     box.write('body_type', bodyType.value);
-
-    Get.snackbar(
-      'Success',
-      'Physical traits updated successfully!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF00ADB5),
-      colorText: Colors.white,
-    );
   }
 
   @override

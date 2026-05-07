@@ -847,16 +847,16 @@ class HomeHeader extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            children: [
-              _buildGlassIconButton(context, Icons.refresh_rounded, () {
-                weatherController.fetchWeather();
-                Get.find<WardrobeController>().fetchCounts();
-              }),
-              const SizedBox(width: 8),
+          // Row(
+          //   children: [
+          //     _buildGlassIconButton(context, Icons.refresh_rounded, () {
+          //       weatherController.fetchWeather();
+          //       Get.find<WardrobeController>().fetchCounts();
+          //     }),
+          //     const SizedBox(width: 8),
               _buildGlassIconButton(context, "assets/body.png", () => Get.toNamed('/body-scan')),
-            ],
-          ),
+          //   ],
+          // ),
         ],
       );
     });

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class WeatherService {
-  final String apiKey = "20388c5b094a033e5fe0c2adb09ea8cd"; // Replace with your key
+  final String apiKey = "20388c5b094a033e5fe0c2adb09ea8cd";
 
   Future<String> fetchWeather(String city) async {
     try {

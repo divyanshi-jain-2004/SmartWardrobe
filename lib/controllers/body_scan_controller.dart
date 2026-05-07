@@ -65,7 +65,7 @@ class BodyScanController extends GetxController {
     }
   }
 
-  // ✅ IMPROVED: Skin tone detection using Face Detection
+  // Skin tone detection using Face Detection
   Future<void> _detectSkinToneWithFaceML(String imagePath, img.Image decodedImage) async {
     final inputImage = InputImage.fromFilePath(imagePath);
     final faceDetector = FaceDetector(
@@ -151,7 +151,7 @@ class BodyScanController extends GetxController {
     }
   }
 
-  // ✅ NEW: Multi-frame detection for better accuracy
+
   Future<void> _detectBodyTypeMultiFrame(List<String> imagePaths) async {
     List<Map<String, dynamic>> detections = [];
 
@@ -174,7 +174,7 @@ class BodyScanController extends GetxController {
       return;
     }
 
-    // Find most common body type (mode)
+
     Map<String, int> typeCounts = {};
     double totalConfidence = 0;
 

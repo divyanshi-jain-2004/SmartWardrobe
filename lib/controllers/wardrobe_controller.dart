@@ -6,11 +6,9 @@ import '../models/wardrobe_category_model.dart';
 class WardrobeController extends GetxController {
   final supabase = Supabase.instance.client;
 
-  // Observable map to store counts
   var categoryCounts = <String, int>{}.obs;
   var isLoading = true.obs;
 
-  // 🎯 Centralized Category Data
   final List<WardrobeCategory> categories = [
     WardrobeCategory(title: "Topwear", icon: Icons.checkroom, itemImage: 'assets/women_top.jpg', tags: ["Silk", "Floral", "Party"], genders: [Gender.women]),
     WardrobeCategory(title: "Bottomwear", icon: Icons.scatter_plot_outlined, itemImage: 'assets/women_jeans.jpg', tags: ["Pleated", "High-waist", "Work"], genders: [Gender.women]),

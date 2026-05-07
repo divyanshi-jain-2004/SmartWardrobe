@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../main.dart'; // Ensure this points to your Supabase client
+import '../main.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -22,7 +22,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     setState(() => _isLoading = true);
     try {
-      // This updates the password for the currently "sessioned" user
+
       await supabase.auth.updateUser(
         UserAttributes(password: _newPasswordController.text.trim()),
       );
