@@ -9,7 +9,9 @@ import '../controllers/event_controller.dart';
 import '../models/event_model.dart';
 import '../services/event_outfit_service.dart'; // 🆕
 import '../utils/constants/colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'addEvent.dart';
+import 'OutfitSuggestion.dart';
 
 class EventPlannerScreen extends StatefulWidget {
   const EventPlannerScreen({super.key});
@@ -325,38 +327,60 @@ class _ModernTimelineCard extends StatelessWidget {
   }
 
 
-  void _showOutfitSuggestions(BuildContext context) {
-    final box = GetStorage();
-
-
-    final List<dynamic> raw = box.read('wardrobe_items') ?? [];
-    final List<Map<String, dynamic>> wardrobe =
-    raw.map((e) => Map<String, dynamic>.from(e)).toList();
-
-    if (wardrobe.isEmpty) {
-      Get.snackbar(
-        'Wardrobe Empty',
-        'Please add clothes to your wardrobe first!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.8),
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    final service = EventOutfitService();
-    final outfits = service.generateOutfitsForEvent(
-      event: event,
-      wardrobeItems: wardrobe,
-      count: 3,
-    );
-
-    showModalBottomSheet(
+  void _showOutfitSuggestions(BuildContext context) async {
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _EventOutfitBottomSheet(event: event, outfits: outfits),
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator(color: AppColors.accentTeal)),
     );
+
+    try {
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+
+      if (userId == null) {
+        Get.back();
+        Get.snackbar('Error', 'Please log in first.');
+        return;
+      }
+
+      final response = await supabase
+          .from('wardrobe_items')
+          .select('*')
+          .eq('user_id', userId);
+
+      final List<Map<String, dynamic>> wardrobe = List<Map<String, dynamic>>.from(response);
+
+      Get.back();
+
+      if (wardrobe.isEmpty) {
+        Get.snackbar(
+          'Wardrobe Empty',
+          'Please add clothes to your wardrobe first!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final service = EventOutfitService();
+      final outfits = service.generateOutfitsForEvent(
+        event: event,
+        wardrobeItems: wardrobe,
+        count: 3,
+      );
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _EventOutfitBottomSheet(event: event, outfits: outfits),
+      );
+    } catch (e) {
+      Get.back();
+      Get.snackbar('Error', 'Failed to fetch wardrobe items.');
+    }
   }
 
   Widget _infoBadge(BuildContext context, IconData icon, String text) {
@@ -563,10 +587,12 @@ class _OutfitSuggestionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).textTheme.bodyLarge!.color!;
     final top = outfit['top'] as Map<String, dynamic>;
-    final bottom = outfit['bottom'] as Map<String, dynamic>;
+    final bottom = outfit['bottom'] as Map<String, dynamic>?;
     final score = outfit['score'] as int;
     final season = outfit['season'] as String? ?? '';
     final subType = outfit['sub_type'] as String? ?? '';
+
+    final footwear = outfit['footwear'] as Map<String, dynamic>?;
 
     String seasonEmoji = switch (season) {
       'Hot'  => '☀️',
@@ -576,19 +602,24 @@ class _OutfitSuggestionCard extends StatelessWidget {
       _      => '🌡️',
     };
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: rank == 1
-            ? AppColors.accentTeal.withValues(alpha: 0.08)
-            : primaryColor.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
+    return GestureDetector(
+      onTap: () {
+        Get.back(); // close bottom sheet
+        Get.to(() => OutfitSuggestionScreen(initialOutfitData: outfit));
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
           color: rank == 1
-              ? AppColors.accentTeal.withValues(alpha: 0.3)
-              : Colors.transparent,
+              ? AppColors.accentTeal.withValues(alpha: 0.08)
+              : primaryColor.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: rank == 1
+                ? AppColors.accentTeal.withValues(alpha: 0.3)
+                : Colors.transparent,
+          ),
         ),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -638,25 +669,40 @@ class _OutfitSuggestionCard extends StatelessWidget {
           // Top item
           _itemRow(
             context: context,
-            icon: Icons.checkroom_rounded,
-            label: 'TOP',
-            name: top['item_name'] ?? 'Top',
+            icon: outfit['is_dress'] == true ? Icons.checkroom_rounded : Icons.checkroom_rounded,
+            label: outfit['is_dress'] == true ? 'DRESS' : 'TOP',
+            name: top['item_name'] ?? (outfit['is_dress'] == true ? 'Dress' : 'Top'),
             color: top['color'] ?? '',
             extra: top['style'] ?? '',
           ),
-          const SizedBox(height: 10),
-
-          // Bottom item
-          _itemRow(
-            context: context,
-            icon: Icons.accessibility_new_rounded,
-            label: 'BOTTOM',
-            name: bottom['item_name'] ?? 'Bottom',
-            color: bottom['color'] ?? '',
-            extra: subType.isNotEmpty && subType != 'Unknown' ? subType : (bottom['style'] ?? ''),
-          ),
+          
+          if (bottom != null) ...[
+            const SizedBox(height: 10),
+            // Bottom item
+            _itemRow(
+              context: context,
+              icon: Icons.accessibility_new_rounded,
+              label: 'BOTTOM',
+              name: bottom['item_name'] ?? 'Bottom',
+              color: bottom['color'] ?? '',
+              extra: subType.isNotEmpty && subType != 'Unknown' ? subType : (bottom['style'] ?? ''),
+            ),
+          ],
+          if (footwear != null) ...[
+            const SizedBox(height: 10),
+            // Footwear item
+            _itemRow(
+              context: context,
+              icon: Icons.snowshoeing_rounded,
+              label: 'FOOTWEAR',
+              name: footwear['item_name'] ?? 'Footwear',
+              color: footwear['color'] ?? '',
+              extra: footwear['style'] ?? '',
+            ),
+          ],
         ],
       ),
+    ),
     );
   }
 

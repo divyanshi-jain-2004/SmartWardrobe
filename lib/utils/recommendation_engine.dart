@@ -320,47 +320,93 @@ class RecommendationEngine {
     final List<Map<String, dynamic>> bottoms = wardrobeItems
         .where((i) => i['category'] == 'Bottomwear' || i['category'] == 'Bottoms')
         .toList();
+    final List<Map<String, dynamic>> dresses = wardrobeItems
+        .where((i) => i['category'] == 'Dresses' || i['category'] == 'Dress')
+        .toList();
+    final List<Map<String, dynamic>> footwears = wardrobeItems
+        .where((i) => i['category'] == 'Footwear')
+        .toList();
 
-    if (tops.isEmpty || bottoms.isEmpty) return [];
+    if ((tops.isEmpty || bottoms.isEmpty) && dresses.isEmpty) return [];
 
     final List<Map<String, dynamic>> combos = [];
+    final iterableFootwears = footwears.isNotEmpty ? footwears : [null];
 
-    for (var top in tops) {
-      for (var bot in bottoms) {
-        int score = 0;
+    // 1. Top + Bottom combos
+    if (tops.isNotEmpty && bottoms.isNotEmpty) {
+      for (var top in tops) {
+        for (var bot in bottoms) {
+          for (var footwear in iterableFootwears) {
+            int score = 0;
 
-        // 1. Skin tone color scoring
-        score += _scoreColorForSkinTone(top['color'] ?? '', skinTone);
-        score += _scoreColorForSkinTone(bot['color'] ?? '', skinTone);
+            // 1. Skin tone color scoring
+            score += _scoreColorForSkinTone(top['color'] ?? '', skinTone);
+            score += _scoreColorForSkinTone(bot['color'] ?? '', skinTone);
 
-        // 2. Body type color scoring
-        score += _scoreForBodyType(top, bodyType, true);
-        score += _scoreForBodyType(bot, bodyType, false);
+            // 2. Body type color scoring
+            score += _scoreForBodyType(top, bodyType, true);
+            score += _scoreForBodyType(bot, bodyType, false);
 
-        // 3. Color harmony
-        score += _scoreColorHarmony(top['color'] ?? '', bot['color'] ?? '');
+            // 3. Color harmony
+            score += _scoreColorHarmony(top['color'] ?? '', bot['color'] ?? '');
 
-        // 4. 🆕 Jeans sub_type + body type compatibility
-        final String? subType = bot['sub_type'] as String?;
-        score += _scoreJeansSubType(subType, bodyType);
+            // 4. Jeans sub_type + body type compatibility
+            final String? subType = bot['sub_type'] as String?;
+            score += _scoreJeansSubType(subType, bodyType);
 
-        // 5. 🌡️ Weather-based scoring
-        score += _scoreTopwearForWeather(top, season);
-        score += _scoreBottomwearForWeather(subType, season);
+            // 5. Weather-based scoring
+            score += _scoreTopwearForWeather(top, season);
+            score += _scoreBottomwearForWeather(subType, season);
+            if (footwear != null) {
+              score += _scoreColorHarmony(bot['color'] ?? '', footwear['color'] ?? '');
+              score += 3; // slight boost when complete look has footwear
+            }
 
-        // Combo name mein sub_type bhi dikhao
-        final String botLabel = subType != null && subType.isNotEmpty && subType != 'Unknown'
-            ? '${bot['color'] ?? 'Matching'} $subType'
-            : '${bot['color'] ?? 'Matching'} Bottom';
+            final String botLabel = subType != null && subType.isNotEmpty && subType != 'Unknown'
+                ? '${bot['color'] ?? 'Matching'} $subType'
+                : '${bot['color'] ?? 'Matching'} Bottom';
 
-        combos.add({
-          'top': top,
-          'bottom': bot,
-          'score': score,
-          'season': season,
-          'sub_type': subType,
-          'name': '${top['color'] ?? 'Stylish'} Top & $botLabel',
-        });
+            combos.add({
+              'top': top,
+              'bottom': bot,
+              'footwear': footwear,
+              'score': score,
+              'season': season,
+              'sub_type': subType,
+              'name': '${top['color'] ?? 'Stylish'} Top & $botLabel',
+              'is_dress': false,
+            });
+          }
+        }
+      }
+    }
+
+    // 2. Dress combos
+    if (dresses.isNotEmpty) {
+      for (var dress in dresses) {
+        for (var footwear in iterableFootwears) {
+          int score = 0;
+
+          score += _scoreColorForSkinTone(dress['color'] ?? '', skinTone);
+          score += _scoreForBodyType(dress, bodyType, true);
+          score += _scoreTopwearForWeather(dress, season); // Score dress for weather
+
+          if (footwear != null) {
+            score += _scoreColorHarmony(dress['color'] ?? '', footwear['color'] ?? '');
+            score += 3;
+          }
+
+          combos.add({
+            'top': dress,
+            'bottom': null,
+            'footwear': footwear,
+            'score': score,
+            'season': season,
+            'sub_type': dress['sub_type'],
+            'name': '${dress['color'] ?? 'Stylish'} Dress',
+            'is_dress': true,
+          });
+        }
       }
     }
 

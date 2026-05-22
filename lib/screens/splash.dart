@@ -137,10 +137,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         child: Stack(
           children: [
             // 🔹 Decorative Icons (Unchanged)
-            Positioned(top: 80, left: 30, child: Icon(Icons.checkroom, size: 40, color: Colors.grey.withOpacity(0.6))),
-            Positioned(top: 120, right: 40, child: FaIcon(FontAwesomeIcons.shoePrints, size: 40, color: Colors.purple.withOpacity(0.5))),
-            Positioned(bottom: 100, left: 30, child: FaIcon(FontAwesomeIcons.shirt, size: 40, color: Colors.blue.withOpacity(0.5))),
-            Positioned(bottom: 80, right: 30, child: FaIcon(FontAwesomeIcons.bagShopping, size: 40, color: Colors.grey.withOpacity(0.5))),
+            Positioned(top: 80, left: 30, child: Icon(Icons.checkroom, size: 40, color: Colors.grey.withValues(alpha:0.6))),
+            Positioned(top: 120, right: 40, child: FaIcon(FontAwesomeIcons.shoePrints, size: 40, color: Colors.purple.withValues(alpha:0.5))),
+            Positioned(bottom: 100, left: 30, child: FaIcon(FontAwesomeIcons.shirt, size: 40, color: Colors.blue.withValues(alpha:0.5))),
+            Positioned(bottom: 80, right: 30, child: FaIcon(FontAwesomeIcons.bagShopping, size: 40, color: Colors.grey.withValues(alpha:0.5))),
 
             //  Center Content (Animated)
             Center(

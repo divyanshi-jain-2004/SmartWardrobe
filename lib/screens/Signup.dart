@@ -32,12 +32,12 @@ class SignUpScreen extends StatelessWidget {
           Positioned(
             top: -100,
             right: -50,
-            child: _buildGlowOrb(screenWidth * 0.8, Colors.white.withOpacity(0.4)),
+            child: _buildGlowOrb(screenWidth * 0.8, Colors.white.withValues(alpha:0.4)),
           ),
           Positioned(
             bottom: -50,
             left: -80,
-            child: _buildGlowOrb(screenWidth * 0.7, Colors.deepPurple.withOpacity(0.15)),
+            child: _buildGlowOrb(screenWidth * 0.7, Colors.deepPurple.withValues(alpha:0.15)),
           ),
 
 
@@ -54,7 +54,7 @@ class SignUpScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha:0.5),
                           blurRadius: 30,
                         )
                       ],
@@ -70,15 +70,15 @@ class SignUpScreen extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.25),
+                          color: Colors.white.withValues(alpha:0.25),
                           borderRadius: BorderRadius.circular(32),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.4),
+                            color: Colors.white.withValues(alpha:0.4),
                             width: 1.5,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha:0.05),
                               blurRadius: 25,
                               offset: const Offset(0, 10),
                             )
@@ -99,7 +99,7 @@ class SignUpScreen extends StatelessWidget {
                             Text(
                               "Join us and start your journey",
                               style: TextStyle(
-                                color: Colors.indigo.withOpacity(0.7),
+                                color: Colors.indigo.withValues(alpha:0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -224,9 +224,9 @@ class SignUpScreen extends StatelessWidget {
       }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6),
+        color: Colors.white.withValues(alpha:0.6),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.5)),
+        border: Border.all(color: Colors.white.withValues(alpha:0.5)),
       ),
       child: TextField(
         controller: ctrl,
@@ -234,13 +234,13 @@ class SignUpScreen extends StatelessWidget {
         style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.indigo.withOpacity(0.4), fontSize: 15),
-          prefixIcon: Icon(icon, color: const Color(0xFF6B21A8).withOpacity(0.7)),
+          hintStyle: TextStyle(color: Colors.indigo.withValues(alpha:0.4), fontSize: 15),
+          prefixIcon: Icon(icon, color: const Color(0xFF6B21A8).withValues(alpha:0.7)),
           suffixIcon: isPassword
               ? IconButton(
             icon: Icon(
                 obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                color: Colors.indigo.withOpacity(0.4)),
+                color: Colors.indigo.withValues(alpha:0.4)),
             onPressed: toggle,
           )
               : null,
@@ -261,7 +261,7 @@ class SignUpScreen extends StatelessWidget {
         gradient: RadialGradient(
           colors: [
             color,
-            color.withOpacity(0.2),
+            color.withValues(alpha:0.2),
             Colors.transparent,
           ],
         ),

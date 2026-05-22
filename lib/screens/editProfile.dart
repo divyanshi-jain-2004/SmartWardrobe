@@ -26,7 +26,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
   final _box                          = GetStorage();
 
   Color get _primaryTextColor   => Theme.of(context).textTheme.bodyLarge!.color!;
-  Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
+  Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6);
   Color get _surfaceColor       => Theme.of(context).colorScheme.surface;
   Color get _scaffoldColor      => Theme.of(context).scaffoldBackgroundColor;
 
@@ -185,7 +185,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
       decoration: BoxDecoration(
         color: _surfaceColor,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.05), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,7 +201,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.accentTeal.withOpacity(0.1),
+                    color: AppColors.accentTeal.withValues(alpha:0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Row(
@@ -253,7 +253,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
                       width: 70,
                       height: 70,
                       decoration: BoxDecoration(
-                        color: AppColors.accentTeal.withOpacity(0.1),
+                        color: AppColors.accentTeal.withValues(alpha:0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
@@ -366,7 +366,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
                     border: Border.all(
                       color: controller.selectedSkinName.value == name
                           ? AppColors.accentTeal
-                          : Colors.grey.withOpacity(0.3),
+                          : Colors.grey.withValues(alpha:0.3),
                       width: 2.5,
                     ),
                   ),
@@ -417,7 +417,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
       decoration: BoxDecoration(
         color: _surfaceColor,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.05), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

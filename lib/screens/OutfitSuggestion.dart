@@ -11,8 +11,14 @@ import '../utils/constants/colors.dart';
 class OutfitSuggestionScreen extends StatefulWidget {
   final String? initialOutfitName;
   final String? initialOutfitImagePath;
+  final Map<String, dynamic>? initialOutfitData;
 
-  const OutfitSuggestionScreen({super.key, this.initialOutfitName, this.initialOutfitImagePath});
+  const OutfitSuggestionScreen({
+    super.key,
+    this.initialOutfitName,
+    this.initialOutfitImagePath,
+    this.initialOutfitData,
+  });
 
   @override
   State<OutfitSuggestionScreen> createState() => _OutfitSuggestionScreenState();
@@ -23,6 +29,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   late bool _isViewingSavedOutfit;
   late String _displayedOutfitName;
   late String _displayedOutfitAssetPath;
+  late String _displayedWeatherLabel;
   int _currentOutfitIndex = 0;
   bool _isLiked = false;
 
@@ -32,14 +39,36 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialOutfitName != null && widget.initialOutfitImagePath != null) {
+    if (widget.initialOutfitData != null) {
+      final combo = widget.initialOutfitData!;
+      final top = (combo['top'] as Map<String, dynamic>? ?? {});
+      final bottom = (combo['bottom'] as Map<String, dynamic>? ?? {});
+      final footwear = (combo['footwear'] as Map<String, dynamic>? ?? {});
+      final topName = (top['item_name'] ?? '').toString().trim();
+      final bottomName = (bottom['item_name'] ?? '').toString().trim();
+      final footwearName = (footwear['item_name'] ?? '').toString().trim();
+      final topImage = (top['image_url'] ?? '').toString().trim();
+      final bottomImage = (bottom['image_url'] ?? '').toString().trim();
+      final footwearImage = (footwear['image_url'] ?? '').toString().trim();
+
+      _displayedOutfitName = [topName, bottomName, footwearName]
+          .where((name) => name.isNotEmpty)
+          .join(' & ');
+      _displayedOutfitAssetPath = [topImage, bottomImage, footwearImage]
+          .where((img) => img.isNotEmpty && img != 'null')
+          .join(',');
+      _displayedWeatherLabel = (combo['season'] ?? 'Current').toString();
+      _isViewingSavedOutfit = true;
+    } else if (widget.initialOutfitName != null && widget.initialOutfitImagePath != null) {
       _displayedOutfitName = widget.initialOutfitName!;
       _displayedOutfitAssetPath = widget.initialOutfitImagePath!;
+      _displayedWeatherLabel = 'Current';
       _isViewingSavedOutfit = true;
     } else {
       _isViewingSavedOutfit = false;
       _displayedOutfitName = 'Generating...';
       _displayedOutfitAssetPath = '';
+      _displayedWeatherLabel = 'Current';
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await outfitController.generateAIOutfits();
@@ -52,10 +81,34 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
   void _updateDisplayFromGenerated() {
     if (outfitController.generatedOutfits.isEmpty) return;
-    var combo = outfitController.generatedOutfits[_currentOutfitIndex];
+    final combo = outfitController.generatedOutfits[_currentOutfitIndex];
+    final top = (combo['top'] as Map<String, dynamic>? ?? {});
+    final bottom = (combo['bottom'] as Map<String, dynamic>? ?? {});
+    final footwear = (combo['footwear'] as Map<String, dynamic>? ?? {});
+    final topName = (top['item_name'] ?? '').toString().trim();
+    final bottomName = (bottom['item_name'] ?? '').toString().trim();
+    final footwearName = (footwear['item_name'] ?? '').toString().trim();
+    final topColor = (top['color'] ?? '').toString().trim();
+    final bottomColor = (bottom['color'] ?? '').toString().trim();
+    final footwearColor = (footwear['color'] ?? '').toString().trim();
+    final topImage = (top['image_url'] ?? '').toString().trim();
+    final bottomImage = (bottom['image_url'] ?? '').toString().trim();
+    final footwearImage = (footwear['image_url'] ?? '').toString().trim();
+    final weather = (combo['season'] ?? 'Current').toString().trim();
+
+    final displayTop = topName.isNotEmpty ? topName : (topColor.isNotEmpty ? '$topColor Top' : 'Top');
+    final displayBottom = bottomName.isNotEmpty ? bottomName : (bottomColor.isNotEmpty ? '$bottomColor Bottom' : 'Bottom');
+    final displayFootwear = footwearName.isNotEmpty
+        ? footwearName
+        : (footwearColor.isNotEmpty ? '$footwearColor Footwear' : '');
+    final mergedImagePath = [topImage, bottomImage, footwearImage].where((img) => img.isNotEmpty && img != 'null').join(',');
+
     setState(() {
-      _displayedOutfitName = combo['name'] ?? 'Stylish Outfit';
-      _displayedOutfitAssetPath = '${combo['top']['image_url']},${combo['bottom']['image_url']}';
+      _displayedOutfitName = [displayTop, displayBottom, displayFootwear]
+          .where((name) => name.isNotEmpty)
+          .join(' & ');
+      _displayedOutfitAssetPath = mergedImagePath;
+      _displayedWeatherLabel = weather.isNotEmpty ? weather : 'Current';
     });
   }
 
@@ -84,7 +137,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       'Refreshing',
       'Scanning your wardrobe for a better match...',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.black.withOpacity(0.7),
+      backgroundColor: Colors.black.withValues(alpha:0.7),
       colorText: Colors.white,
       icon: const Icon(Icons.auto_awesome, color: AppColors.accentTeal),
     );
@@ -96,7 +149,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     final newOutfit = OutfitModel(
       name: _displayedOutfitName,
       imageUrl: _displayedOutfitAssetPath,
-      season: 'Current',
+      season: _displayedWeatherLabel,
       gender: 'F',
     );
     outfitController.addOutfit(newOutfit);
@@ -150,8 +203,8 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
               }
 
               // 🎯 FIX: Use cached _box instead of creating new GetStorage() in build
-              final String profileGender = _box.read('user_gender') ?? 'Women';
-
+              final String rawGender = _box.read('gender') ?? 'Female';
+              final String profileGender = (rawGender.toLowerCase() == 'male' || rawGender.toLowerCase() == 'men') ? 'Men' : 'Women';
               // Safely get currentCombo
               final currentCombo = outfitController.generatedOutfits.isNotEmpty
                   ? outfitController.generatedOutfits[_currentOutfitIndex % outfitController.generatedOutfits.length]
@@ -168,7 +221,11 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                   children: [
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.6,
-                      child: OutfitCard(outfitName: _displayedOutfitName, outfitImagePath: _displayedOutfitAssetPath),
+                      child: OutfitCard(
+                        outfitName: _displayedOutfitName,
+                        outfitImagePath: _displayedOutfitAssetPath,
+                        weatherLabel: _displayedWeatherLabel,
+                      ),
                     ),
                     const SizedBox(height: 32),
                     _buildControlPanel(),
@@ -181,6 +238,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         // 1. Get the category from the bottom (e.g., 'Jeans')
                         topCategory: currentCombo['top']?['category'] ?? 'Tops',
                         bottomCategory: currentCombo['bottom']?['category'] ?? 'Jeans',
+                        footwearCategory: currentCombo['footwear']?['category'] ?? 'Footwear',
 
                         // 2. Get the sub_type from the recommendation (e.g., 'Wide Leg')
                         subType: currentCombo['sub_type'] ?? '',
@@ -243,6 +301,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 class ShoppableGrid extends StatelessWidget {
   final String topCategory;    // 🎯 Added
   final String bottomCategory;
+  final String footwearCategory;
   final String subType;
   final String gender;
 
@@ -250,7 +309,7 @@ class ShoppableGrid extends StatelessWidget {
     super.key,
 
     required this.subType,
-    required this.gender, required this.topCategory, required this.bottomCategory,
+    required this.gender, required this.topCategory, required this.bottomCategory, required this.footwearCategory,
   });
 
   @override
@@ -280,9 +339,10 @@ class ShoppableGrid extends StatelessWidget {
           String dbCat = (item['category'] ?? "").toString().toLowerCase().trim();
           String targetTop = topCategory.toLowerCase().trim();
           String targetBottom = bottomCategory.toLowerCase().trim();
+          String targetFootwear = footwearCategory.toLowerCase().trim();
 
           // Match if it's a top OR a bottom for this outfit
-          return dbCat == targetTop || dbCat == targetBottom;
+          return dbCat == targetTop || dbCat == targetBottom || dbCat == targetFootwear;
         }).toList();
         // 🎯 FIX: Removed filteredItems.shuffle() — shuffling inside build() causes
         // unnecessary main thread work on every rebuild. The list order from DB is fine.
@@ -336,7 +396,7 @@ class ShoppableGrid extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.04), blurRadius: 10)],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,13 +444,23 @@ class ShoppableGrid extends StatelessWidget {
 class OutfitCard extends StatelessWidget {
   final String outfitName;
   final String outfitImagePath;
-  const OutfitCard({required this.outfitName, required this.outfitImagePath, super.key});
+  final String weatherLabel;
+  const OutfitCard({
+    required this.outfitName,
+    required this.outfitImagePath,
+    required this.weatherLabel,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    List<String> images = outfitImagePath.split(',');
+    final List<String> images = outfitImagePath
+        .split(',')
+        .map((img) => img.trim())
+        .where((img) => img.isNotEmpty && img != 'null')
+        .toList();
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, 15))]),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.1), blurRadius: 30, offset: const Offset(0, 15))]),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
         child: Column(
@@ -400,11 +470,15 @@ class OutfitCard extends StatelessWidget {
               flex: 7,
               child: Container(
                 color: const Color(0xFFF4F4F4),
-                child: images.length > 1
-                    ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Expanded(child: _buildImage(images[0])),
-                  Expanded(child: _buildImage(images[1])),
-                ])
+                child: images.isEmpty
+                    ? _buildImage('')
+                    : images.length > 1
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: images
+                            .map((img) => Expanded(child: _buildImage(img)))
+                            .toList(),
+                      )
                     : _buildImage(images[0]),
               ),
             ),
@@ -422,12 +496,39 @@ class OutfitCard extends StatelessWidget {
         Text("PERFECT MATCH", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.accentTeal)),
         const SizedBox(height: 8),
         Text(outfitName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.accentTeal.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            'Weather: $weatherLabel',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.accentTeal,
+            ),
+          ),
+        ),
       ]),
     );
   }
 
   Widget _buildImage(String path) {
-    if (path.isEmpty) return const SizedBox();
+    if (path.isEmpty) {
+      return Container(
+        color: const Color(0xFFF4F4F4),
+        child: const Center(
+          child: Icon(
+            Icons.image_not_supported_outlined,
+            color: Colors.grey,
+            size: 40,
+          ),
+        ),
+      );
+    }
 
     // 🎯 Use Image.network for Supabase URLs
     if (path.startsWith('http')) {

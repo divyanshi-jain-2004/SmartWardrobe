@@ -310,8 +310,8 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: BoxDecoration(
               color: scanController.isScanning.value
-                  ? AppColors.accentTeal.withOpacity(0.9)
-                  : Colors.black.withOpacity(0.6),
+                  ? AppColors.accentTeal.withValues(alpha:0.9)
+                  : Colors.black.withValues(alpha:0.6),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -370,7 +370,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
+                    color: Colors.black.withValues(alpha:0.7),
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: Row(
@@ -409,7 +409,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> with WidgetsBindingObse
                         ? null
                         : [
                       BoxShadow(
-                        color: AppColors.accentTeal.withOpacity(0.5),
+                        color: AppColors.accentTeal.withValues(alpha:0.5),
                         blurRadius: 20,
                         spreadRadius: 2,
                       ),
@@ -535,12 +535,12 @@ class ScannerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.8)
+      ..color = color.withValues(alpha:0.8)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
     final glowPaint = Paint()
-      ..color = color.withOpacity(0.3)
+      ..color = color.withValues(alpha:0.3)
       ..strokeWidth = 15
       ..style = PaintingStyle.stroke
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10);
@@ -551,7 +551,7 @@ class ScannerPainter extends CustomPainter {
     canvas.drawLine(Offset(0, scanY), Offset(size.width, scanY), paint);
 
     final gridPaint = Paint()
-      ..color = color.withOpacity(0.2)
+      ..color = color.withValues(alpha:0.2)
       ..strokeWidth = 1;
 
     for (double x = 0; x < size.width; x += 40) {
@@ -573,12 +573,12 @@ class BodyOutlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.accentTeal.withOpacity(0.3)
+      ..color = AppColors.accentTeal.withValues(alpha:0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
     final guidePaint = Paint()
-      ..color = AppColors.accentTeal.withOpacity(0.6)
+      ..color = AppColors.accentTeal.withValues(alpha:0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 

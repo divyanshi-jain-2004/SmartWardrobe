@@ -32,12 +32,12 @@ class LoginScreen extends StatelessWidget {
           Positioned(
             top: -50,
             right: -50,
-            child: _buildOrb(screenWidth * 0.6, Colors.white.withOpacity(0.3)),
+            child: _buildOrb(screenWidth * 0.6, Colors.white.withValues(alpha:0.3)),
           ),
           Positioned(
             bottom: -80,
             left: -30,
-            child: _buildOrb(screenWidth * 0.5, Colors.deepPurple.withOpacity(0.1)),
+            child: _buildOrb(screenWidth * 0.5, Colors.deepPurple.withValues(alpha:0.1)),
           ),
 
 
@@ -51,12 +51,12 @@ class LoginScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha:0.2),
                       borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      border: Border.all(color: Colors.white.withValues(alpha:0.3)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha:0.05),
                           blurRadius: 20,
                           spreadRadius: 5,
                         )
@@ -71,7 +71,7 @@ class LoginScreen extends StatelessWidget {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha:0.5),
                                 blurRadius: 20,
                               )
                             ],
@@ -134,7 +134,7 @@ class LoginScreen extends StatelessWidget {
                               backgroundColor: controller.accentTeal,
                               foregroundColor: Colors.white,
                               elevation: 8,
-                              shadowColor: controller.accentTeal.withOpacity(0.4),
+                              shadowColor: controller.accentTeal.withValues(alpha:0.4),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
                             onPressed: controller.isLoading.value ? null : controller.signIn,
@@ -193,11 +193,11 @@ class LoginScreen extends StatelessWidget {
       }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha:0.9),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -245,7 +245,7 @@ class LoginScreen extends StatelessWidget {
     Get.defaultDialog(
       title: "Reset Password",
       titleStyle: const TextStyle(fontWeight: FontWeight.bold),
-      backgroundColor: Colors.white.withOpacity(0.9),
+      backgroundColor: Colors.white.withValues(alpha:0.9),
       radius: 20,
       contentPadding: const EdgeInsets.all(20),
       content: Column(

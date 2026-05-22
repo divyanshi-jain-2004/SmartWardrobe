@@ -176,7 +176,7 @@
 //   //             child: Text(
 //   //               'Cancel',
 //   //               style: TextStyle(
-//   //                 color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6),
+//   //                 color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6),
 //   //               ),
 //   //             ),
 //   //             onPressed: () {
@@ -264,7 +264,7 @@
 //               icon,
 //               color: titleColor == Colors.red
 //                   ? Colors.red
-//                   : AppColors.accentTeal.withOpacity(0.8),
+//                   : AppColors.accentTeal.withValues(alpha:0.8),
 //               size: iconSize,
 //             ),
 //             SizedBox(width: size.width * 0.04),
@@ -283,7 +283,7 @@
 //             if (hasNavigation)
 //               Icon(
 //                 Icons.chevron_right,
-//                 color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.5),
+//                 color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.5),
 //                 size: iconSize * 0.8,
 //               ),
 //           ],
@@ -302,7 +302,7 @@
 //         color: Theme.of(context).colorScheme.surface,
 //         boxShadow: [
 //           BoxShadow(
-//             color: Colors.black.withOpacity(0.08),
+//             color: Colors.black.withValues(alpha:0.08),
 //             blurRadius: 10,
 //             offset: const Offset(0, -5),
 //           ),
@@ -313,7 +313,7 @@
 //         backgroundColor: Colors.transparent,
 //         type: BottomNavigationBarType.fixed,
 //         selectedItemColor: AppColors.accentTeal,
-//         unselectedItemColor: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.5),
+//         unselectedItemColor: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.5),
 //         selectedLabelStyle: TextStyle(fontSize: labelSize, fontWeight: FontWeight.bold),
 //         unselectedLabelStyle: TextStyle(fontSize: labelSize),
 //         currentIndex: _selectedIndex,
@@ -434,7 +434,7 @@
 //                         userController.userEmail.value,
 //                         style: TextStyle(
 //                           fontSize: size.width * 0.038,
-//                           color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6),
+//                           color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6),
 //                         ),
 //                       ),
 //                     ),
@@ -661,7 +661,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         )),
                         Obx(() => Text(
                           userController.userEmail.value,
-                          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+                          style: TextStyle(color: Colors.white.withValues(alpha:0.8), fontSize: 14),
                         )),
                       ],
                     ),
@@ -730,12 +730,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       height: 70,
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.97),
+        color: Theme.of(context).cardColor.withValues(alpha:0.97),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
+        border: Border.all(color: Colors.white.withValues(alpha:0.1), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha:0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -762,7 +762,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accentTeal.withOpacity(0.15) : Colors.transparent,
+          color: isSelected ? AppColors.accentTeal.withValues(alpha:0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Icon(
@@ -808,7 +808,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _sectionLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(left: 8, bottom: 12),
-      child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodySmall!.color!.withOpacity(0.5), letterSpacing: 1.2)),
+      child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Theme.of(context).textTheme.bodySmall!.color!.withValues(alpha:0.5), letterSpacing: 1.2)),
     );
   }
 
@@ -817,7 +817,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.03), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(children: children),
     );
@@ -830,7 +830,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: color.withValues(alpha:0.1), borderRadius: BorderRadius.circular(12)),
         child: Icon(icon, color: color, size: 22),
       ),
       title: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: isDangerous ? Colors.redAccent : Theme.of(context).textTheme.bodyLarge!.color)),

@@ -124,7 +124,8 @@ class EventOutfitService {
 
   // ─── 4. Occasion Score Bonus ─────────────────────────────────────────────
   // Scored outfits mein occasion ke hisab se bonus add karo
-  int _occasionBonus(Map<String, dynamic> item, OccasionType occasion, bool isTop) {
+  int _occasionBonus(Map<String, dynamic>? item, OccasionType occasion, bool isTop) {
+    if (item == null) return 0;
     final style = (item['style'] ?? '').toString().toLowerCase();
     final name = (item['item_name'] ?? '').toString().toLowerCase();
     final color = (item['color'] ?? '').toString().toLowerCase();
@@ -186,9 +187,16 @@ class EventOutfitService {
     final previousTemp = box.read('current_temp_c');
     box.write('current_temp_c', tempC);
 
-    // Occasion se filter karein (agar filter ke baad items bahut kam hain toh full list use karo)
+    // Occasion se filter karein
     List<Map<String, dynamic>> filtered = _filterByOccasion(wardrobeItems, occasion);
-    if (filtered.length < 4) filtered = wardrobeItems; // Fallback to all items
+    bool hasTops = filtered.any((i) => i['category'] == 'Topwear' || i['category'] == 'Tops');
+    bool hasBottoms = filtered.any((i) => i['category'] == 'Bottomwear' || i['category'] == 'Bottoms');
+    bool hasDresses = filtered.any((i) => i['category'] == 'Dresses' || i['category'] == 'Dress');
+    
+    // Agar valid combo (top+bottom ya dress) nahi ban sakta, toh fallback to all items
+    if ((!hasTops || !hasBottoms) && !hasDresses || filtered.length < 4) {
+      filtered = wardrobeItems; 
+    }
 
     // Engine se base combos nikalo
     List<Map<String, dynamic>> combos = _engine.generateOutfits(filtered, count + 8);
@@ -196,8 +204,8 @@ class EventOutfitService {
     // Occasion bonus add karo
     for (var combo in combos) {
       int bonus = 0;
-      bonus += _occasionBonus(combo['top'] as Map<String, dynamic>, occasion, true);
-      bonus += _occasionBonus(combo['bottom'] as Map<String, dynamic>, occasion, false);
+      bonus += _occasionBonus(combo['top'] as Map<String, dynamic>?, occasion, true);
+      bonus += _occasionBonus(combo['bottom'] as Map<String, dynamic>?, occasion, false);
       combo['score'] = (combo['score'] as int) + bonus;
       combo['occasion'] = occasion.name;
       combo['event_temp_c'] = tempC;

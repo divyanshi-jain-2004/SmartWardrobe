@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:get_storage/get_storage.dart';
 
 class ShoppableGrid extends StatelessWidget {
   final String category;
@@ -8,10 +9,15 @@ class ShoppableGrid extends StatelessWidget {
   const ShoppableGrid({super.key, required this.category});
 
   Future<List<Map<String, dynamic>>> _fetchDeals() async {
+    final box = GetStorage();
+    final rawGender = box.read('gender') ?? 'Female';
+    final profileGender = (rawGender.toLowerCase() == 'male' || rawGender.toLowerCase() == 'men') ? 'Men' : 'Women';
+
     final response = await Supabase.instance.client
         .from('shopping_deals')
         .select()
         .eq('category', category)
+        .eq('gender', profileGender)
         .limit(12);
     return List<Map<String, dynamic>>.from(response);
   }

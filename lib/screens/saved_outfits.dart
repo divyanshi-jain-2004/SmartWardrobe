@@ -16,7 +16,7 @@ class SavedOutfitsScreen extends GetView<OutfitController> {
   const SavedOutfitsScreen({super.key});
 
   Color _primaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyLarge!.color!;
-  Color _secondaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
+  Color _secondaryTextColor(BuildContext context) => Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6);
   Color _surfaceColor(BuildContext context) => Theme.of(context).colorScheme.surface;
   Color _scaffoldColor(BuildContext context) => Theme.of(context).scaffoldBackgroundColor;
 
@@ -228,7 +228,7 @@ class _OutfitCard extends StatelessWidget {
             left: 0,
             right: 0,
             child: Container(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha:0.4),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -261,7 +261,7 @@ class _OutfitCard extends StatelessWidget {
     Color? backgroundColor,
     required VoidCallback onTap,
   }) {
-    final chipBackgroundColor = backgroundColor ?? _surfaceColor(Get.context!).withOpacity(0.9);
+    final chipBackgroundColor = backgroundColor ?? _surfaceColor(Get.context!).withValues(alpha:0.9);
 
     return GestureDetector(
       onTap: onTap,

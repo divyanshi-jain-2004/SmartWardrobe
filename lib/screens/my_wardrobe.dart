@@ -83,7 +83,7 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
             right: -50,
             child: CircleAvatar(
                 radius: 150,
-                backgroundColor: AppColors.accentTeal.withOpacity(isDark ? 0.1 : 0.05)
+                backgroundColor: AppColors.accentTeal.withValues(alpha:isDark ? 0.1 : 0.05)
             ),
           ),
 
@@ -173,7 +173,7 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
       decoration: BoxDecoration(
         color: bg,
         shape: BoxShape.circle,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.1), blurRadius: 10)],
       ),
       child: Icon(icon, color: iconCol, size: 24),
     );
@@ -200,7 +200,7 @@ class _CategoryCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(isDark ? 0.3 : 0.1), blurRadius: 15, offset: const Offset(0, 8))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:isDark ? 0.3 : 0.1), blurRadius: 15, offset: const Offset(0, 8))],
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -215,7 +215,7 @@ class _CategoryCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                  colors: [Colors.transparent, Colors.black.withValues(alpha:0.8)],
                 ),
               ),
             ),
@@ -224,7 +224,7 @@ class _CategoryCard extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                    color: isDark ? Colors.black45 : Colors.white.withOpacity(0.9),
+                    color: isDark ? Colors.black45 : Colors.white.withValues(alpha:0.9),
                     borderRadius: BorderRadius.circular(12)
                 ),
                 child: Icon(category.icon, size: 18, color: AppColors.accentTeal),
@@ -234,7 +234,7 @@ class _CategoryCard extends StatelessWidget {
               bottom: 45, left: 15,
               child: Text(
                 "$itemCount Items",
-                style: TextStyle(color: AppColors.accentTeal.withOpacity(0.9), fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppColors.accentTeal.withValues(alpha:0.9), fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ),
             Positioned(
@@ -354,7 +354,7 @@ class _WardrobeItemScreenState extends State<WardrobeItemScreen> {
         'Success',
         'Item deleted successfully',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.8),
+        backgroundColor: Colors.green.withValues(alpha:0.8),
         colorText: Colors.white,
       );
     } catch (e) {
@@ -363,7 +363,7 @@ class _WardrobeItemScreenState extends State<WardrobeItemScreen> {
         'Error',
         'Failed to delete item',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha:0.8),
         colorText: Colors.white,
       );
     }
@@ -401,7 +401,7 @@ class _WardrobeItemScreenState extends State<WardrobeItemScreen> {
             return Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                color: isDark ? Colors.white.withValues(alpha:0.05) : Colors.grey[100],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,7 +421,7 @@ class _WardrobeItemScreenState extends State<WardrobeItemScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
+                                color: Colors.black.withValues(alpha:0.5),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(

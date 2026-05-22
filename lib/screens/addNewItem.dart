@@ -108,7 +108,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
       final dir = await getTemporaryDirectory();
       final targetPath = '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_compressed.jpg';
 
-      print('📦 Original file size: ${(await file.length() / 1024 / 1024).toStringAsFixed(2)} MB');
 
       final result = await FlutterImageCompress.compressAndGetFile(
         file.absolute.path,
@@ -671,8 +670,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildUploadImageCard(size),
-                  SizedBox(height: size.height * 0.04),
-                  _buildFixedActionButton(size, 0),
+                  SizedBox(height: size.height * 0.04)
                 ],
               ),
             )
@@ -700,6 +698,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                   right: 0,
                   child: _buildFixedActionButton(size, horizontalPadding),
                 ),
+            
               ],
             ),
     );
@@ -712,15 +711,15 @@ class _AddItemScreenState extends State<AddItemScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            _kPrimaryTeal.withOpacity(0.07),
-            _kPrimaryTeal.withOpacity(0.03),
+            _kPrimaryTeal.withValues(alpha:0.07),
+            _kPrimaryTeal.withValues(alpha:0.03),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _kPrimaryTeal.withOpacity(0.35),
+          color: _kPrimaryTeal.withValues(alpha:0.35),
           width: 1.5,
         ),
       ),
@@ -732,7 +731,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
             width: size.width * 0.16,
             height: size.width * 0.16,
             decoration: BoxDecoration(
-              color: _kPrimaryTeal.withOpacity(0.12),
+              color: _kPrimaryTeal.withValues(alpha:0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -797,9 +796,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
           vertical: size.height * 0.007,
         ),
         decoration: BoxDecoration(
-          color: _kPrimaryTeal.withOpacity(0.12),
+          color: _kPrimaryTeal.withValues(alpha:0.12),
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: _kPrimaryTeal.withOpacity(0.3)),
+          border: Border.all(color: _kPrimaryTeal.withValues(alpha:0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1036,8 +1035,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
       ),
     );
   }
-
-  Widget _buildFixedActionButton(Size size, double padding) {
+Widget _buildFixedActionButton(Size size, double padding) {
     final buttonHeight = size.height * 0.07;
     final fontSize = size.width * 0.045;
     final bool isFormValid = _isImageUploaded && _selectedCategory != null && _itemName.isNotEmpty;
@@ -1048,7 +1046,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         color: _surfaceColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha:0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -1064,7 +1062,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
             shadowColor: Colors.transparent,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             elevation: 0,
-            disabledBackgroundColor: _kPrimaryTeal.withOpacity(0.35),
+            disabledBackgroundColor: _kPrimaryTeal.withValues(alpha:0.35),
             padding: EdgeInsets.zero,
           ),
           child: Ink(
@@ -1076,12 +1074,12 @@ class _AddItemScreenState extends State<AddItemScreen> {
                       end: Alignment.centerRight,
                     )
                   : null,
-              color: isFormValid ? null : _kPrimaryTeal.withOpacity(0.35),
+              color: isFormValid ? null : _kPrimaryTeal.withValues(alpha:0.35),
               borderRadius: BorderRadius.circular(14),
               boxShadow: isFormValid
                   ? [
                       BoxShadow(
-                        color: _kPrimaryTeal.withOpacity(0.4),
+                        color: _kPrimaryTeal.withValues(alpha:0.4),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -1107,4 +1105,5 @@ class _AddItemScreenState extends State<AddItemScreen> {
       ),
     );
   }
+  
 }

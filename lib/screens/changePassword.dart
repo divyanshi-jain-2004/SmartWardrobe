@@ -29,7 +29,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   // 🎯 Theme Getters
   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
-  Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6);
+  Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6);
   Color get _surfaceColor => Theme.of(context).colorScheme.surface;
   Color get _scaffoldColor => Theme.of(context).scaffoldBackgroundColor;
   Color get _dividerColor => Theme.of(context).dividerColor;
@@ -182,7 +182,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 4,
 
-                  disabledBackgroundColor: AppColors.accentTeal.withOpacity(0.5),
+                  disabledBackgroundColor: AppColors.accentTeal.withValues(alpha:0.5),
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -207,7 +207,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   padding: EdgeInsets.symmetric(vertical: size.height * 0.018),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
 
-                  side: BorderSide(color: _secondaryTextColor.withOpacity(0.8), width: 1),
+                  side: BorderSide(color: _secondaryTextColor.withValues(alpha:0.8), width: 1),
                 ),
                 child: Text(
                   'Cancel',
