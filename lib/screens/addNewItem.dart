@@ -30,7 +30,7 @@ class AddItemScreen extends StatefulWidget {
 }
 
 class MLApiconfig {
-  static const String baseUrl = 'https://smart-wardrobe-api-q42p.onrender.com';
+  static const String baseUrl = 'https://smart-wardrobe-api-production.up.railway.app';
   static const Duration timeout = Duration(seconds: 60);
 }
 
@@ -185,7 +185,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
           throw Exception('Server Error: ${response.statusCode}');
         }
       } catch (e) {
-        print('BG Removal Error: $e');
         Get.snackbar('Error', 'Failed to remove background. Server might be down.');
         setState(() => _removeBackground = false);
       }
@@ -305,7 +304,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
         body: jsonEncode({'image': base64Image}),
       ).timeout(MLApiconfig.timeout);
 
-      print('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -373,7 +371,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
         throw Exception('API returned status ${response.statusCode}');
       }
     } on TimeoutException catch (_) {
-      print('ML Processing Timeout');
       setState(() => _mlProcessingFailed = true);
       Get.closeCurrentSnackbar();
       Get.snackbar(
@@ -385,7 +382,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
         duration: const Duration(seconds: 4),
       );
     } catch (e) {
-      print('ML Processing Error: $e');
       setState(() => _mlProcessingFailed = true);
       Get.closeCurrentSnackbar();
       Get.snackbar(
@@ -474,7 +470,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
         );
       }
     } catch (e) {
-      print('Crop Error: $e');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Error',
@@ -566,11 +561,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
         'created_at': DateTime.now().toIso8601String(),
       };
 
-      print('Inserting item: $newItem');
 
       await supabase.from('wardrobe_items').insert(newItem);
 
-      print('✅ Item Added Successfully!');
 
       Get.closeCurrentSnackbar();
       Get.snackbar(
@@ -584,7 +577,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
       _resetForm();
 
     } on StorageException catch (e) {
-      print('❌ Storage Error: ${e.message}');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Upload Failed',
@@ -594,7 +586,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
         colorText: Colors.white,
       );
     } on PostgrestException catch (error) {
-      print('❌ Database Error: ${error.message}');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Database Error',
@@ -604,7 +595,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
         colorText: Colors.white,
       );
     } catch (e) {
-      print('❌ General Error: $e');
       Get.closeCurrentSnackbar();
       Get.snackbar(
         'Error',
@@ -926,7 +916,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                       ),
                     ],
                   ),
-                  // 🆕 Jeans type badge — sirf Bottomwear ke liye dikhega
+                  // 🆕 Jeans type badge
                   if (_detectedJeansType != null) ...[
                     SizedBox(height: 8),
                     Padding(

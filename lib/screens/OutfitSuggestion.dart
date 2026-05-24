@@ -53,15 +53,20 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       final bottomImage = (bottom['image_url'] ?? '').toString().trim();
       final footwearImage = (footwear['image_url'] ?? '').toString().trim();
 
-      _displayedOutfitName = [topName, bottomName, footwearName]
-          .where((name) => name.isNotEmpty)
-          .join(' & ');
-      _displayedOutfitAssetPath = [topImage, bottomImage, footwearImage]
-          .where((img) => img.isNotEmpty && img != 'null')
-          .join(',');
+      _displayedOutfitName = [
+        topName,
+        bottomName,
+        footwearName,
+      ].where((name) => name.isNotEmpty).join(' & ');
+      _displayedOutfitAssetPath = [
+        topImage,
+        bottomImage,
+        footwearImage,
+      ].where((img) => img.isNotEmpty && img != 'null').join(',');
       _displayedWeatherLabel = (combo['season'] ?? 'Current').toString();
       _isViewingSavedOutfit = true;
-    } else if (widget.initialOutfitName != null && widget.initialOutfitImagePath != null) {
+    } else if (widget.initialOutfitName != null &&
+        widget.initialOutfitImagePath != null) {
       _displayedOutfitName = widget.initialOutfitName!;
       _displayedOutfitAssetPath = widget.initialOutfitImagePath!;
       _displayedWeatherLabel = 'Current';
@@ -100,18 +105,31 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
     final footwearImage = (footwear['image_url'] ?? '').toString().trim();
     final weather = (combo['season'] ?? 'Current').toString().trim();
 
-    final displayTop = topName.isNotEmpty ? topName : (topColor.isNotEmpty ? '$topColor Top' : 'Top');
-    final displayBottom = bottomName.isNotEmpty ? bottomName : (bottomColor.isNotEmpty ? '$bottomColor Bottom' : 'Bottom');
-    final displayFootwear = footwearName.isNotEmpty
-        ? footwearName
-        : (footwearColor.isNotEmpty ? '$footwearColor Footwear' : '');
-    final mergedImagePath = [topImage, bottomImage, footwearImage].where((img) => img.isNotEmpty && img != 'null').join(',');
+    final displayTop =
+        topName.isNotEmpty
+            ? topName
+            : (topColor.isNotEmpty ? '$topColor Top' : 'Top');
+    final displayBottom =
+        bottomName.isNotEmpty
+            ? bottomName
+            : (bottomColor.isNotEmpty ? '$bottomColor Bottom' : 'Bottom');
+    final displayFootwear =
+        footwearName.isNotEmpty
+            ? footwearName
+            : (footwearColor.isNotEmpty ? '$footwearColor Footwear' : '');
+    final mergedImagePath = [
+      topImage,
+      bottomImage,
+      footwearImage,
+    ].where((img) => img.isNotEmpty && img != 'null').join(',');
 
     setState(() {
       _activeCombo = combo;
-      _displayedOutfitName = [displayTop, displayBottom, displayFootwear]
-          .where((name) => name.isNotEmpty)
-          .join(' & ');
+      _displayedOutfitName = [
+        displayTop,
+        displayBottom,
+        displayFootwear,
+      ].where((name) => name.isNotEmpty).join(' & ');
       _displayedOutfitAssetPath = mergedImagePath;
       _displayedWeatherLabel = weather.isNotEmpty ? weather : 'Current';
     });
@@ -128,10 +146,12 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       _isViewingSavedOutfit = false;
       _currentOutfitIndex = 0;
     } else if (outfitController.generatedOutfits.isNotEmpty) {
-      _currentOutfitIndex = (_currentOutfitIndex + 1) % outfitController.generatedOutfits.length;
+      _currentOutfitIndex =
+          (_currentOutfitIndex + 1) % outfitController.generatedOutfits.length;
     }
     _isLiked = false; // Reset liked state for new outfit
-    if (outfitController.generatedOutfits.isNotEmpty && !_isViewingSavedOutfit) {
+    if (outfitController.generatedOutfits.isNotEmpty &&
+        !_isViewingSavedOutfit) {
       _updateDisplayFromGenerated();
     }
   }
@@ -142,7 +162,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
       'Refreshing',
       'Scanning your wardrobe for a better match...',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.black.withValues(alpha:0.7),
+      backgroundColor: Colors.black.withValues(alpha: 0.7),
       colorText: Colors.white,
       icon: const Icon(Icons.auto_awesome, color: AppColors.accentTeal),
     );
@@ -171,37 +191,71 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text('AI STYLIST', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.w900, fontSize: 16, color: Colors.black87)),
+        title: const Text(
+          'AI STYLIST',
+          style: TextStyle(
+            letterSpacing: 2,
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+            color: Colors.black87,
+          ),
+        ),
         // leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black87), onPressed: () => Get.back()),
       ),
       body: Stack(
         children: [
-          Positioned.fill(child: Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFFFDFCFB), Color(0xFFE2D1C3)], begin: Alignment.topLeft, end: Alignment.bottomRight)))),
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFFDFCFB), Color(0xFFE2D1C3)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+          ),
           SafeArea(
             child: Obx(() {
               if (outfitController.isGenerating.value) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.accentTeal));
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.accentTeal),
+                );
               }
 
               // Handle case where no outfits are available and not viewing a saved one
-              if (outfitController.generatedOutfits.isEmpty && !_isViewingSavedOutfit) {
+              if (outfitController.generatedOutfits.isEmpty &&
+                  !_isViewingSavedOutfit) {
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.sentiment_dissatisfied, size: 64, color: Colors.grey),
+                      const Icon(
+                        Icons.sentiment_dissatisfied,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(height: 16),
                       const Text(
                         "No outfits found.\nAdd more items to your wardrobe!",
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: () => Get.back(),
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentTeal),
-                        child: const Text("Go Back", style: TextStyle(color: Colors.white)),
-                      )
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accentTeal,
+                        ),
+                        child: const Text(
+                          "Go Back",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -209,11 +263,18 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
               // 🎯 FIX: Use cached _box instead of creating new GetStorage() in build
               final String rawGender = _box.read('gender') ?? 'Female';
-              final String profileGender = (rawGender.toLowerCase() == 'male' || rawGender.toLowerCase() == 'men') ? 'Men' : 'Women';
+              final String profileGender =
+                  (rawGender.toLowerCase() == 'male' ||
+                          rawGender.toLowerCase() == 'men')
+                      ? 'Men'
+                      : 'Women';
 
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 10,
+                ),
                 child: Column(
                   children: [
                     SizedBox(
@@ -252,8 +313,18 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             onTap: _skipOutfit,
             child: Container(
               height: 65,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-              child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.refresh_rounded, color: Colors.grey), SizedBox(width: 10), Text("Next Look")]),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.refresh_rounded, color: Colors.grey),
+                  SizedBox(width: 10),
+                  Text("Next Look"),
+                ],
+              ),
             ),
           ),
         ),
@@ -262,21 +333,36 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
           onTap: _saveOutfit,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            height: 65, width: 75,
+            height: 65,
+            width: 75,
             decoration: BoxDecoration(
-              gradient: _isLiked
-                  ? const LinearGradient(colors: [Colors.redAccent, Colors.red], begin: Alignment.topLeft, end: Alignment.bottomRight)
-                  : const LinearGradient(colors: [AppColors.accentTeal, Color(0xFF00A392)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              gradient:
+                  _isLiked
+                      ? const LinearGradient(
+                        colors: [Colors.redAccent, Colors.red],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                      : const LinearGradient(
+                        colors: [AppColors.accentTeal, Color(0xFF00A392)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: (_isLiked ? Colors.red : AppColors.accentTeal).withValues(alpha:0.3),
+                  color: (_isLiked ? Colors.red : AppColors.accentTeal)
+                      .withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
-                )
+                ),
               ],
             ),
-            child: Icon(_isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded, color: Colors.white, size: 28),
+            child: Icon(
+              _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
         ),
       ],
@@ -288,11 +374,7 @@ class ShoppableGrid extends StatefulWidget {
   final Map<String, dynamic>? activeCombo;
   final String gender;
 
-  const ShoppableGrid({
-    super.key,
-    this.activeCombo,
-    required this.gender,
-  });
+  const ShoppableGrid({super.key, this.activeCombo, required this.gender});
 
   @override
   State<ShoppableGrid> createState() => _ShoppableGridState();
@@ -311,7 +393,8 @@ class _ShoppableGridState extends State<ShoppableGrid> {
   @override
   void didUpdateWidget(covariant ShoppableGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.activeCombo != widget.activeCombo || oldWidget.gender != widget.gender) {
+    if (oldWidget.activeCombo != widget.activeCombo ||
+        oldWidget.gender != widget.gender) {
       _loadDeals();
       _activeTabIndex = 0;
     }
@@ -325,7 +408,16 @@ class _ShoppableGridState extends State<ShoppableGrid> {
           .from('shopping_deals')
           .select()
           .eq('gender', gender)
-          .inFilter('category', ['Tops', 'tops', 'T-Shirt', 't-shirt', 'Outerwear', 'outerwear', 'Topwear', 'topwear'])
+          .inFilter('category', [
+            'Tops',
+            'tops',
+            'T-Shirt',
+            't-shirt',
+            'Outerwear',
+            'outerwear',
+            'Topwear',
+            'topwear',
+          ])
           .limit(50)
           .then((d) => List<Map<String, dynamic>>.from(d)),
       // Bottoms
@@ -333,7 +425,14 @@ class _ShoppableGridState extends State<ShoppableGrid> {
           .from('shopping_deals')
           .select()
           .eq('gender', gender)
-          .inFilter('category', ['Jeans', 'jeans', 'Bottomwear', 'bottomwear', 'Bottoms', 'bottoms'])
+          .inFilter('category', [
+            'Jeans',
+            'jeans',
+            'Bottomwear',
+            'bottomwear',
+            'Bottoms',
+            'bottoms',
+          ])
           .limit(50)
           .then((d) => List<Map<String, dynamic>>.from(d)),
     ]);
@@ -358,53 +457,60 @@ class _ShoppableGridState extends State<ShoppableGrid> {
     return false;
   }
 
-  List<Map<String, dynamic>> _scoreAndSortItems(List<Map<String, dynamic>> items, Map<String, dynamic>? outfitPart) {
+  List<Map<String, dynamic>> _scoreAndSortItems(
+    List<Map<String, dynamic>> items,
+    Map<String, dynamic>? outfitPart,
+  ) {
     if (outfitPart == null) return items;
 
-    final partColor = (outfitPart['color'] ?? '').toString().toLowerCase().trim();
-    final partSubType = (outfitPart['sub_type'] ?? '').toString().toLowerCase().trim();
-    final partName = (outfitPart['item_name'] ?? '').toString().toLowerCase().trim();
+    final partColor =
+        (outfitPart['color'] ?? '').toString().toLowerCase().trim();
+    final partSubType =
+        (outfitPart['sub_type'] ?? '').toString().toLowerCase().trim();
+    final partName =
+        (outfitPart['item_name'] ?? '').toString().toLowerCase().trim();
 
-    final scoredItems = items.map((item) {
-      int score = 0;
-      final itemName = (item['item_name'] ?? '').toString().toLowerCase();
-      final dbSubType = (item['sub_type'] ?? '').toString().toLowerCase();
+    final scoredItems =
+        items.map((item) {
+          int score = 0;
+          final itemName = (item['item_name'] ?? '').toString().toLowerCase();
+          final dbSubType = (item['sub_type'] ?? '').toString().toLowerCase();
 
-      // 1. Subtype match
-      if (partSubType.isNotEmpty) {
-        if (dbSubType.contains(partSubType) || partSubType.contains(dbSubType)) {
-          score += 15;
-        }
-        if (itemName.contains(partSubType)) {
-          score += 10;
-        }
-      }
-
-      // 2. Color match
-      if (partColor.isNotEmpty) {
-        if (itemName.contains(partColor)) {
-          score += 8;
-        }
-      }
-
-      // 3. Name word matches
-      if (partName.isNotEmpty) {
-        final nameWords = partName.split(' ').where((w) => w.length > 2);
-        for (var word in nameWords) {
-          if (itemName.contains(word)) {
-            score += 2;
+          // 1. Subtype match
+          if (partSubType.isNotEmpty) {
+            if (dbSubType.contains(partSubType) ||
+                partSubType.contains(dbSubType)) {
+              score += 15;
+            }
+            if (itemName.contains(partSubType)) {
+              score += 10;
+            }
           }
-        }
-      }
 
-      return {
-        ...item,
-        '_matchScore': score,
-      };
-    }).toList();
+          // 2. Color match
+          if (partColor.isNotEmpty) {
+            if (itemName.contains(partColor)) {
+              score += 8;
+            }
+          }
+
+          // 3. Name word matches
+          if (partName.isNotEmpty) {
+            final nameWords = partName.split(' ').where((w) => w.length > 2);
+            for (var word in nameWords) {
+              if (itemName.contains(word)) {
+                score += 2;
+              }
+            }
+          }
+
+          return {...item, '_matchScore': score};
+        }).toList();
 
     // Sort by score descending
-    scoredItems.sort((a, b) => (b['_matchScore'] as int).compareTo(a['_matchScore'] as int));
+    scoredItems.sort(
+      (a, b) => (b['_matchScore'] as int).compareTo(a['_matchScore'] as int),
+    );
     return scoredItems;
   }
 
@@ -433,8 +539,20 @@ class _ShoppableGridState extends State<ShoppableGrid> {
         final bottomPart = widget.activeCombo?['bottom'];
 
         // Filter out items of the wrong gender (impurity fix)
-        final rawTopsFiltered = rawTops.where((item) => !_isWrongGender(item['item_name'] ?? '', widget.gender)).toList();
-        final rawBottomsFiltered = rawBottoms.where((item) => !_isWrongGender(item['item_name'] ?? '', widget.gender)).toList();
+        final rawTopsFiltered =
+            rawTops
+                .where(
+                  (item) =>
+                      !_isWrongGender(item['item_name'] ?? '', widget.gender),
+                )
+                .toList();
+        final rawBottomsFiltered =
+            rawBottoms
+                .where(
+                  (item) =>
+                      !_isWrongGender(item['item_name'] ?? '', widget.gender),
+                )
+                .toList();
 
         // Score and sort items
         final tops = _scoreAndSortItems(rawTopsFiltered, topPart);
@@ -442,9 +560,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
 
         // Filter tabs if it's a dress
         final bool isDress = widget.activeCombo?['is_dress'] ?? false;
-        final List<String> tabLabels = isDress 
-            ? ['✨ Complete Look', '👗 Dresses']
-            : ['✨ Complete Look', '👕 Tops', '👖 Bottoms'];
+        final List<String> tabLabels =
+            isDress
+                ? ['✨ Complete Look', '👗 Dresses']
+                : ['✨ Complete Look', '👕 Tops', '👖 Bottoms'];
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,12 +574,16 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                 SizedBox(width: 8),
                 Text(
                   "Shop the Look",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Premium category pill selector
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -474,36 +597,50 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                       onTap: () => setState(() => _activeTabIndex = index),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
-                          gradient: isSelected
-                              ? const LinearGradient(
-                                  colors: [AppColors.accentTeal, Color(0xFF00ADB5)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                )
-                              : null,
+                          gradient:
+                              isSelected
+                                  ? const LinearGradient(
+                                    colors: [
+                                      AppColors.accentTeal,
+                                      Color(0xFF00ADB5),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                  : null,
                           color: isSelected ? null : Colors.white,
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
-                            color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                            color:
+                                isSelected
+                                    ? Colors.transparent
+                                    : Colors.grey.shade200,
                             width: 1.5,
                           ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: AppColors.accentTeal.withValues(alpha:0.3),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  )
-                                ]
-                              : null,
+                          boxShadow:
+                              isSelected
+                                  ? [
+                                    BoxShadow(
+                                      color: AppColors.accentTeal.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                  : null,
                         ),
                         child: Text(
                           tabLabels[index],
                           style: TextStyle(
                             color: isSelected ? Colors.white : Colors.black87,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
                             fontSize: 13,
                           ),
                         ),
@@ -524,8 +661,8 @@ class _ShoppableGridState extends State<ShoppableGrid> {
   }
 
   Widget _buildTabContent(
-    List<Map<String, dynamic>> tops, 
-    List<Map<String, dynamic>> bottoms, 
+    List<Map<String, dynamic>> tops,
+    List<Map<String, dynamic>> bottoms,
     bool isDress,
   ) {
     // 0: All, 1: Tops/Dresses, 2: Bottoms
@@ -537,26 +674,26 @@ class _ShoppableGridState extends State<ShoppableGrid> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (tops.isNotEmpty) ...[
-            _buildCategorySection(isDress ? "Recommended Dresses" : "Recommended Tops", tops),
+            _buildCategorySection(
+              isDress ? "Recommended Dresses" : "Recommended Tops",
+              tops,
+            ),
             const SizedBox(height: 24),
           ],
           if (!isDress && bottoms.isNotEmpty) ...[
             _buildCategorySection("Recommended Bottoms", bottoms),
             const SizedBox(height: 16),
           ],
-          if (tops.isEmpty && bottoms.isEmpty)
-            _buildEmptyPlaceholder(),
+          if (tops.isEmpty && bottoms.isEmpty) _buildEmptyPlaceholder(),
         ],
       );
     } else if (index == 1) {
       // Tops / Dresses Grid
-      return tops.isEmpty 
-          ? _buildEmptyPlaceholder() 
-          : _buildProductGrid(tops);
+      return tops.isEmpty ? _buildEmptyPlaceholder() : _buildProductGrid(tops);
     } else {
       // Bottoms Grid
-      return bottoms.isEmpty 
-          ? _buildEmptyPlaceholder() 
+      return bottoms.isEmpty
+          ? _buildEmptyPlaceholder()
           : _buildProductGrid(bottoms);
     }
   }
@@ -569,7 +706,12 @@ class _ShoppableGridState extends State<ShoppableGrid> {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -578,7 +720,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            itemCount: items.length > 8 ? 8 : items.length, // Curate top 8 matches for the Look
+            itemCount:
+                items.length > 8
+                    ? 8
+                    : items.length, // Curate top 8 matches for the Look
             itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.only(right: 14, bottom: 8),
@@ -626,7 +771,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> item, {bool isHorizontal = false}) {
+  Widget _buildProductCard(
+    Map<String, dynamic> item, {
+    bool isHorizontal = false,
+  }) {
     final int score = item['_matchScore'] as int? ?? 0;
     final bool isBestMatch = score >= 15;
     final bool isGoodMatch = score >= 8 && score < 15;
@@ -650,10 +798,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
         border: Border.all(color: Colors.grey.shade100, width: 1),
       ),
@@ -666,16 +814,22 @@ class _ShoppableGridState extends State<ShoppableGrid> {
               children: [
                 Positioned.fill(
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
                     child: Image.network(
                       item['image_url'] ?? '',
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Center(
-                          child: Icon(Icons.image_not_supported_outlined, color: Colors.grey),
-                        ),
-                      ),
+                      errorBuilder:
+                          (context, error, stackTrace) => Container(
+                            color: Colors.grey.shade100,
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_not_supported_outlined,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(
@@ -684,7 +838,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                             child: SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentTeal),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.accentTeal,
+                              ),
                             ),
                           ),
                         );
@@ -698,7 +855,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Colors.orangeAccent, Colors.redAccent],
@@ -707,17 +867,30 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                         ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
-                          BoxShadow(color: Colors.redAccent.withValues(alpha:0.2), blurRadius: 4, offset: const Offset(0, 2))
+                          BoxShadow(
+                            color: Colors.redAccent.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
                         ],
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.local_fire_department, color: Colors.white, size: 10),
+                          Icon(
+                            Icons.local_fire_department,
+                            color: Colors.white,
+                            size: 10,
+                          ),
                           SizedBox(width: 2),
                           Text(
                             "Best Match",
-                            style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.3,
+                            ),
                           ),
                         ],
                       ),
@@ -728,21 +901,28 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.accentTeal,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
                         "✨ Match",
-                        style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ),
               ],
             ),
           ),
-          
+
           // Card Details
           Padding(
             padding: const EdgeInsets.all(10.0),
@@ -751,14 +931,21 @@ class _ShoppableGridState extends State<ShoppableGrid> {
               children: [
                 // Platform Tag
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: platformBg,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     platform.toUpperCase(),
-                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: platformTxt),
+                    style: TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                      color: platformTxt,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -767,7 +954,11 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                   item['item_name'] ?? 'Fashion Item',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 // Price
@@ -776,9 +967,17 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                   children: [
                     Text(
                       "₹${item['price']}",
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.black),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                      ),
                     ),
-                    const Icon(Icons.arrow_outward_rounded, size: 14, color: AppColors.accentTeal),
+                    const Icon(
+                      Icons.arrow_outward_rounded,
+                      size: 14,
+                      color: AppColors.accentTeal,
+                    ),
                   ],
                 ),
               ],
@@ -789,7 +988,11 @@ class _ShoppableGridState extends State<ShoppableGrid> {
     );
 
     return GestureDetector(
-      onTap: () => launchUrl(Uri.parse(item['link']), mode: LaunchMode.externalApplication),
+      onTap:
+          () => launchUrl(
+            Uri.parse(item['link']),
+            mode: LaunchMode.externalApplication,
+          ),
       child: cardContent,
     );
   }
@@ -808,13 +1011,24 @@ class OutfitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> images = outfitImagePath
-        .split(',')
-        .map((img) => img.trim())
-        .where((img) => img.isNotEmpty && img != 'null')
-        .toList();
+    final List<String> images =
+        outfitImagePath
+            .split(',')
+            .map((img) => img.trim())
+            .where((img) => img.isNotEmpty && img != 'null')
+            .toList();
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.1), blurRadius: 30, offset: const Offset(0, 15))]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
         child: Column(
@@ -823,17 +1037,21 @@ class OutfitCard extends StatelessWidget {
             Expanded(
               flex: 7,
               child: Container(
-                color: const Color(0xFFF4F4F4),
-                child: images.isEmpty
-                    ? _buildImage('')
-                    : images.length > 1
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: images
-                            .map((img) => Expanded(child: _buildImage(img)))
-                            .toList(),
-                      )
-                    : _buildImage(images[0]),
+                color: const Color.fromARGB(255, 151, 147, 147),
+                child:
+                    images.isEmpty
+                        ? _buildImage('')
+                        : images.length > 1
+                        ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children:
+                              images
+                                  .map(
+                                    (img) => Expanded(child: _buildImage(img)),
+                                  )
+                                  .toList(),
+                        )
+                        : _buildImage(images[0]),
               ),
             ),
             _buildInfoPanel(),
@@ -846,27 +1064,40 @@ class OutfitCard extends StatelessWidget {
   Widget _buildInfoPanel() {
     return Container(
       padding: const EdgeInsets.all(20),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text("PERFECT MATCH", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.accentTeal)),
-        const SizedBox(height: 8),
-        Text(outfitName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.accentTeal.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text(
-            'Weather: $weatherLabel',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "PERFECT MATCH",
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
               color: AppColors.accentTeal,
             ),
           ),
-        ),
-      ]),
+          const SizedBox(height: 8),
+          Text(
+            outfitName,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.accentTeal.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              'Weather: $weatherLabel',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.accentTeal,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -919,7 +1150,8 @@ class OutfitCard extends StatelessWidget {
     return Image.asset(
       path,
       fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+      errorBuilder:
+          (context, error, stackTrace) => const Icon(Icons.broken_image),
     );
   }
 }

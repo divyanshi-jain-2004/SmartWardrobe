@@ -386,12 +386,32 @@ class LookCard extends StatelessWidget {
         );
       }
 
-      var dailyCombo = outfitController.dailyOutfit;
-      var top = dailyCombo['top'];
-      var bot = dailyCombo['bottom'];
-      String outfitName = dailyCombo['name'] ?? 'Daily Styling';
-      String topUrl = top != null ? top['image_url'] ?? '' : '';
-      String botUrl = bot != null ? bot['image_url'] ?? '' : '';
+      final dailyCombo = outfitController.dailyOutfit;
+      final top = (dailyCombo['top'] as Map<String, dynamic>? ?? {});
+      final bot = (dailyCombo['bottom'] as Map<String, dynamic>? ?? {});
+      final footwear = (dailyCombo['footwear'] as Map<String, dynamic>? ?? {});
+
+      final topName = (top['item_name'] ?? '').toString().trim();
+      final botName = (bot['item_name'] ?? '').toString().trim();
+      final footwearName = (footwear['item_name'] ?? '').toString().trim();
+
+      final topColor = (top['color'] ?? '').toString().trim();
+      final botColor = (bot['color'] ?? '').toString().trim();
+      final footwearColor = (footwear['color'] ?? '').toString().trim();
+
+      final displayTop = topName.isNotEmpty ? topName : (topColor.isNotEmpty ? '$topColor Top' : '');
+      final displayBottom = botName.isNotEmpty ? botName : (botColor.isNotEmpty ? '$botColor Bottom' : '');
+      final displayFootwear = footwearName.isNotEmpty
+          ? footwearName
+          : (footwearColor.isNotEmpty ? '$footwearColor Footwear' : '');
+
+      final outfitName = [displayTop, displayBottom, displayFootwear]
+          .where((name) => name.isNotEmpty)
+          .join(' & ')
+          .trim();
+
+      final topUrl = (top['image_url'] ?? '').toString();
+      final botUrl = (bot['image_url'] ?? '').toString();
 
       return Container(
         height: size.height * 0.52,
@@ -446,7 +466,10 @@ class LookCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('AI Daily Pick', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 12)),
-                          Text(outfitName, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(
+                            outfitName.isNotEmpty ? outfitName : 'Daily Styling',
+                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                     ),

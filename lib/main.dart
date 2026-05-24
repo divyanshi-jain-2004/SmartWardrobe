@@ -36,7 +36,7 @@ Future<void> main() async {
       )
   );
 
-  final session = Supabase.instance.client.auth.currentSession;
+  //final session = Supabase.instance.client.auth.currentSession;
 
   Get.put(ThemeController());
   Get.put(UserController());

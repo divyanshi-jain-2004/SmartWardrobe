@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_storage/get_storage.dart';
-import 'onboarding.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:smart_wardrobe_new/main.dart';
 
 // --- App Colors ---
 const Color _kGradientStart = Color(0xFFD8B4FE);

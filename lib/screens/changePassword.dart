@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smart_wardrobe_new/main.dart';
-
 import '../utils/constants/colors.dart';
 
 
@@ -30,7 +28,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   // 🎯 Theme Getters
   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
   Color get _secondaryTextColor => Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha:0.6);
-  Color get _surfaceColor => Theme.of(context).colorScheme.surface;
   Color get _scaffoldColor => Theme.of(context).scaffoldBackgroundColor;
   Color get _dividerColor => Theme.of(context).dividerColor;
 

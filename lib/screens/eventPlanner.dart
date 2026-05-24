@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../controllers/event_controller.dart';
@@ -25,6 +24,12 @@ class _EventPlannerScreenState extends State<EventPlannerScreen> {
 
   Color get _primaryTextColor => Theme.of(context).textTheme.bodyLarge!.color!;
   Color get _scaffoldColor => Theme.of(context).scaffoldBackgroundColor;
+
+  @override
+  void initState() {
+    super.initState();
+    eventController.removeExpiredEvents();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +135,7 @@ class _ModernTimelineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    //final size = MediaQuery.of(context).size;
     final primaryColor = Theme.of(context).textTheme.bodyLarge!.color!;
     final surfaceColor = Theme.of(context).colorScheme.surface;
     final service = EventOutfitService();
@@ -414,7 +419,7 @@ class _ModernTimelineCard extends StatelessWidget {
       textConfirm: "Delete",
       confirmTextColor: Colors.white,
       onConfirm: () {
-        controller.events.remove(event);
+        controller.deleteEventByObject(event);
         Get.back();
       },
     );
@@ -584,113 +589,148 @@ class _OutfitSuggestionCard extends StatelessWidget {
   const _OutfitSuggestionCard({required this.outfit, required this.rank});
 
   @override
-  Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).textTheme.bodyLarge!.color!;
-    final top = outfit['top'] as Map<String, dynamic>;
-    final bottom = outfit['bottom'] as Map<String, dynamic>?;
-    final score = outfit['score'] as int;
-    final season = outfit['season'] as String? ?? '';
-    final subType = outfit['sub_type'] as String? ?? '';
+  @override
+Widget build(BuildContext context) {
+  final primaryColor = Theme.of(context).textTheme.bodyLarge!.color!;
 
-    final footwear = outfit['footwear'] as Map<String, dynamic>?;
+  final top = outfit['top'] as Map<String, dynamic>;
+  final bottom = outfit['bottom'] as Map<String, dynamic>?;
+  final footwear = outfit['footwear'] as Map<String, dynamic>?;
 
-    String seasonEmoji = switch (season) {
-      'Hot'  => '☀️',
-      'Warm' => '🌤️',
-      'Cool' => '🍂',
-      'Cold' => '❄️',
-      _      => '🌡️',
-    };
+  final score = outfit['score'] as int;
+  final season = outfit['season'] as String? ?? '';
+  final subType = outfit['sub_type'] as String? ?? '';
 
-    return GestureDetector(
-      onTap: () {
-        Get.back(); // close bottom sheet
-        Get.to(() => OutfitSuggestionScreen(initialOutfitData: outfit));
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: rank == 1
-              ? AppColors.accentTeal.withValues(alpha: 0.08)
-              : primaryColor.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: rank == 1
-                ? AppColors.accentTeal.withValues(alpha: 0.3)
-                : Colors.transparent,
-          ),
+  String seasonEmoji = switch (season) {
+    'Hot' => '☀️',
+    'Warm' => '🌤️',
+    'Cool' => '🍂',
+    'Cold' => '❄️',
+    _ => '🌡️',
+  };
+
+  return GestureDetector(
+    onTap: () {
+      Get.back();
+      Get.to(
+        () => OutfitSuggestionScreen(
+          initialOutfitData: outfit,
         ),
+      );
+    },
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: rank == 1
+            ? AppColors.accentTeal.withValues(alpha: 0.08)
+            : primaryColor.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: rank == 1
+              ? AppColors.accentTeal.withValues(alpha: 0.3)
+              : Colors.transparent,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Rank + Score
+
+          /// Rank + Score
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   if (rank == 1)
-                    const Text('👑 ', style: TextStyle(fontSize: 16)),
+                    const Text(
+                      '👑 ',
+                      style: TextStyle(fontSize: 16),
+                    ),
+
                   Text(
-                    rank == 1 ? 'TOP PICK' : 'OPTION $rank',
+                    rank == 1
+                        ? 'TOP PICK'
+                        : 'OPTION $rank',
                     style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                        color: rank == 1
-                            ? AppColors.accentTeal
-                            : primaryColor.withValues(alpha: 0.4)),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      color: rank == 1
+                          ? AppColors.accentTeal
+                          : primaryColor.withValues(alpha: 0.4),
+                    ),
                   ),
                 ],
               ),
+
               Row(
                 children: [
-                  Text('$seasonEmoji ',
-                      style: const TextStyle(fontSize: 12)),
+                  Text(
+                    '$seasonEmoji ',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.accentTeal.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text('Score: $score',
-                        style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.accentTeal)),
+                    child: Text(
+                      'Score: $score',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.accentTeal,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ],
           ),
+
           const SizedBox(height: 14),
 
-          // Top item
+          /// Top / Dress
           _itemRow(
             context: context,
-            icon: outfit['is_dress'] == true ? Icons.checkroom_rounded : Icons.checkroom_rounded,
-            label: outfit['is_dress'] == true ? 'DRESS' : 'TOP',
-            name: top['item_name'] ?? (outfit['is_dress'] == true ? 'Dress' : 'Top'),
+            icon: Icons.checkroom_rounded,
+            label: outfit['is_dress'] == true
+                ? 'DRESS'
+                : 'TOP',
+            name: top['item_name'] ??
+                (outfit['is_dress'] == true
+                    ? 'Dress'
+                    : 'Top'),
             color: top['color'] ?? '',
             extra: top['style'] ?? '',
           ),
-          
+
+          /// Bottom
           if (bottom != null) ...[
             const SizedBox(height: 10),
-            // Bottom item
+
             _itemRow(
               context: context,
               icon: Icons.accessibility_new_rounded,
               label: 'BOTTOM',
               name: bottom['item_name'] ?? 'Bottom',
               color: bottom['color'] ?? '',
-              extra: subType.isNotEmpty && subType != 'Unknown' ? subType : (bottom['style'] ?? ''),
+              extra: subType.isNotEmpty &&
+                      subType != 'Unknown'
+                  ? subType
+                  : (bottom['style'] ?? ''),
             ),
           ],
+
+          /// Footwear
           if (footwear != null) ...[
             const SizedBox(height: 10),
-            // Footwear item
+
             _itemRow(
               context: context,
               icon: Icons.snowshoeing_rounded,
@@ -703,8 +743,8 @@ class _OutfitSuggestionCard extends StatelessWidget {
         ],
       ),
     ),
-    );
-  }
+  );
+}
 
   Widget _itemRow({
     required BuildContext context,

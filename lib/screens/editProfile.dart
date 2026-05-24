@@ -176,7 +176,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
 
 
   Widget _buildBodyTypeCard(Size size) {
-    final bodyType  = scanController.getStoredBodyType();
+    //final bodyType  = scanController.getStoredBodyType();
     final hasScanned = scanController.hasCompletedScan();
 
     return Container(
