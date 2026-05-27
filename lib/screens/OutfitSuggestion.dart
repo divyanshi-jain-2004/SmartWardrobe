@@ -185,30 +185,40 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'AI STYLIST',
           style: TextStyle(
             letterSpacing: 2,
             fontWeight: FontWeight.w900,
             fontSize: 16,
-            color: Colors.black87,
+            color: isDark ? Colors.white : Colors.black87,
           ),
         ),
-        // leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black87), onPressed: () => Get.back()),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: isDark ? Colors.white : Colors.black87,
+          ),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: Stack(
         children: [
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFFDFCFB), Color(0xFFE2D1C3)],
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFFFDFCFB), const Color(0xFFE2D1C3)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -236,13 +246,13 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
                         color: Colors.grey,
                       ),
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         "No outfits found.\nAdd more items to your wardrobe!",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black54,
+                          color: isDark ? Colors.white70 : Colors.black54,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -305,6 +315,7 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
   }
 
   Widget _buildControlPanel() {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Expanded(
@@ -314,15 +325,22 @@ class _OutfitSuggestionScreenState extends State<OutfitSuggestionScreen> {
             child: Container(
               height: 65,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(20),
+                border: isDark ? Border.all(color: Colors.white10) : null,
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.refresh_rounded, color: Colors.grey),
-                  SizedBox(width: 10),
-                  Text("Next Look"),
+                  Icon(Icons.refresh_rounded, color: isDark ? Colors.white70 : Colors.grey),
+                  const SizedBox(width: 10),
+                  Text(
+                    "Next Look",
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -516,6 +534,7 @@ class _ShoppableGridState extends State<ShoppableGrid> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return FutureBuilder<List<List<Map<String, dynamic>>>>(
       future: _dealsFuture,
       builder: (context, snapshot) {
@@ -568,16 +587,17 @@ class _ShoppableGridState extends State<ShoppableGrid> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.auto_awesome, color: AppColors.accentTeal, size: 22),
-                SizedBox(width: 8),
+                const Icon(Icons.auto_awesome, color: AppColors.accentTeal, size: 22),
+                const SizedBox(width: 8),
                 Text(
                   "Shop the Look",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0.5,
+                    color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),
               ],
@@ -613,13 +633,13 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                                     end: Alignment.bottomRight,
                                   )
                                   : null,
-                          color: isSelected ? null : Colors.white,
+                          color: isSelected ? null : (isDark ? AppColors.darkCard : Colors.white),
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
                             color:
                                 isSelected
                                     ? Colors.transparent
-                                    : Colors.grey.shade200,
+                                    : (isDark ? Colors.white10 : Colors.grey.shade200),
                             width: 1.5,
                           ),
                           boxShadow:
@@ -638,7 +658,7 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                         child: Text(
                           tabLabels[index],
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black87,
+                            color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
                             fontWeight:
                                 isSelected ? FontWeight.bold : FontWeight.w500,
                             fontSize: 13,
@@ -699,6 +719,7 @@ class _ShoppableGridState extends State<ShoppableGrid> {
   }
 
   Widget _buildCategorySection(String title, List<Map<String, dynamic>> items) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -706,10 +727,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.black54,
+              color: isDark ? Colors.white70 : Colors.black54,
               letterSpacing: 0.5,
             ),
           ),
@@ -775,35 +796,36 @@ class _ShoppableGridState extends State<ShoppableGrid> {
     Map<String, dynamic> item, {
     bool isHorizontal = false,
   }) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final int score = item['_matchScore'] as int? ?? 0;
     final bool isBestMatch = score >= 15;
     final bool isGoodMatch = score >= 8 && score < 15;
 
     // Platform configurations
     final String platform = item['platform']?.toString() ?? 'Fashion';
-    Color platformBg = Colors.grey.shade100;
-    Color platformTxt = Colors.grey.shade700;
+    Color platformBg = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100;
+    Color platformTxt = isDark ? Colors.white70 : Colors.grey.shade700;
     if (platform.toLowerCase() == 'myntra') {
-      platformBg = Colors.pink.shade50;
-      platformTxt = Colors.pink.shade600;
+      platformBg = isDark ? Colors.pink.withValues(alpha: 0.15) : Colors.pink.shade50;
+      platformTxt = isDark ? Colors.pink.shade300 : Colors.pink.shade600;
     } else if (platform.toLowerCase() == 'flipkart') {
-      platformBg = Colors.amber.shade50;
-      platformTxt = Colors.amber.shade900;
+      platformBg = isDark ? Colors.amber.withValues(alpha: 0.15) : Colors.amber.shade50;
+      platformTxt = isDark ? Colors.amber.shade300 : Colors.amber.shade900;
     }
 
     Widget cardContent = Container(
       width: isHorizontal ? 150 : double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade100, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -822,18 +844,18 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                       fit: BoxFit.cover,
                       errorBuilder:
                           (context, error, stackTrace) => Container(
-                            color: Colors.grey.shade100,
-                            child: const Center(
+                            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
+                            child: Center(
                               child: Icon(
                                 Icons.image_not_supported_outlined,
-                                color: Colors.grey,
+                                color: isDark ? Colors.white30 : Colors.grey,
                               ),
                             ),
                           ),
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(
-                          color: Colors.grey.shade50,
+                          color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.grey.shade50,
                           child: const Center(
                             child: SizedBox(
                               width: 20,
@@ -954,10 +976,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                   item['item_name'] ?? 'Fashion Item',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: isDark ? Colors.white70 : Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -967,10 +989,10 @@ class _ShoppableGridState extends State<ShoppableGrid> {
                   children: [
                     Text(
                       "₹${item['price']}",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w900,
-                        color: Colors.black,
+                        color: isDark ? Colors.white : Colors.black,
                       ),
                     ),
                     const Icon(
@@ -1011,6 +1033,7 @@ class OutfitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final List<String> images =
         outfitImagePath
             .split(',')
@@ -1019,15 +1042,16 @@ class OutfitCard extends StatelessWidget {
             .toList();
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
             blurRadius: 30,
             offset: const Offset(0, 15),
           ),
         ],
+        border: isDark ? Border.all(color: Colors.white10, width: 1) : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
@@ -1037,37 +1061,37 @@ class OutfitCard extends StatelessWidget {
             Expanded(
               flex: 7,
               child: Container(
-                color: const Color.fromARGB(255, 151, 147, 147),
+                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFECECEC),
                 child:
                     images.isEmpty
-                        ? _buildImage('')
+                        ? _buildImage('', isDark)
                         : images.length > 1
                         ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children:
                               images
                                   .map(
-                                    (img) => Expanded(child: _buildImage(img)),
+                                    (img) => Expanded(child: _buildImage(img, isDark)),
                                   )
                                   .toList(),
                         )
-                        : _buildImage(images[0]),
+                        : _buildImage(images[0], isDark),
               ),
             ),
-            _buildInfoPanel(),
+            _buildInfoPanel(isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoPanel() {
+  Widget _buildInfoPanel(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "PERFECT MATCH",
             style: TextStyle(
               fontSize: 10,
@@ -1078,7 +1102,11 @@ class OutfitCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             outfitName,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: isDark ? Colors.white : Colors.black,
+            ),
           ),
           const SizedBox(height: 10),
           Container(
@@ -1101,14 +1129,14 @@ class OutfitCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImage(String path) {
+  Widget _buildImage(String path, bool isDark) {
     if (path.isEmpty) {
       return Container(
-        color: const Color(0xFFF4F4F4),
-        child: const Center(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF4F4F4),
+        child: Center(
           child: Icon(
             Icons.image_not_supported_outlined,
-            color: Colors.grey,
+            color: isDark ? Colors.white24 : Colors.grey,
             size: 40,
           ),
         ),
@@ -1123,11 +1151,11 @@ class OutfitCard extends StatelessWidget {
         // 🛡️ FIX: This catches the 400 error and shows an icon instead of an exception
         errorBuilder: (context, error, stackTrace) {
           return Container(
-            color: const Color(0xFFF4F4F4), // Match your card background
-            child: const Center(
+            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF4F4F4), // Match your card background
+            child: Center(
               child: Icon(
                 Icons.image_not_supported_outlined,
-                color: Colors.grey,
+                color: isDark ? Colors.white24 : Colors.grey,
                 size: 40,
               ),
             ),
@@ -1136,10 +1164,10 @@ class OutfitCard extends StatelessWidget {
         // 🌀 Optional: Show a tiny spinner while the image loads
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
-          return const Center(
+          return Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: Colors.grey,
+              color: isDark ? Colors.white24 : Colors.grey,
             ),
           );
         },

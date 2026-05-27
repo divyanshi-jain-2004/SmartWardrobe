@@ -14,7 +14,6 @@ class WardrobeController extends GetxController {
     WardrobeCategory(title: "Bottomwear", icon: Icons.scatter_plot_outlined, itemImage: 'assets/bottoms.jpg', tags: ["Pleated", "High-waist", "Work"], genders: [Gender.women]),
     WardrobeCategory(title: "Dresses", icon: Icons.woman_outlined, itemImage: 'assets/dress.jpg', tags: ["Maxi", "Cocktail", "Summer"], genders: [Gender.women]),
     WardrobeCategory(title: "Footwear", icon: Icons.directions_walk_outlined, itemImage: 'assets/footwear.jpg', tags: ["Heels", "Sandals", "Boots"], genders: [Gender.women]),
-    WardrobeCategory(title: "Jewellery/Scarves", icon: Icons.watch_outlined, itemImage: 'assets/women_accesories.png', tags: ["Silver", "Necklace", "Scarf"], genders: [Gender.women]),
   ];
 
   int get totalItemsCount => categoryCounts.values.fold(0, (sum, count) => sum + count);

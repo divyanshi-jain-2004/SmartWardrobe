@@ -84,7 +84,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
     'Dresses': 'Dresses',
     'Outerwear': 'Topwear',
     'Footwear': 'Footwear',
-    'Accessories': 'Jewellery/Scarves',
   };
 
   final List<String> _categories = [
@@ -92,7 +91,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
     'Bottomwear',
     'Dresses',
     'Footwear',
-    'Jewellery/Scarves'
   ];
 
   // Theme Getters
